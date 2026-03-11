@@ -8,16 +8,52 @@ importers:
 
   .:
     dependencies:
+      '@vueuse/core':
+        specifier: ^10.9.0
+        version: 10.11.1(vue@3.5.30(typescript@5.9.3))
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.0
+        version: 2.1.1
+      lucide-vue-next:
+        specifier: ^0.359.0
+        version: 0.359.0(vue@3.5.30(typescript@5.9.3))
+      motion-v:
+        specifier: ^1.0.0
+        version: 1.10.3(@vueuse/core@10.11.1(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
+      radix-vue:
+        specifier: ^1.8.0
+        version: 1.9.17(vue@3.5.30(typescript@5.9.3))
+      tailwind-merge:
+        specifier: ^2.2.2
+        version: 2.6.1
       vue:
         specifier: ^3.4.21
         version: 3.5.30(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.3.0
+        version: 4.6.4(vue@3.5.30(typescript@5.9.3))
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.4
         version: 5.2.4(vite@5.4.21)(vue@3.5.30(typescript@5.9.3))
+      autoprefixer:
+        specifier: ^10.4.19
+        version: 10.4.27(postcss@8.5.8)
       gh-pages:
         specifier: ^6.1.1
         version: 6.3.0
+      postcss:
+        specifier: ^8.4.38
+        version: 8.5.8
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.19
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.19)
       typescript:
         specifier: ^5.4.2
         version: 5.9.3
@@ -29,6 +65,10 @@ importers:
         version: 2.2.12(typescript@5.9.3)
 
 packages:
+
+  '@alloc/quick-lru@5.2.0':
+    resolution: {integrity: sha1-e/aLIMCjUPk2kV/K4G9Y4yAHzjA=, tarball: https://registry.npm.wps.cn/@alloc/quick-lru/download/@alloc/quick-lru-5.2.0.tgz}
+    engines: {node: '>=10'}
 
   '@babel/helper-string-parser@7.27.1':
     resolution: {integrity: sha1-VNp5YJerGc5n7Z+ItHuy7Ek2doc=, tarball: https://registry.npm.wps.cn/@babel/helper-string-parser/download/@babel/helper-string-parser-7.27.1.tgz}
@@ -185,8 +225,36 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@floating-ui/core@1.7.5':
+    resolution: {integrity: sha1-1K8VegMzCvWmDmnaekaSUHraBiI=, tarball: https://registry.npm.wps.cn/@floating-ui/core/download/@floating-ui/core-1.7.5.tgz}
+
+  '@floating-ui/dom@1.7.6':
+    resolution: {integrity: sha1-+RW7pau7F34fInys7htNBjSxh78=, tarball: https://registry.npm.wps.cn/@floating-ui/dom/download/@floating-ui/dom-1.7.6.tgz}
+
+  '@floating-ui/utils@0.2.11':
+    resolution: {integrity: sha1-omngVeQOL0WHO66dGi/cy9MU6j8=, tarball: https://registry.npm.wps.cn/@floating-ui/utils/download/@floating-ui/utils-0.2.11.tgz}
+
+  '@floating-ui/vue@1.1.11':
+    resolution: {integrity: sha1-lPseYvbhV/kSWKMVp4sXB53SYOM=, tarball: https://registry.npm.wps.cn/@floating-ui/vue/download/@floating-ui/vue-1.1.11.tgz}
+
+  '@internationalized/date@3.12.0':
+    resolution: {integrity: sha1-zc0SrfNuHMsF7HuWT0hX5+xiE30=, tarball: https://registry.npm.wps.cn/@internationalized/date/download/@internationalized/date-3.12.0.tgz}
+
+  '@internationalized/number@3.6.5':
+    resolution: {integrity: sha1-EQPygyyo2d0+Tuz5VzPUl3kdu74=, tarball: https://registry.npm.wps.cn/@internationalized/number/download/@internationalized/number-3.6.5.tgz}
+
+  '@jridgewell/gen-mapping@0.3.13':
+    resolution: {integrity: sha1-Y0Khn0Q0dRjJPkOxrGnes8Rlah8=, tarball: https://registry.npm.wps.cn/@jridgewell/gen-mapping/download/@jridgewell/gen-mapping-0.3.13.tgz}
+
+  '@jridgewell/resolve-uri@3.1.2':
+    resolution: {integrity: sha1-eg7mAfYPmaIMfHxf8MgDiMEYm9Y=, tarball: https://registry.npm.wps.cn/@jridgewell/resolve-uri/download/@jridgewell/resolve-uri-3.1.2.tgz}
+    engines: {node: '>=6.0.0'}
+
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha1-aRKwDSxjHA0Vzhp6tXzWV/Ko+Lo=, tarball: https://registry.npm.wps.cn/@jridgewell/sourcemap-codec/download/@jridgewell/sourcemap-codec-1.5.5.tgz}
+
+  '@jridgewell/trace-mapping@0.3.31':
+    resolution: {integrity: sha1-2xXWeByTHzolGj2sOVAcmKYIL9A=, tarball: https://registry.npm.wps.cn/@jridgewell/trace-mapping/download/@jridgewell/trace-mapping-0.3.31.tgz}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha1-dhnC6yGyVIP20WdUi0z9WnSIw9U=, tarball: https://registry.npm.wps.cn/@nodelib/fs.scandir/download/@nodelib/fs.scandir-2.1.5.tgz}
@@ -338,8 +406,22 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@swc/helpers@0.5.19':
+    resolution: {integrity: sha1-moyKC9rs/fubiuVCHAyOCSRt/uk=, tarball: https://registry.npm.wps.cn/@swc/helpers/download/@swc/helpers-0.5.19.tgz}
+
+  '@tanstack/virtual-core@3.13.21':
+    resolution: {integrity: sha1-kl7sg9F9KKMK1MNkXVTV++eXu7M=, tarball: https://registry.npm.wps.cn/@tanstack/virtual-core/download/@tanstack/virtual-core-3.13.21.tgz}
+
+  '@tanstack/vue-virtual@3.13.21':
+    resolution: {integrity: sha1-/AouJhQiXGW+2ykbHUnsp3aVPgU=, tarball: https://registry.npm.wps.cn/@tanstack/vue-virtual/download/@tanstack/vue-virtual-3.13.21.tgz}
+    peerDependencies:
+      vue: ^2.7.0 || ^3.0.0
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha1-lYuRyZGxhnztMYvt6g4hXuBQcm4=, tarball: https://registry.npm.wps.cn/@types/estree/download/@types/estree-1.0.8.tgz}
+
+  '@types/web-bluetooth@0.0.20':
+    resolution: {integrity: sha1-8Gar/NHL5mJnzbvw3gENikG0FZc=, tarball: https://registry.npm.wps.cn/@types/web-bluetooth/download/@types/web-bluetooth-0.0.20.tgz}
 
   '@vitejs/plugin-vue@5.2.4':
     resolution: {integrity: sha1-nopRLrF0v8KjM7qVm7+d5CjYmtg=, tarball: https://registry.npm.wps.cn/@vitejs/plugin-vue/download/@vitejs/plugin-vue-5.2.4.tgz}
@@ -372,6 +454,9 @@ packages:
   '@vue/compiler-vue2@2.7.16':
     resolution: {integrity: sha1-K6g3y9PxszwryGX74aO1P7YR4kk=, tarball: https://registry.npm.wps.cn/@vue/compiler-vue2/download/@vue/compiler-vue2-2.7.16.tgz}
 
+  '@vue/devtools-api@6.6.4':
+    resolution: {integrity: sha1-y+l/4BYrNl7cHbqA4XP5BJJTU0M=, tarball: https://registry.npm.wps.cn/@vue/devtools-api/download/@vue/devtools-api-6.6.4.tgz}
+
   '@vue/language-core@2.2.12':
     resolution: {integrity: sha1-0B9+hl9ZP5aMtlwSoT2DN+ZWQfA=, tarball: https://registry.npm.wps.cn/@vue/language-core/download/@vue/language-core-2.2.12.tgz}
     peerDependencies:
@@ -397,8 +482,31 @@ packages:
   '@vue/shared@3.5.30':
     resolution: {integrity: sha1-XXoNPKFRZHSEMD/Z8Ffi4T7LgO8=, tarball: https://registry.npm.wps.cn/@vue/shared/download/@vue/shared-3.5.30.tgz}
 
+  '@vueuse/core@10.11.1':
+    resolution: {integrity: sha1-FdLAtkSNIhIjWyOnuinCcXPgwsY=, tarball: https://registry.npm.wps.cn/@vueuse/core/download/@vueuse/core-10.11.1.tgz}
+
+  '@vueuse/metadata@10.11.1':
+    resolution: {integrity: sha1-IJ23u1kVqhcqh1ELbeLKAcrb0qc=, tarball: https://registry.npm.wps.cn/@vueuse/metadata/download/@vueuse/metadata-10.11.1.tgz}
+
+  '@vueuse/shared@10.11.1':
+    resolution: {integrity: sha1-YrhOMRiubh8/849PvnGwxdDxCTg=, tarball: https://registry.npm.wps.cn/@vueuse/shared/download/@vueuse/shared-10.11.1.tgz}
+
   alien-signals@1.0.13:
     resolution: {integrity: sha1-jW23NGL3Qu5riWcfvYw30LFyen4=, tarball: https://registry.npm.wps.cn/alien-signals/download/alien-signals-1.0.13.tgz}
+
+  any-promise@1.3.0:
+    resolution: {integrity: sha1-q8av7tzqUugJzcA3au0845Y10X8=, tarball: https://registry.npm.wps.cn/any-promise/download/any-promise-1.3.0.tgz}
+
+  anymatch@3.1.3:
+    resolution: {integrity: sha1-eQxYsZuhcgqEIFtXxhjVrYUklz4=, tarball: https://registry.npm.wps.cn/anymatch/download/anymatch-3.1.3.tgz}
+    engines: {node: '>= 8'}
+
+  arg@5.0.2:
+    resolution: {integrity: sha1-yBQzzEJ8ksTc9IZRQtvKbxWs1Zw=, tarball: https://registry.npm.wps.cn/arg/download/arg-5.0.2.tgz}
+
+  aria-hidden@1.2.6:
+    resolution: {integrity: sha1-cwUcmwiBFMeVsepBTpwP/4dP/Bo=, tarball: https://registry.npm.wps.cn/aria-hidden/download/aria-hidden-1.2.6.tgz}
+    engines: {node: '>=10'}
 
   array-union@2.1.0:
     resolution: {integrity: sha1-t5hCCtvrHego2ErNii4j0+/oXo0=, tarball: https://registry.npm.wps.cn/array-union/download/array-union-2.1.0.tgz}
@@ -407,8 +515,24 @@ packages:
   async@3.2.6:
     resolution: {integrity: sha1-Gwco4Ukp1RuFtEm38G4nwRReOM4=, tarball: https://registry.npm.wps.cn/async/download/async-3.2.6.tgz}
 
+  autoprefixer@10.4.27:
+    resolution: {integrity: sha1-UeowGlw8X4ZC+OVkdZxPVzvkhvI=, tarball: https://registry.npm.wps.cn/autoprefixer/download/autoprefixer-10.4.27.tgz}
+    engines: {node: ^10 || ^12 || >=14}
+    hasBin: true
+    peerDependencies:
+      postcss: ^8.1.0
+
   balanced-match@1.0.2:
     resolution: {integrity: sha1-6D46fj8wCzTLnYf2FfoMvzV2kO4=, tarball: https://registry.npm.wps.cn/balanced-match/download/balanced-match-1.0.2.tgz}
+
+  baseline-browser-mapping@2.10.0:
+    resolution: {integrity: sha1-WwmTUCW/ioDikTAlHjN8an/Iy7k=, tarball: https://registry.npm.wps.cn/baseline-browser-mapping/download/baseline-browser-mapping-2.10.0.tgz}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  binary-extensions@2.3.0:
+    resolution: {integrity: sha1-9uFKl4WNMnJSIAJC1Mz+UixEVSI=, tarball: https://registry.npm.wps.cn/binary-extensions/download/binary-extensions-2.3.0.tgz}
+    engines: {node: '>=8'}
 
   brace-expansion@2.0.2:
     resolution: {integrity: sha1-VPxTI3phPYVMe9N0Y6rRffhyFOc=, tarball: https://registry.npm.wps.cn/brace-expansion/download/brace-expansion-2.0.2.tgz}
@@ -417,12 +541,44 @@ packages:
     resolution: {integrity: sha1-SQMy9AkZRSJy1VqEgK3AxEE1h4k=, tarball: https://registry.npm.wps.cn/braces/download/braces-3.0.3.tgz}
     engines: {node: '>=8'}
 
+  browserslist@4.28.1:
+    resolution: {integrity: sha1-f1NFlGKMU8YxAQeeJ+QN5JBFapU=, tarball: https://registry.npm.wps.cn/browserslist/download/browserslist-4.28.1.tgz}
+    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+    hasBin: true
+
+  camelcase-css@2.0.1:
+    resolution: {integrity: sha1-7pePaUeRTMMMa0R0G27R338EP9U=, tarball: https://registry.npm.wps.cn/camelcase-css/download/camelcase-css-2.0.1.tgz}
+    engines: {node: '>= 6'}
+
+  caniuse-lite@1.0.30001777:
+    resolution: {integrity: sha1-Ao8h5LJxjROLVeaSWD5oEMz2BpE=, tarball: https://registry.npm.wps.cn/caniuse-lite/download/caniuse-lite-1.0.30001777.tgz}
+
+  chokidar@3.6.0:
+    resolution: {integrity: sha1-GXxsxmnvKo3F57TZfuTgksPrDVs=, tarball: https://registry.npm.wps.cn/chokidar/download/chokidar-3.6.0.tgz}
+    engines: {node: '>= 8.10.0'}
+
+  class-variance-authority@0.7.1:
+    resolution: {integrity: sha1-QAinmKDkVTp4GlesUXfJ+10EN4c=, tarball: https://registry.npm.wps.cn/class-variance-authority/download/class-variance-authority-0.7.1.tgz}
+
+  clsx@2.1.1:
+    resolution: {integrity: sha1-7tOXyf2L2IK/sY3qtxAgSaLzKZk=, tarball: https://registry.npm.wps.cn/clsx/download/clsx-2.1.1.tgz}
+    engines: {node: '>=6'}
+
   commander@13.1.0:
     resolution: {integrity: sha1-d2Fn22jHjzjczh+bjXuLmkiKv0Y=, tarball: https://registry.npm.wps.cn/commander/download/commander-13.1.0.tgz}
     engines: {node: '>=18'}
 
+  commander@4.1.1:
+    resolution: {integrity: sha1-n9YCvZNilOnp70aj9NaWQESxgGg=, tarball: https://registry.npm.wps.cn/commander/download/commander-4.1.1.tgz}
+    engines: {node: '>= 6'}
+
   commondir@1.0.1:
     resolution: {integrity: sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=, tarball: https://registry.npm.wps.cn/commondir/download/commondir-1.0.1.tgz}
+
+  cssesc@3.0.0:
+    resolution: {integrity: sha1-N3QZGZA7hoVl4cCep0dEXNGJg+4=, tarball: https://registry.npm.wps.cn/cssesc/download/cssesc-3.0.0.tgz}
+    engines: {node: '>=4'}
+    hasBin: true
 
   csstype@3.2.3:
     resolution: {integrity: sha1-7EjA8+mT5QZIyG2lWeJhCZXPmJo=, tarball: https://registry.npm.wps.cn/csstype/download/csstype-3.2.3.tgz}
@@ -430,9 +586,21 @@ packages:
   de-indent@1.0.2:
     resolution: {integrity: sha1-sgOOhG3DO6pXlhKNCAS0VbjB4h0=, tarball: https://registry.npm.wps.cn/de-indent/download/de-indent-1.0.2.tgz}
 
+  defu@6.1.4:
+    resolution: {integrity: sha1-Tgyc+f9o/l89fydlzBoBLf3LBHk=, tarball: https://registry.npm.wps.cn/defu/download/defu-6.1.4.tgz}
+
+  didyoumean@1.2.2:
+    resolution: {integrity: sha1-mJNG/+noObRVXs9WZu3qDT6K0Dc=, tarball: https://registry.npm.wps.cn/didyoumean/download/didyoumean-1.2.2.tgz}
+
   dir-glob@3.0.1:
     resolution: {integrity: sha1-Vtv3PZkqSpO6FYT0U0Bj/S5BcX8=, tarball: https://registry.npm.wps.cn/dir-glob/download/dir-glob-3.0.1.tgz}
     engines: {node: '>=8'}
+
+  dlv@1.1.3:
+    resolution: {integrity: sha1-XBmKihFFNZbnUUlNSYdLx3MvLnk=, tarball: https://registry.npm.wps.cn/dlv/download/dlv-1.1.3.tgz}
+
+  electron-to-chromium@1.5.307:
+    resolution: {integrity: sha1-CfiXMQDDn7DQA7iQOTzR1Ykyscg=, tarball: https://registry.npm.wps.cn/electron-to-chromium/download/electron-to-chromium-1.5.307.tgz}
 
   email-addresses@5.0.0:
     resolution: {integrity: sha1-eunn9Y7vfV4+LCwtPqSbeNyFT6Y=, tarball: https://registry.npm.wps.cn/email-addresses/download/email-addresses-5.0.0.tgz}
@@ -446,6 +614,10 @@ packages:
     engines: {node: '>=12'}
     hasBin: true
 
+  escalade@3.2.0:
+    resolution: {integrity: sha1-ARo/aYVroYnf+n3I/M6Z0qh5A+U=, tarball: https://registry.npm.wps.cn/escalade/download/escalade-3.2.0.tgz}
+    engines: {node: '>=6'}
+
   escape-string-regexp@1.0.5:
     resolution: {integrity: sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=, tarball: https://registry.npm.wps.cn/escape-string-regexp/download/escape-string-regexp-1.0.5.tgz}
     engines: {node: '>=0.8.0'}
@@ -453,12 +625,24 @@ packages:
   estree-walker@2.0.2:
     resolution: {integrity: sha1-UvAQF4wqTBF6d1fP6UKtt9LaTKw=, tarball: https://registry.npm.wps.cn/estree-walker/download/estree-walker-2.0.2.tgz}
 
+  fast-deep-equal@3.1.3:
+    resolution: {integrity: sha1-On1WtVnWy8PrUSMlJE5hmmXGxSU=, tarball: https://registry.npm.wps.cn/fast-deep-equal/download/fast-deep-equal-3.1.3.tgz}
+
   fast-glob@3.3.3:
     resolution: {integrity: sha1-0G1YXOjbqQoWsFBcVDw8z7OuuBg=, tarball: https://registry.npm.wps.cn/fast-glob/download/fast-glob-3.3.3.tgz}
     engines: {node: '>=8.6.0'}
 
   fastq@1.20.1:
     resolution: {integrity: sha1-ynUKENySW8ixiDn9ID4+9LPO1nU=, tarball: https://registry.npm.wps.cn/fastq/download/fastq-1.20.1.tgz}
+
+  fdir@6.5.0:
+    resolution: {integrity: sha1-7Sq5Z6MxreYvGNB32uGSaE1Q01A=, tarball: https://registry.npm.wps.cn/fdir/download/fdir-6.5.0.tgz}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      picomatch: ^3 || ^4
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
 
   filename-reserved-regex@2.0.0:
     resolution: {integrity: sha1-q/c9+rc10EVECr/qLZHzieu/oik=, tarball: https://registry.npm.wps.cn/filename-reserved-regex/download/filename-reserved-regex-2.0.0.tgz}
@@ -480,6 +664,23 @@ packages:
     resolution: {integrity: sha1-l6/n1s3AvFkoWEt8jXsW6KmqXRk=, tarball: https://registry.npm.wps.cn/find-up/download/find-up-4.1.0.tgz}
     engines: {node: '>=8'}
 
+  fraction.js@5.3.4:
+    resolution: {integrity: sha1-jA/MapkIJi307Rl0J73u9WPgaZo=, tarball: https://registry.npm.wps.cn/fraction.js/download/fraction.js-5.3.4.tgz}
+
+  framer-motion@12.35.2:
+    resolution: {integrity: sha1-rdQP6M2461U/653RdSXJO1Hm9nw=, tarball: https://registry.npm.wps.cn/framer-motion/download/framer-motion-12.35.2.tgz}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fs-extra@11.3.4:
     resolution: {integrity: sha1-q2k07Ki89vf2uCdC4zWR+GMB1vw=, tarball: https://registry.npm.wps.cn/fs-extra/download/fs-extra-11.3.4.tgz}
     engines: {node: '>=14.14'}
@@ -488,6 +689,9 @@ packages:
     resolution: {integrity: sha1-ysZAd4XQNnWipeGlMFxpezR9kNY=, tarball: https://registry.npm.wps.cn/fsevents/download/fsevents-2.3.3.tgz}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  function-bind@1.1.2:
+    resolution: {integrity: sha1-LALYZNl/PqbIgwxGTL0Rq26rehw=, tarball: https://registry.npm.wps.cn/function-bind/download/function-bind-1.1.2.tgz}
 
   gh-pages@6.3.0:
     resolution: {integrity: sha1-pblHbdQ4XOr4XGRnsuBTlwk+dhM=, tarball: https://registry.npm.wps.cn/gh-pages/download/gh-pages-6.3.0.tgz}
@@ -498,6 +702,10 @@ packages:
     resolution: {integrity: sha1-hpgyxYA0/mikCTwX3BXoNA2EAcQ=, tarball: https://registry.npm.wps.cn/glob-parent/download/glob-parent-5.1.2.tgz}
     engines: {node: '>= 6'}
 
+  glob-parent@6.0.2:
+    resolution: {integrity: sha1-bSN9mQg5UMeSkPJMdkKj3poo+eM=, tarball: https://registry.npm.wps.cn/glob-parent/download/glob-parent-6.0.2.tgz}
+    engines: {node: '>=10.13.0'}
+
   globby@11.1.0:
     resolution: {integrity: sha1-vUvpi7BC+D15b344EZkfvoKg00s=, tarball: https://registry.npm.wps.cn/globby/download/globby-11.1.0.tgz}
     engines: {node: '>=10'}
@@ -505,13 +713,28 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha1-QYPk6L8Iu24Fu7L30uDI9xLKQOM=, tarball: https://registry.npm.wps.cn/graceful-fs/download/graceful-fs-4.2.11.tgz}
 
+  hasown@2.0.2:
+    resolution: {integrity: sha1-AD6vkb563DcuhOxZ3DclLO24AAM=, tarball: https://registry.npm.wps.cn/hasown/download/hasown-2.0.2.tgz}
+    engines: {node: '>= 0.4'}
+
   he@1.2.0:
     resolution: {integrity: sha1-hK5l+n6vsWX922FWauFLrwVmTw8=, tarball: https://registry.npm.wps.cn/he/download/he-1.2.0.tgz}
     hasBin: true
 
+  hey-listen@1.0.8:
+    resolution: {integrity: sha1-jllWH/ckkI3hqpJO1uzISlapqmg=, tarball: https://registry.npm.wps.cn/hey-listen/download/hey-listen-1.0.8.tgz}
+
   ignore@5.3.2:
     resolution: {integrity: sha1-PNQOcp82Q/2HywTlC/DrcivFlvU=, tarball: https://registry.npm.wps.cn/ignore/download/ignore-5.3.2.tgz}
     engines: {node: '>= 4'}
+
+  is-binary-path@2.1.0:
+    resolution: {integrity: sha1-6h9/O4DwZCNug0cPhsCcJU+0Wwk=, tarball: https://registry.npm.wps.cn/is-binary-path/download/is-binary-path-2.1.0.tgz}
+    engines: {node: '>=8'}
+
+  is-core-module@2.16.1:
+    resolution: {integrity: sha1-KpiAGoSfQ+Kt1kT7trxiKbGaTvQ=, tarball: https://registry.npm.wps.cn/is-core-module/download/is-core-module-2.16.1.tgz}
+    engines: {node: '>= 0.4'}
 
   is-extglob@2.1.1:
     resolution: {integrity: sha1-qIwCU1eR8C7TfHahueqXc8gz+MI=, tarball: https://registry.npm.wps.cn/is-extglob/download/is-extglob-2.1.1.tgz}
@@ -525,12 +748,28 @@ packages:
     resolution: {integrity: sha1-dTU0W4lnNNX4DE0GxQlVUnoU8Ss=, tarball: https://registry.npm.wps.cn/is-number/download/is-number-7.0.0.tgz}
     engines: {node: '>=0.12.0'}
 
+  jiti@1.21.7:
+    resolution: {integrity: sha1-ndgQQ0JKPShFixk9ll8NGKIwC6k=, tarball: https://registry.npm.wps.cn/jiti/download/jiti-1.21.7.tgz}
+    hasBin: true
+
   jsonfile@6.2.0:
     resolution: {integrity: sha1-fCZb0bZd5pd0eDAAh8mfHIQ4P2I=, tarball: https://registry.npm.wps.cn/jsonfile/download/jsonfile-6.2.0.tgz}
+
+  lilconfig@3.1.3:
+    resolution: {integrity: sha1-obz9Ylf5WFv1rhTO7rt7VZAl5MQ=, tarball: https://registry.npm.wps.cn/lilconfig/download/lilconfig-3.1.3.tgz}
+    engines: {node: '>=14'}
+
+  lines-and-columns@1.2.4:
+    resolution: {integrity: sha1-7KKE910pZQeTCdwK2SVauy68FjI=, tarball: https://registry.npm.wps.cn/lines-and-columns/download/lines-and-columns-1.2.4.tgz}
 
   locate-path@5.0.0:
     resolution: {integrity: sha1-Gvujlq/WdqbUJQTQpno6frn2KqA=, tarball: https://registry.npm.wps.cn/locate-path/download/locate-path-5.0.0.tgz}
     engines: {node: '>=8'}
+
+  lucide-vue-next@0.359.0:
+    resolution: {integrity: sha1-IpjsxoKE8I0b9i3DjuevZVjmZe0=, tarball: https://registry.npm.wps.cn/lucide-vue-next/download/lucide-vue-next-0.359.0.tgz}
+    peerDependencies:
+      vue: '>=3.0.1'
 
   magic-string@0.30.21:
     resolution: {integrity: sha1-VnY+wJoPqAkd8nh5/ZTRkHjADZE=, tarball: https://registry.npm.wps.cn/magic-string/download/magic-string-0.30.21.tgz}
@@ -551,13 +790,48 @@ packages:
     resolution: {integrity: sha1-mwy5/LeAh/b9fqur4lEcTT1gV04=, tarball: https://registry.npm.wps.cn/minimatch/download/minimatch-9.0.9.tgz}
     engines: {node: '>=16 || 14 >=14.17'}
 
+  motion-dom@12.35.2:
+    resolution: {integrity: sha1-SJuetyBtusPWCHquWE8I54wWz70=, tarball: https://registry.npm.wps.cn/motion-dom/download/motion-dom-12.35.2.tgz}
+
+  motion-utils@12.29.2:
+    resolution: {integrity: sha1-j90our4ELCRWsHirM7Mtqjv1k4s=, tarball: https://registry.npm.wps.cn/motion-utils/download/motion-utils-12.29.2.tgz}
+
+  motion-v@1.10.3:
+    resolution: {integrity: sha1-cCXvAvd0bfHiww8EnEmz0Cn4AoQ=, tarball: https://registry.npm.wps.cn/motion-v/download/motion-v-1.10.3.tgz}
+    peerDependencies:
+      '@vueuse/core': '>=10.0.0'
+      vue: '>=3.0.0'
+
   muggle-string@0.4.1:
     resolution: {integrity: sha1-OzZr1Dsy+AncIGWVNN0w58ig0yg=, tarball: https://registry.npm.wps.cn/muggle-string/download/muggle-string-0.4.1.tgz}
+
+  mz@2.7.0:
+    resolution: {integrity: sha1-lQCAV6Vsr63CvGPd5/n/aVWUjjI=, tarball: https://registry.npm.wps.cn/mz/download/mz-2.7.0.tgz}
 
   nanoid@3.3.11:
     resolution: {integrity: sha1-T08RLO++MDIC8hmYOBKJNiZtGFs=, tarball: https://registry.npm.wps.cn/nanoid/download/nanoid-3.3.11.tgz}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  nanoid@5.1.6:
+    resolution: {integrity: sha1-MDY/ZkeX59QEKfbBaUbWvXo/Jsk=, tarball: https://registry.npm.wps.cn/nanoid/download/nanoid-5.1.6.tgz}
+    engines: {node: ^18 || >=20}
+    hasBin: true
+
+  node-releases@2.0.36:
+    resolution: {integrity: sha1-mf1lUqrtqeF8RxO1emOWSi4yXp0=, tarball: https://registry.npm.wps.cn/node-releases/download/node-releases-2.0.36.tgz}
+
+  normalize-path@3.0.0:
+    resolution: {integrity: sha1-Dc1p/yOhybEf0JeDFmRKA4ghamU=, tarball: https://registry.npm.wps.cn/normalize-path/download/normalize-path-3.0.0.tgz}
+    engines: {node: '>=0.10.0'}
+
+  object-assign@4.1.1:
+    resolution: {integrity: sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=, tarball: https://registry.npm.wps.cn/object-assign/download/object-assign-4.1.1.tgz}
+    engines: {node: '>=0.10.0'}
+
+  object-hash@3.0.0:
+    resolution: {integrity: sha1-c/l/dT57r/wOLMnW4HkHl0Ssguk=, tarball: https://registry.npm.wps.cn/object-hash/download/object-hash-3.0.0.tgz}
+    engines: {node: '>= 6'}
 
   p-limit@2.3.0:
     resolution: {integrity: sha1-PdM8ZHohT9//2DWTPrCG2g3CHbE=, tarball: https://registry.npm.wps.cn/p-limit/download/p-limit-2.3.0.tgz}
@@ -578,6 +852,9 @@ packages:
     resolution: {integrity: sha1-UTvb4tO5XXdi6METfvoZXGxhtbM=, tarball: https://registry.npm.wps.cn/path-exists/download/path-exists-4.0.0.tgz}
     engines: {node: '>=8'}
 
+  path-parse@1.0.7:
+    resolution: {integrity: sha1-+8EUtgykKzDZ2vWFjkvWi77bZzU=, tarball: https://registry.npm.wps.cn/path-parse/download/path-parse-1.0.7.tgz}
+
   path-type@4.0.0:
     resolution: {integrity: sha1-hO0BwKe6OAr+CdkKjBgNzZ0DBDs=, tarball: https://registry.npm.wps.cn/path-type/download/path-type-4.0.0.tgz}
     engines: {node: '>=8'}
@@ -589,9 +866,64 @@ packages:
     resolution: {integrity: sha1-O6ODNzNkbZ0+SZWUbBNlpn+wekI=, tarball: https://registry.npm.wps.cn/picomatch/download/picomatch-2.3.1.tgz}
     engines: {node: '>=8.6'}
 
+  picomatch@4.0.3:
+    resolution: {integrity: sha1-eWx2E20e6tcV2x57rXhd7daVoEI=, tarball: https://registry.npm.wps.cn/picomatch/download/picomatch-4.0.3.tgz}
+    engines: {node: '>=12'}
+
+  pify@2.3.0:
+    resolution: {integrity: sha1-7RQaasBDqEnqWISY59yosVMw6Qw=, tarball: https://registry.npm.wps.cn/pify/download/pify-2.3.0.tgz}
+    engines: {node: '>=0.10.0'}
+
+  pirates@4.0.7:
+    resolution: {integrity: sha1-ZDtKGMQlfIplEEtz8wSc6aChXiI=, tarball: https://registry.npm.wps.cn/pirates/download/pirates-4.0.7.tgz}
+    engines: {node: '>= 6'}
+
   pkg-dir@4.2.0:
     resolution: {integrity: sha1-8JkTPfft5CLoHR2ESCcO6z5CYfM=, tarball: https://registry.npm.wps.cn/pkg-dir/download/pkg-dir-4.2.0.tgz}
     engines: {node: '>=8'}
+
+  postcss-import@15.1.0:
+    resolution: {integrity: sha1-QcZO2MwOI3NalpizJJ/9v3BK3HA=, tarball: https://registry.npm.wps.cn/postcss-import/download/postcss-import-15.1.0.tgz}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      postcss: ^8.0.0
+
+  postcss-js@4.1.0:
+    resolution: {integrity: sha1-ADtjxu3elIdm5A89r36ZeuQ6XOY=, tarball: https://registry.npm.wps.cn/postcss-js/download/postcss-js-4.1.0.tgz}
+    engines: {node: ^12 || ^14 || >= 16}
+    peerDependencies:
+      postcss: ^8.4.21
+
+  postcss-load-config@6.0.1:
+    resolution: {integrity: sha1-b9fc2K6JutzxstZESJy6v4OqgJY=, tarball: https://registry.npm.wps.cn/postcss-load-config/download/postcss-load-config-6.0.1.tgz}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      jiti: '>=1.21.0'
+      postcss: '>=8.0.9'
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      jiti:
+        optional: true
+      postcss:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
+        optional: true
+
+  postcss-nested@6.2.0:
+    resolution: {integrity: sha1-TC0iq18gucth4sXFkVlQeE0GgTE=, tarball: https://registry.npm.wps.cn/postcss-nested/download/postcss-nested-6.2.0.tgz}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.2.14
+
+  postcss-selector-parser@6.1.2:
+    resolution: {integrity: sha1-J+y0H7Djtrp6HshP/zR/c0x5Kd4=, tarball: https://registry.npm.wps.cn/postcss-selector-parser/download/postcss-selector-parser-6.1.2.tgz}
+    engines: {node: '>=4'}
+
+  postcss-value-parser@4.2.0:
+    resolution: {integrity: sha1-cjwJkgg2um0+WvAZ+SvAlxwC5RQ=, tarball: https://registry.npm.wps.cn/postcss-value-parser/download/postcss-value-parser-4.2.0.tgz}
 
   postcss@8.5.8:
     resolution: {integrity: sha1-YjDsyPsC56D2mC5TmQk3hX4T85k=, tarball: https://registry.npm.wps.cn/postcss/download/postcss-8.5.8.tgz}
@@ -599,6 +931,23 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha1-SSkii7xyTfrEPg77BYyve2z7YkM=, tarball: https://registry.npm.wps.cn/queue-microtask/download/queue-microtask-1.2.3.tgz}
+
+  radix-vue@1.9.17:
+    resolution: {integrity: sha1-1q7BcnFI4hz7EFxGpMIL8QDI7uc=, tarball: https://registry.npm.wps.cn/radix-vue/download/radix-vue-1.9.17.tgz}
+    peerDependencies:
+      vue: '>= 3.2.0'
+
+  read-cache@1.0.0:
+    resolution: {integrity: sha1-5mTvMRYRZsl1HNvo28+GtftY93Q=, tarball: https://registry.npm.wps.cn/read-cache/download/read-cache-1.0.0.tgz}
+
+  readdirp@3.6.0:
+    resolution: {integrity: sha1-dKNwvYVxFuJFspzJc0DNQxoCpsc=, tarball: https://registry.npm.wps.cn/readdirp/download/readdirp-3.6.0.tgz}
+    engines: {node: '>=8.10.0'}
+
+  resolve@1.22.11:
+    resolution: {integrity: sha1-qthXzh/7i/qbCxrCnxFWOD9owmI=, tarball: https://registry.npm.wps.cn/resolve/download/resolve-1.22.11.tgz}
+    engines: {node: '>= 0.4'}
+    hasBin: true
 
   reusify@1.1.0:
     resolution: {integrity: sha1-D+E7lSLhRz9RtVjueW4I8R+bSJ8=, tarball: https://registry.npm.wps.cn/reusify/download/reusify-1.1.0.tgz}
@@ -628,6 +977,39 @@ packages:
     resolution: {integrity: sha1-sv0qv2YEudHmATBXGV34Nrip1jE=, tarball: https://registry.npm.wps.cn/strip-outer/download/strip-outer-1.0.1.tgz}
     engines: {node: '>=0.10.0'}
 
+  sucrase@3.35.1:
+    resolution: {integrity: sha1-RhnqUDk/6L0K5QccJqvZsuNGv+E=, tarball: https://registry.npm.wps.cn/sucrase/download/sucrase-3.35.1.tgz}
+    engines: {node: '>=16 || 14 >=14.17'}
+    hasBin: true
+
+  supports-preserve-symlinks-flag@1.0.0:
+    resolution: {integrity: sha1-btpL00SjyUrqN21MwxvHcxEDngk=, tarball: https://registry.npm.wps.cn/supports-preserve-symlinks-flag/download/supports-preserve-symlinks-flag-1.0.0.tgz}
+    engines: {node: '>= 0.4'}
+
+  tailwind-merge@2.6.1:
+    resolution: {integrity: sha1-qdWCQPZk0hwzw3mgktmic/gzRDs=, tarball: https://registry.npm.wps.cn/tailwind-merge/download/tailwind-merge-2.6.1.tgz}
+
+  tailwindcss-animate@1.0.7:
+    resolution: {integrity: sha1-MYtpLExCZ2zJ5nsZt4d1dCOIvvQ=, tarball: https://registry.npm.wps.cn/tailwindcss-animate/download/tailwindcss-animate-1.0.7.tgz}
+    peerDependencies:
+      tailwindcss: '>=3.0.0 || insiders'
+
+  tailwindcss@3.4.19:
+    resolution: {integrity: sha1-ryoKSuMC1S6+B4tndeeZ4TJQDuI=, tarball: https://registry.npm.wps.cn/tailwindcss/download/tailwindcss-3.4.19.tgz}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+
+  thenify-all@1.6.0:
+    resolution: {integrity: sha1-GhkY1ALY/D+Y+/I02wvMjMEOlyY=, tarball: https://registry.npm.wps.cn/thenify-all/download/thenify-all-1.6.0.tgz}
+    engines: {node: '>=0.8'}
+
+  thenify@3.3.1:
+    resolution: {integrity: sha1-iTLmhqQGYDigFt2eLKRq3Zg4qV8=, tarball: https://registry.npm.wps.cn/thenify/download/thenify-3.3.1.tgz}
+
+  tinyglobby@0.2.15:
+    resolution: {integrity: sha1-4ijdHmOM6pk9L9tPzS1GAqeZUcI=, tarball: https://registry.npm.wps.cn/tinyglobby/download/tinyglobby-0.2.15.tgz}
+    engines: {node: '>=12.0.0'}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha1-FkjESq58jZiKMmAY7XL1tN0DkuQ=, tarball: https://registry.npm.wps.cn/to-regex-range/download/to-regex-range-5.0.1.tgz}
     engines: {node: '>=8.0'}
@@ -635,6 +1017,12 @@ packages:
   trim-repeated@1.0.0:
     resolution: {integrity: sha1-42RqLqTokTEr9+rObPsFOAvAHCE=, tarball: https://registry.npm.wps.cn/trim-repeated/download/trim-repeated-1.0.0.tgz}
     engines: {node: '>=0.10.0'}
+
+  ts-interface-checker@0.1.13:
+    resolution: {integrity: sha1-eE/T1nlyK8EDsbS4AwvN212yppk=, tarball: https://registry.npm.wps.cn/ts-interface-checker/download/ts-interface-checker-0.1.13.tgz}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha1-YS7+TtI11Wfoq6Xypfq3AoCt6D8=, tarball: https://registry.npm.wps.cn/tslib/download/tslib-2.8.1.tgz}
 
   typescript@5.9.3:
     resolution: {integrity: sha1-W09Z4VMQqxeiFvXWz1PuR27eZw8=, tarball: https://registry.npm.wps.cn/typescript/download/typescript-5.9.3.tgz}
@@ -644,6 +1032,15 @@ packages:
   universalify@2.0.1:
     resolution: {integrity: sha1-Fo78IYCWTmOG0GHglN9hr+I5sY0=, tarball: https://registry.npm.wps.cn/universalify/download/universalify-2.0.1.tgz}
     engines: {node: '>= 10.0.0'}
+
+  update-browserslist-db@1.2.3:
+    resolution: {integrity: sha1-ZNdttYcTE2rL60xJEUNmzGzC6A0=, tarball: https://registry.npm.wps.cn/update-browserslist-db/download/update-browserslist-db-1.2.3.tgz}
+    hasBin: true
+    peerDependencies:
+      browserslist: '>= 4.21.0'
+
+  util-deprecate@1.0.2:
+    resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=, tarball: https://registry.npm.wps.cn/util-deprecate/download/util-deprecate-1.0.2.tgz}
 
   vite@5.4.21:
     resolution: {integrity: sha1-hKT3xdhgsHFnbTm6UTwNWY/ccCc=, tarball: https://registry.npm.wps.cn/vite/download/vite-5.4.21.tgz}
@@ -679,6 +1076,22 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha1-3QnsWmaji1w//8d0AVcTSW0U4Jw=, tarball: https://registry.npm.wps.cn/vscode-uri/download/vscode-uri-3.1.0.tgz}
 
+  vue-demi@0.14.10:
+    resolution: {integrity: sha1-r8eN49b54Rv3jFXoUQ7hKBRSLwQ=, tarball: https://registry.npm.wps.cn/vue-demi/download/vue-demi-0.14.10.tgz}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+
+  vue-router@4.6.4:
+    resolution: {integrity: sha1-oKnLnvgRoQbSSeS7kxPShnGAINg=, tarball: https://registry.npm.wps.cn/vue-router/download/vue-router-4.6.4.tgz}
+    peerDependencies:
+      vue: ^3.5.0
+
   vue-tsc@2.2.12:
     resolution: {integrity: sha1-X3GbCO9zkKdjwaIBacpcnQnVVog=, tarball: https://registry.npm.wps.cn/vue-tsc/download/vue-tsc-2.2.12.tgz}
     hasBin: true
@@ -694,6 +1107,8 @@ packages:
         optional: true
 
 snapshots:
+
+  '@alloc/quick-lru@5.2.0': {}
 
   '@babel/helper-string-parser@7.27.1': {}
 
@@ -777,7 +1192,47 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
+  '@floating-ui/core@1.7.5':
+    dependencies:
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/dom@1.7.6':
+    dependencies:
+      '@floating-ui/core': 1.7.5
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/utils@0.2.11': {}
+
+  '@floating-ui/vue@1.1.11(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/utils': 0.2.11
+      vue-demi: 0.14.10(vue@3.5.30(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
+  '@internationalized/date@3.12.0':
+    dependencies:
+      '@swc/helpers': 0.5.19
+
+  '@internationalized/number@3.6.5':
+    dependencies:
+      '@swc/helpers': 0.5.19
+
+  '@jridgewell/gen-mapping@0.3.13':
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/trace-mapping': 0.3.31
+
+  '@jridgewell/resolve-uri@3.1.2': {}
+
   '@jridgewell/sourcemap-codec@1.5.5': {}
+
+  '@jridgewell/trace-mapping@0.3.31':
+    dependencies:
+      '@jridgewell/resolve-uri': 3.1.2
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -866,7 +1321,20 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.59.0':
     optional: true
 
+  '@swc/helpers@0.5.19':
+    dependencies:
+      tslib: 2.8.1
+
+  '@tanstack/virtual-core@3.13.21': {}
+
+  '@tanstack/vue-virtual@3.13.21(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      '@tanstack/virtual-core': 3.13.21
+      vue: 3.5.30(typescript@5.9.3)
+
   '@types/estree@1.0.8': {}
+
+  '@types/web-bluetooth@0.0.20': {}
 
   '@vitejs/plugin-vue@5.2.4(vite@5.4.21)(vue@3.5.30(typescript@5.9.3))':
     dependencies:
@@ -920,6 +1388,8 @@ snapshots:
       de-indent: 1.0.2
       he: 1.2.0
 
+  '@vue/devtools-api@6.6.4': {}
+
   '@vue/language-core@2.2.12(typescript@5.9.3)':
     dependencies:
       '@volar/language-core': 2.4.15
@@ -957,13 +1427,58 @@ snapshots:
 
   '@vue/shared@3.5.30': {}
 
+  '@vueuse/core@10.11.1(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      '@types/web-bluetooth': 0.0.20
+      '@vueuse/metadata': 10.11.1
+      '@vueuse/shared': 10.11.1(vue@3.5.30(typescript@5.9.3))
+      vue-demi: 0.14.10(vue@3.5.30(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
+  '@vueuse/metadata@10.11.1': {}
+
+  '@vueuse/shared@10.11.1(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      vue-demi: 0.14.10(vue@3.5.30(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
   alien-signals@1.0.13: {}
+
+  any-promise@1.3.0: {}
+
+  anymatch@3.1.3:
+    dependencies:
+      normalize-path: 3.0.0
+      picomatch: 2.3.1
+
+  arg@5.0.2: {}
+
+  aria-hidden@1.2.6:
+    dependencies:
+      tslib: 2.8.1
 
   array-union@2.1.0: {}
 
   async@3.2.6: {}
 
+  autoprefixer@10.4.27(postcss@8.5.8):
+    dependencies:
+      browserslist: 4.28.1
+      caniuse-lite: 1.0.30001777
+      fraction.js: 5.3.4
+      picocolors: 1.1.1
+      postcss: 8.5.8
+      postcss-value-parser: 4.2.0
+
   balanced-match@1.0.2: {}
+
+  baseline-browser-mapping@2.10.0: {}
+
+  binary-extensions@2.3.0: {}
 
   brace-expansion@2.0.2:
     dependencies:
@@ -973,17 +1488,59 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
+  browserslist@4.28.1:
+    dependencies:
+      baseline-browser-mapping: 2.10.0
+      caniuse-lite: 1.0.30001777
+      electron-to-chromium: 1.5.307
+      node-releases: 2.0.36
+      update-browserslist-db: 1.2.3(browserslist@4.28.1)
+
+  camelcase-css@2.0.1: {}
+
+  caniuse-lite@1.0.30001777: {}
+
+  chokidar@3.6.0:
+    dependencies:
+      anymatch: 3.1.3
+      braces: 3.0.3
+      glob-parent: 5.1.2
+      is-binary-path: 2.1.0
+      is-glob: 4.0.3
+      normalize-path: 3.0.0
+      readdirp: 3.6.0
+    optionalDependencies:
+      fsevents: 2.3.3
+
+  class-variance-authority@0.7.1:
+    dependencies:
+      clsx: 2.1.1
+
+  clsx@2.1.1: {}
+
   commander@13.1.0: {}
 
+  commander@4.1.1: {}
+
   commondir@1.0.1: {}
+
+  cssesc@3.0.0: {}
 
   csstype@3.2.3: {}
 
   de-indent@1.0.2: {}
 
+  defu@6.1.4: {}
+
+  didyoumean@1.2.2: {}
+
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
+
+  dlv@1.1.3: {}
+
+  electron-to-chromium@1.5.307: {}
 
   email-addresses@5.0.0: {}
 
@@ -1015,9 +1572,13 @@ snapshots:
       '@esbuild/win32-ia32': 0.21.5
       '@esbuild/win32-x64': 0.21.5
 
+  escalade@3.2.0: {}
+
   escape-string-regexp@1.0.5: {}
 
   estree-walker@2.0.2: {}
+
+  fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.3:
     dependencies:
@@ -1030,6 +1591,10 @@ snapshots:
   fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
+
+  fdir@6.5.0(picomatch@4.0.3):
+    optionalDependencies:
+      picomatch: 4.0.3
 
   filename-reserved-regex@2.0.0: {}
 
@@ -1054,6 +1619,14 @@ snapshots:
       locate-path: 5.0.0
       path-exists: 4.0.0
 
+  fraction.js@5.3.4: {}
+
+  framer-motion@12.35.2:
+    dependencies:
+      motion-dom: 12.35.2
+      motion-utils: 12.29.2
+      tslib: 2.8.1
+
   fs-extra@11.3.4:
     dependencies:
       graceful-fs: 4.2.11
@@ -1062,6 +1635,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  function-bind@1.1.2: {}
 
   gh-pages@6.3.0:
     dependencies:
@@ -1077,6 +1652,10 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
+  glob-parent@6.0.2:
+    dependencies:
+      is-glob: 4.0.3
+
   globby@11.1.0:
     dependencies:
       array-union: 2.1.0
@@ -1088,9 +1667,23 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
+  hasown@2.0.2:
+    dependencies:
+      function-bind: 1.1.2
+
   he@1.2.0: {}
 
+  hey-listen@1.0.8: {}
+
   ignore@5.3.2: {}
+
+  is-binary-path@2.1.0:
+    dependencies:
+      binary-extensions: 2.3.0
+
+  is-core-module@2.16.1:
+    dependencies:
+      hasown: 2.0.2
 
   is-extglob@2.1.1: {}
 
@@ -1100,15 +1693,25 @@ snapshots:
 
   is-number@7.0.0: {}
 
+  jiti@1.21.7: {}
+
   jsonfile@6.2.0:
     dependencies:
       universalify: 2.0.1
     optionalDependencies:
       graceful-fs: 4.2.11
 
+  lilconfig@3.1.3: {}
+
+  lines-and-columns@1.2.4: {}
+
   locate-path@5.0.0:
     dependencies:
       p-locate: 4.1.0
+
+  lucide-vue-next@0.359.0(vue@3.5.30(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.30(typescript@5.9.3)
 
   magic-string@0.30.21:
     dependencies:
@@ -1129,9 +1732,43 @@ snapshots:
     dependencies:
       brace-expansion: 2.0.2
 
+  motion-dom@12.35.2:
+    dependencies:
+      motion-utils: 12.29.2
+
+  motion-utils@12.29.2: {}
+
+  motion-v@1.10.3(@vueuse/core@10.11.1(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)):
+    dependencies:
+      '@vueuse/core': 10.11.1(vue@3.5.30(typescript@5.9.3))
+      framer-motion: 12.35.2
+      hey-listen: 1.0.8
+      motion-dom: 12.35.2
+      vue: 3.5.30(typescript@5.9.3)
+    transitivePeerDependencies:
+      - '@emotion/is-prop-valid'
+      - react
+      - react-dom
+
   muggle-string@0.4.1: {}
 
+  mz@2.7.0:
+    dependencies:
+      any-promise: 1.3.0
+      object-assign: 4.1.1
+      thenify-all: 1.6.0
+
   nanoid@3.3.11: {}
+
+  nanoid@5.1.6: {}
+
+  node-releases@2.0.36: {}
+
+  normalize-path@3.0.0: {}
+
+  object-assign@4.1.1: {}
+
+  object-hash@3.0.0: {}
 
   p-limit@2.3.0:
     dependencies:
@@ -1147,15 +1784,54 @@ snapshots:
 
   path-exists@4.0.0: {}
 
+  path-parse@1.0.7: {}
+
   path-type@4.0.0: {}
 
   picocolors@1.1.1: {}
 
   picomatch@2.3.1: {}
 
+  picomatch@4.0.3: {}
+
+  pify@2.3.0: {}
+
+  pirates@4.0.7: {}
+
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
+
+  postcss-import@15.1.0(postcss@8.5.8):
+    dependencies:
+      postcss: 8.5.8
+      postcss-value-parser: 4.2.0
+      read-cache: 1.0.0
+      resolve: 1.22.11
+
+  postcss-js@4.1.0(postcss@8.5.8):
+    dependencies:
+      camelcase-css: 2.0.1
+      postcss: 8.5.8
+
+  postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.8):
+    dependencies:
+      lilconfig: 3.1.3
+    optionalDependencies:
+      jiti: 1.21.7
+      postcss: 8.5.8
+
+  postcss-nested@6.2.0(postcss@8.5.8):
+    dependencies:
+      postcss: 8.5.8
+      postcss-selector-parser: 6.1.2
+
+  postcss-selector-parser@6.1.2:
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
+
+  postcss-value-parser@4.2.0: {}
 
   postcss@8.5.8:
     dependencies:
@@ -1164,6 +1840,37 @@ snapshots:
       source-map-js: 1.2.1
 
   queue-microtask@1.2.3: {}
+
+  radix-vue@1.9.17(vue@3.5.30(typescript@5.9.3)):
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/vue': 1.1.11(vue@3.5.30(typescript@5.9.3))
+      '@internationalized/date': 3.12.0
+      '@internationalized/number': 3.6.5
+      '@tanstack/vue-virtual': 3.13.21(vue@3.5.30(typescript@5.9.3))
+      '@vueuse/core': 10.11.1(vue@3.5.30(typescript@5.9.3))
+      '@vueuse/shared': 10.11.1(vue@3.5.30(typescript@5.9.3))
+      aria-hidden: 1.2.6
+      defu: 6.1.4
+      fast-deep-equal: 3.1.3
+      nanoid: 5.1.6
+      vue: 3.5.30(typescript@5.9.3)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+
+  read-cache@1.0.0:
+    dependencies:
+      pify: 2.3.0
+
+  readdirp@3.6.0:
+    dependencies:
+      picomatch: 2.3.1
+
+  resolve@1.22.11:
+    dependencies:
+      is-core-module: 2.16.1
+      path-parse: 1.0.7
+      supports-preserve-symlinks-flag: 1.0.0
 
   reusify@1.1.0: {}
 
@@ -1212,6 +1919,65 @@ snapshots:
     dependencies:
       escape-string-regexp: 1.0.5
 
+  sucrase@3.35.1:
+    dependencies:
+      '@jridgewell/gen-mapping': 0.3.13
+      commander: 4.1.1
+      lines-and-columns: 1.2.4
+      mz: 2.7.0
+      pirates: 4.0.7
+      tinyglobby: 0.2.15
+      ts-interface-checker: 0.1.13
+
+  supports-preserve-symlinks-flag@1.0.0: {}
+
+  tailwind-merge@2.6.1: {}
+
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.19):
+    dependencies:
+      tailwindcss: 3.4.19
+
+  tailwindcss@3.4.19:
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.3
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.7
+      lilconfig: 3.1.3
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.5.8
+      postcss-import: 15.1.0(postcss@8.5.8)
+      postcss-js: 4.1.0(postcss@8.5.8)
+      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.8)
+      postcss-nested: 6.2.0(postcss@8.5.8)
+      postcss-selector-parser: 6.1.2
+      resolve: 1.22.11
+      sucrase: 3.35.1
+    transitivePeerDependencies:
+      - tsx
+      - yaml
+
+  thenify-all@1.6.0:
+    dependencies:
+      thenify: 3.3.1
+
+  thenify@3.3.1:
+    dependencies:
+      any-promise: 1.3.0
+
+  tinyglobby@0.2.15:
+    dependencies:
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
@@ -1220,9 +1986,21 @@ snapshots:
     dependencies:
       escape-string-regexp: 1.0.5
 
+  ts-interface-checker@0.1.13: {}
+
+  tslib@2.8.1: {}
+
   typescript@5.9.3: {}
 
   universalify@2.0.1: {}
+
+  update-browserslist-db@1.2.3(browserslist@4.28.1):
+    dependencies:
+      browserslist: 4.28.1
+      escalade: 3.2.0
+      picocolors: 1.1.1
+
+  util-deprecate@1.0.2: {}
 
   vite@5.4.21:
     dependencies:
@@ -1233,6 +2011,15 @@ snapshots:
       fsevents: 2.3.3
 
   vscode-uri@3.1.0: {}
+
+  vue-demi@0.14.10(vue@3.5.30(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.30(typescript@5.9.3)
+
+  vue-router@4.6.4(vue@3.5.30(typescript@5.9.3)):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.30(typescript@5.9.3)
 
   vue-tsc@2.2.12(typescript@5.9.3):
     dependencies:

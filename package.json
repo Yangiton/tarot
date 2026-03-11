@@ -1,5 +1,5 @@
 {
-  "name": "tarot-webapp",
+  "name": "blackrice-tarot",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -11,11 +11,23 @@
     "deploy": "pnpm build && gh-pages -d dist"
   },
   "dependencies": {
-    "vue": "^3.4.21"
+    "@vueuse/core": "^10.9.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "lucide-vue-next": "^0.359.0",
+    "motion-v": "^1.0.0",
+    "radix-vue": "^1.8.0",
+    "tailwind-merge": "^2.2.2",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.19",
     "gh-pages": "^6.1.1",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.2",
     "vite": "^5.2.0",
     "vue-tsc": "^2.0.6"

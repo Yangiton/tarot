@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 36 33% 85%;
+    
+    --muted: 222 47% 20%;
+    --muted-foreground: 220 9% 65%;
+    
+    --accent: 222 47% 25%;
+    --accent-foreground: 36 33% 85%;
+    
+    --primary: 51 100% 50%;
+    --primary-foreground: 222 47% 11%;
+    
+    --secondary: 222 47% 20%;
+    --secondary-foreground: 36 33% 85%;
+    
+    --border: 51 100% 50% / 0.15;
+    --input: 51 100% 50% / 0.15;
+    --ring: 51 100% 50%;
+    
+    --radius: 0.75rem;
+    
+    --gold: #ffd700;
+    --gold-dark: #c9a227;
+    --gold-light: #ffb347;
+    
+    --nav-height: 60px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    @apply h-full w-full overflow-hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Noto Serif SC', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 15%) 50%, hsl(215 60% 20%) 100%);
+  }
+
+  #app {
+    @apply h-full w-full overflow-hidden;
+  }
+}
+
+@layer components {
+  .gold-title {
+    @apply bg-gradient-to-r from-gold via-gold-light to-gold bg-clip-text text-transparent;
+  }
+  
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md rounded-xl border border-white/10;
+  }
+}
+
+/* 星空背景 */
+.stars {
+  @apply fixed inset-0 pointer-events-none overflow-hidden z-0;
+}
+
+.star {
+  @apply absolute w-0.5 h-0.5 bg-white rounded-full;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 滚动条样式 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
+}
+
+/* 高亮文本 */
+.highlight {
+  color: var(--gold);
+  font-weight: 500;
+}
