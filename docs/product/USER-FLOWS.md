@@ -1,4 +1,4 @@
-# Tarot Insight - 用户流程图
+# BlackRice Tarot - 用户流程图
 
 > 版本：1.0  
 > 更新日期：2026-03-11  

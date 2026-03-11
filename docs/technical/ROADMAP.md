@@ -1,4 +1,4 @@
-# Tarot Insight - 迭代路径
+# BlackRice Tarot - 迭代路径
 
 > 版本：1.0  
 > 更新日期：2026-03-11
@@ -9,7 +9,7 @@
 
 ```mermaid
 gantt
-    title Tarot Insight 迭代路径
+    title BlackRice Tarot 迭代路径
     dateFormat  YYYY-MM
     section MVP
     核心占卜功能     :done, mvp1, 2026-01, 2026-02
@@ -338,7 +338,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Tarot Insight',
+        name: 'BlackRice Tarot',
         short_name: 'Tarot',
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',

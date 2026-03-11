@@ -1,4 +1,4 @@
-# Tarot Insight - API 设计
+# BlackRice Tarot - API 设计
 
 > 版本：1.0  
 > 更新日期：2026-03-11

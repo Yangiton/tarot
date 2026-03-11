@@ -134,7 +134,7 @@
 
 ### 本项目采用体系
 
-**Tarot Insight 基于 Rider-Waite（伟特/韦特）体系**，原因：
+**BlackRice Tarot 基于 Rider-Waite（伟特/韦特）体系**，原因：
 1. 最广泛使用，资料丰富
 2. 图像直观，易于数字化呈现
 3. 牌义解读有标准参考
@@ -143,7 +143,7 @@
 
 # Part B: Web App 数字卡片设计规范
 
-以下为 Tarot Insight 应用中数字卡片的前端实现规范。
+以下为 BlackRice Tarot 应用中数字卡片的前端实现规范。
 
 ---
 

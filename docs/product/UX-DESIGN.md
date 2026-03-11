@@ -1,4 +1,4 @@
-# Tarot Insight - UX 设计规范
+# BlackRice Tarot - UX 设计规范
 
 > 版本：1.0  
 > 更新日期：2026-03-11  

@@ -1,4 +1,4 @@
-# Tarot Insight - 产品文档中心
+# BlackRice Tarot - 产品文档中心
 
 > 🔮 轻量级塔罗占卜 Web App - 完整产品与技术文档
 
@@ -109,7 +109,7 @@ docs/
 ## 四、产品概览
 
 ### 产品名称
-**Tarot Insight** （塔罗洞见）
+**BlackRice Tarot** （黑米塔罗）
 
 ### 核心价值
 一款**轻量级塔罗占卜 Web App**，用户可以通过抽取塔罗牌获得对问题的启发性解读。

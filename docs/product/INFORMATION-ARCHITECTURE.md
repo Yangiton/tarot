@@ -1,4 +1,4 @@
-# Tarot Insight - 信息架构 (IA)
+# BlackRice Tarot - 信息架构 (IA)
 
 > 版本：1.0  
 > 更新日期：2026-03-11  
@@ -12,7 +12,7 @@
 
 ```mermaid
 graph TD
-    A[Tarot Insight] --> B[首页 /]
+    A[BlackRice Tarot] --> B[首页 /]
     A --> C[解读页 /reading]
     A --> D[牌库 /library]
     A --> E[设置 /settings]

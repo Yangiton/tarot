@@ -1,4 +1,4 @@
-# Tarot Insight - 产品需求文档 (PRD)
+# BlackRice Tarot - 产品需求文档 (PRD)
 
 > 版本：1.0  
 > 更新日期：2026-03-11  
@@ -10,7 +10,7 @@
 
 ### 1.1 产品名称
 
-**Tarot Insight** （塔罗洞见）
+**BlackRice Tarot** （黑米塔罗）
 
 ### 1.2 产品定位
 
