@@ -50,10 +50,12 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <p 
-      class="text-sm text-muted-foreground leading-relaxed min-h-[40px]"
-      v-html="tips[currentIndex].text"
-    ></p>
+    <div class="tips-content">
+      <p 
+        class="text-sm text-muted-foreground leading-relaxed"
+        v-html="tips[currentIndex].text"
+      ></p>
+    </div>
     
     <div class="flex justify-center gap-1.5 mt-3">
       <span 
@@ -68,3 +70,11 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.tips-content {
+  height: 2.6em;
+  line-height: 1.3em;
+  overflow: hidden;
+}
+</style>

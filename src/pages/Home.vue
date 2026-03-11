@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Motion, AnimatePresence } from 'motion-v'
-import TipsBox from '@/components/TipsBox.vue'
+import { Lightbulb, X } from 'lucide-vue-next'
 import TarotCard from '@/components/tarot/TarotCard.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
+import { tips } from '@/data'
 
 const router = useRouter()
 const {
@@ -28,40 +29,59 @@ const spreads = [
 ] as const
 
 const cardRefs = ref<Record<number, any>>({})
+const isAnimating = ref(false)
+const drawKey = ref(0)
+const showTips = ref(false)
+const currentTipIndex = ref(0)
 
 const setCardRef = (el: unknown, index: number) => {
   cardRefs.value[index] = el
 }
 
-const dateDisplay = computed(() => {
-  const now = new Date()
-  const options: Intl.DateTimeFormatOptions = { 
-    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
-  }
-  return now.toLocaleDateString('zh-CN', options)
-})
+const currentTip = computed(() => tips[currentTipIndex.value])
+
+const nextTip = () => {
+  currentTipIndex.value = (currentTipIndex.value + 1) % tips.length
+}
 
 const hint = computed(() => {
-  if (!isDrawn.value) return '选择牌阵，然后点击抽牌'
-  if (!allFlipped.value) return '点击卡牌翻开查看'
-  return '点击下方查看解读'
+  if (!allFlipped.value) return '点击卡牌翻开'
+  return '查看解读 →'
 })
 
 const handleSelectSpread = (count: number) => {
   selectSpread(count as 1 | 3 | 5)
 }
 
-const handleDraw = () => {
+const handleDraw = async () => {
+  isAnimating.value = true
   drawCards()
+  drawKey.value++
+  await nextTick()
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 600)
 }
 
 const handleFlip = () => {
   flipCard()
 }
 
-const handleReset = () => {
-  resetReading()
+const handleReset = async () => {
+  if (isAnimating.value) return
+  isAnimating.value = true
+  
   Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.())
+  
+  await new Promise(resolve => setTimeout(resolve, 350))
+  
+  resetReading()
+  drawKey.value++
+  
+  await nextTick()
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 100)
 }
 
 const goToReading = () => {
@@ -72,130 +92,296 @@ const goToReading = () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col overflow-hidden px-4 md:px-8">
-    <!-- Header -->
-    <Motion
-      :initial="{ opacity: 0, y: -20 }"
-      :animate="{ opacity: 1, y: 0 }"
-      :transition="{ duration: 0.5 }"
-    >
-      <header class="text-center py-4 md:py-6 flex-shrink-0">
-        <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold gold-title">
-          ✦ 塔罗牌占卜 ✦
-        </h1>
-        <p class="text-muted-foreground text-sm md:text-base mt-1 tracking-widest">
-          聆听宇宙的低语
-        </p>
-        <p class="text-muted-foreground/60 text-xs md:text-sm mt-2">
-          {{ dateDisplay }}
-        </p>
-      </header>
-    </Motion>
+  <div class="home-container">
+    <!-- Header Row: Title + Tips Icon -->
+    <header class="header-row">
+      <div class="header-content">
+        <h1 class="title">✦ 塔罗占卜 ✦</h1>
+        <p class="subtitle">聆听宇宙的低语</p>
+      </div>
+      
+      <!-- Tips Toggle Button -->
+      <button 
+        class="tips-toggle"
+        :class="{ 'is-active': showTips }"
+        @click="showTips = !showTips"
+        title="占卜小贴士"
+      >
+        <Lightbulb class="w-4 h-4 md:w-5 md:h-5" />
+      </button>
+    </header>
 
-    <!-- Tips (PC only) -->
-    <div class="hidden md:block flex-shrink-0">
-      <TipsBox />
-    </div>
+    <!-- Tips Popup -->
+    <AnimatePresence>
+      <Motion
+        v-if="showTips"
+        :initial="{ opacity: 0, y: -10, scale: 0.95 }"
+        :animate="{ opacity: 1, y: 0, scale: 1 }"
+        :exit="{ opacity: 0, y: -10, scale: 0.95 }"
+        :transition="{ duration: 0.2 }"
+        class="tips-popup"
+      >
+        <div class="tips-header">
+          <span class="tips-title">💡 小贴士</span>
+          <button class="tips-close" @click="showTips = false">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+        <p class="tips-text" v-html="currentTip.text"></p>
+        <div class="tips-footer">
+          <span class="tips-count">{{ currentTipIndex + 1 }}/{{ tips.length }}</span>
+          <button class="tips-next" @click="nextTip">下一条 →</button>
+        </div>
+      </Motion>
+    </AnimatePresence>
 
     <!-- Spread Selector -->
-    <Motion
-      :initial="{ opacity: 0 }"
-      :animate="{ opacity: 1 }"
-      :transition="{ duration: 0.5, delay: 0.2 }"
-    >
-      <div class="flex justify-center gap-2 md:gap-3 py-3 flex-shrink-0">
-        <button 
-          v-for="spread in spreads" 
-          :key="spread.count"
-          :class="[
-            'px-4 md:px-6 py-2 text-sm md:text-base rounded-full border-2 transition-all',
-            currentSpread === spread.count 
-              ? 'bg-gradient-to-r from-gold to-gold-light text-background border-transparent shadow-lg shadow-gold/30' 
-              : 'border-gold/50 text-gold hover:border-gold hover:bg-gold/10',
-            isDrawn ? 'opacity-50 cursor-not-allowed' : ''
-          ]"
-          :disabled="isDrawn"
-          @click="handleSelectSpread(spread.count)"
-        >
-          {{ spread.name }}
-        </button>
-      </div>
-    </Motion>
-
-    <!-- Cards Area -->
-    <div class="flex-1 flex justify-center items-center gap-3 md:gap-5 min-h-0 py-4">
-      <AnimatePresence>
-        <Motion
-          v-for="(card, index) in drawnCards"
-          :key="card.id + '-' + index"
-          :initial="{ opacity: 0, scale: 0.8, y: 30 }"
-          :animate="{ opacity: 1, scale: 1, y: 0 }"
-          :exit="{ opacity: 0, scale: 0.8 }"
-          :transition="{ duration: 0.4, delay: index * 0.1 }"
-          class="card-wrapper"
-        >
-          <TarotCard 
-            :ref="(el) => setCardRef(el, index)"
-            :card="card"
-            :position="positions[index]"
-            :clickable="true"
-            @flip="handleFlip"
-          />
-        </Motion>
-      </AnimatePresence>
-      
-      <Motion
-        v-if="!isDrawn"
-        :initial="{ opacity: 0 }"
-        :animate="{ opacity: 1 }"
-        class="text-muted-foreground text-center"
+    <div class="spread-selector">
+      <button 
+        v-for="spread in spreads" 
+        :key="spread.count"
+        :class="[
+          'spread-btn',
+          currentSpread === spread.count ? 'is-active' : '',
+          isDrawn ? 'is-disabled' : ''
+        ]"
+        :disabled="isDrawn"
+        @click="handleSelectSpread(spread.count)"
       >
-        <p class="text-sm md:text-base">选择牌阵后点击抽牌</p>
-      </Motion>
+        {{ spread.name }}
+      </button>
     </div>
 
-    <!-- Action Area -->
-    <Motion
-      :initial="{ opacity: 0, y: 20 }"
-      :animate="{ opacity: 1, y: 0 }"
-      :transition="{ duration: 0.5, delay: 0.3 }"
-    >
-      <div class="flex-shrink-0 text-center py-4 min-h-[100px] flex flex-col justify-center items-center gap-3">
-        <Button 
-          v-if="!isDrawn" 
-          size="lg"
-          @click="handleDraw"
+    <!-- Main Card Area -->
+    <div class="main-area">
+      <AnimatePresence mode="wait">
+        <!-- 抽牌前：居中显示按钮 -->
+        <Motion
+          v-if="!isDrawn"
+          key="draw-button"
+          :initial="{ opacity: 0, scale: 0.9 }"
+          :animate="{ opacity: 1, scale: 1 }"
+          :exit="{ opacity: 0, scale: 0.8 }"
+          :transition="{ duration: 0.3 }"
+          class="draw-area"
         >
-          开始抽牌
-        </Button>
+          <Button 
+            size="lg"
+            :disabled="isAnimating"
+            @click="handleDraw"
+            class="draw-btn"
+          >
+            开始抽牌
+          </Button>
+        </Motion>
         
-        <template v-else>
-          <p class="text-sm text-muted-foreground">{{ hint }}</p>
-          <div class="flex gap-3">
-            <Button variant="outline" size="sm" @click="handleReset">
-              重新抽牌
-            </Button>
-            <Button 
-              v-if="allFlipped"
-              size="sm"
-              @click="goToReading"
-            >
-              查看解读 →
-            </Button>
-          </div>
-        </template>
-      </div>
-    </Motion>
+        <!-- 抽牌后：显示卡牌 -->
+        <Motion
+          v-else
+          :key="'cards-' + drawKey"
+          :initial="{ opacity: 0 }"
+          :animate="{ opacity: 1 }"
+          :exit="{ opacity: 0 }"
+          :transition="{ duration: 0.3 }"
+          class="cards-area"
+        >
+          <Motion
+            v-for="(card, index) in drawnCards"
+            :key="card.id + '-' + index"
+            :initial="{ opacity: 0, scale: 0.6, y: 40 }"
+            :animate="{ opacity: 1, scale: 1, y: 0 }"
+            :transition="{ 
+              duration: 0.5, 
+              delay: index * 0.1,
+              ease: [0.34, 1.56, 0.64, 1]
+            }"
+          >
+            <TarotCard 
+              :ref="(el) => setCardRef(el, index)"
+              :card="card"
+              :position="positions[index]"
+              :clickable="!isAnimating"
+              @flip="handleFlip"
+            />
+          </Motion>
+        </Motion>
+      </AnimatePresence>
+    </div>
 
-    <!-- Footer (PC only) -->
-    <div class="hidden md:block flex-shrink-0">
+    <!-- Bottom Action Area -->
+    <div class="action-area">
+      <AnimatePresence>
+        <Motion
+          v-if="isDrawn"
+          :initial="{ opacity: 0, y: 10 }"
+          :animate="{ opacity: 1, y: 0 }"
+          :exit="{ opacity: 0 }"
+          :transition="{ duration: 0.3 }"
+          class="action-buttons"
+        >
+          <Button 
+            variant="outline" 
+            size="sm" 
+            :disabled="isAnimating"
+            @click="handleReset"
+          >
+            重新抽牌
+          </Button>
+          <Button 
+            v-if="allFlipped"
+            size="sm"
+            @click="goToReading"
+          >
+            查看解读 →
+          </Button>
+          <span v-else class="hint-text">{{ hint }}</span>
+        </Motion>
+      </AnimatePresence>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-area">
       <AppFooter />
     </div>
   </div>
 </template>
 
 <style scoped>
-.card-wrapper {
-  @apply transition-transform hover:-translate-y-2;
+.home-container {
+  @apply h-full flex flex-col overflow-hidden px-3 md:px-6 relative;
+}
+
+/* ========== Header ========== */
+.header-row {
+  @apply flex items-center justify-between py-3 md:py-4 flex-shrink-0;
+}
+
+.header-content {
+  @apply flex-1 text-center;
+}
+
+.title {
+  @apply text-xl md:text-2xl lg:text-3xl font-bold;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  @apply text-muted-foreground text-xs md:text-sm mt-0.5 tracking-wider;
+}
+
+.tips-toggle {
+  @apply absolute right-3 md:right-6 top-3 md:top-4;
+  @apply w-8 h-8 md:w-9 md:h-9 rounded-full;
+  @apply flex items-center justify-center;
+  @apply border border-gold/40 text-gold/70;
+  @apply hover:bg-gold/10 hover:text-gold hover:border-gold;
+  @apply transition-all duration-200;
+}
+
+.tips-toggle.is-active {
+  @apply bg-gold/20 text-gold border-gold;
+}
+
+/* ========== Tips Popup ========== */
+.tips-popup {
+  @apply absolute right-3 md:right-6 top-14 md:top-16 z-50;
+  @apply w-[280px] md:w-[320px];
+  @apply glass-card p-3 md:p-4;
+  @apply border border-gold/20;
+}
+
+.tips-header {
+  @apply flex items-center justify-between mb-2;
+}
+
+.tips-title {
+  @apply text-gold text-sm font-medium;
+}
+
+.tips-close {
+  @apply w-6 h-6 rounded-full;
+  @apply flex items-center justify-center;
+  @apply text-muted-foreground hover:text-foreground hover:bg-white/10;
+  @apply transition-colors;
+}
+
+.tips-text {
+  @apply text-xs md:text-sm text-muted-foreground leading-relaxed;
+}
+
+.tips-text :deep(.highlight) {
+  @apply text-gold font-medium;
+}
+
+.tips-footer {
+  @apply flex items-center justify-between mt-3 pt-2 border-t border-white/10;
+}
+
+.tips-count {
+  @apply text-xs text-muted-foreground/60;
+}
+
+.tips-next {
+  @apply text-xs text-gold hover:text-gold-light transition-colors;
+}
+
+/* ========== Spread Selector ========== */
+.spread-selector {
+  @apply flex justify-center gap-2 md:gap-3 py-2 flex-shrink-0;
+}
+
+.spread-btn {
+  @apply px-3 md:px-5 py-1.5 md:py-2 text-xs md:text-sm rounded-full;
+  @apply border-2 border-gold/40 text-gold;
+  @apply hover:border-gold hover:bg-gold/10;
+  @apply transition-all duration-200;
+}
+
+.spread-btn.is-active {
+  @apply bg-gradient-to-r from-gold to-gold-light text-background;
+  @apply border-transparent shadow-lg shadow-gold/25;
+}
+
+.spread-btn.is-disabled {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+/* ========== Main Card Area ========== */
+.main-area {
+  @apply flex-1 flex items-center justify-center min-h-0;
+  @apply py-2 md:py-4;
+}
+
+.draw-area {
+  @apply flex flex-col items-center gap-3;
+}
+
+.draw-btn {
+  @apply px-8 md:px-10 py-2.5 md:py-3 text-base md:text-lg;
+}
+
+.cards-area {
+  @apply flex items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5;
+}
+
+/* ========== Action Area ========== */
+.action-area {
+  @apply flex-shrink-0 h-14 md:h-16 flex items-center justify-center;
+}
+
+.action-buttons {
+  @apply flex items-center gap-3;
+}
+
+.hint-text {
+  @apply text-xs md:text-sm text-muted-foreground;
+}
+
+/* ========== Footer ========== */
+.footer-area {
+  @apply flex-shrink-0 py-2;
 }
 </style>
