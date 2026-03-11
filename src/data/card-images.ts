@@ -12,13 +12,21 @@ export const IMAGE_DECK_ID = '178'
  * 获取卡牌图片 URL
  * @param cardIndex 卡牌序号 0-77
  * @param deckId 牌组 ID
+ * @returns 图片 URL，无效时返回空字符串
  */
 export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): string {
   if (deckId === '0') return '' // Emoji 牌组无图片
   if (deckId !== IMAGE_DECK_ID) return '' // 暂只支持 178
+  if (cardIndex < 0 || cardIndex > 77 || isNaN(cardIndex)) return '' // 无效索引
   
   const filename = getCardFilename(cardIndex)
-  return new URL(`../assets/tarot/${deckId}/${filename}`, import.meta.url).href
+  if (filename.includes('unknown')) return '' // 文件名无效
+  
+  try {
+    return new URL(`../assets/tarot/${deckId}/${filename}`, import.meta.url).href
+  } catch {
+    return ''
+  }
 }
 
 /**

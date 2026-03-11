@@ -1,99 +1,106 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { Motion, AnimatePresence } from 'motion-v'
-import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
-import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
-import TarotCard from '@/components/tarot/TarotCard.vue'
-import AppFooter from '@/components/AppFooter.vue'
-import Button from '@/components/ui/button.vue'
-import { useTarot } from '@/composables/useTarot'
-import { useDevice } from '@/composables/useDevice'
-import { tips, spreads } from '@/data'
+import { computed, ref, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import { Motion, AnimatePresence } from "motion-v";
+import { Lightbulb, X, ChevronRight } from "lucide-vue-next";
+import { useToggle, useCycleList, useTimeoutFn } from "@vueuse/core";
+import TarotCard from "@/components/tarot/TarotCard.vue";
+import AppFooter from "@/components/AppFooter.vue";
+import Button from "@/components/ui/button.vue";
+import { useTarot } from "@/composables/useTarot";
+import { useDevice } from "@/composables/useDevice";
+import { tips, spreads } from "@/data";
 
-const router = useRouter()
-const { isMobileLandscape, isMobile } = useDevice()
+const router = useRouter();
+const { isMobileLandscape, isMobile } = useDevice();
 const {
   currentSpread,
   drawnCards,
   holoType,
   currentDeckId,
+  useFullDeck,
   isDrawn,
   allFlipped,
   drawCards,
   flipCard,
-  resetReading
-} = useTarot()
+  resetReading,
+} = useTarot();
 
-const cardRefs = ref<Record<number, any>>({})
-const isAnimating = ref(false)
-const drawKey = ref(0)
+const deckRangeLabel = computed(() =>
+  useFullDeck.value ? "完整牌组" : "大阿尔卡纳",
+);
 
-const [showTips, toggleTips] = useToggle(false)
-const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips)
-const nextTip = () => { next() }
+const cardRefs = ref<Record<number, any>>({});
+const isAnimating = ref(false);
+const drawKey = ref(0);
+
+const [showTips, toggleTips] = useToggle(false);
+const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips);
+const nextTip = () => {
+  next();
+};
 
 const setCardRef = (el: unknown, index: number) => {
-  cardRefs.value[index] = el
-}
+  cardRefs.value[index] = el;
+};
 
 const currentSpreadConfig = computed(() => {
-  return spreads[String(currentSpread.value)]
-})
+  return spreads[String(currentSpread.value)];
+});
 
 const hint = computed(() => {
-  if (!allFlipped.value) return '点击卡牌翻开'
-  return '查看解读 →'
-})
+  if (!allFlipped.value) return "点击卡牌翻开";
+  return "查看解读 →";
+});
 
 const goToSettings = () => {
-  router.push('/settings')
-}
+  router.push("/settings");
+};
 
 const handleDraw = async () => {
-  isAnimating.value = true
-  drawCards()
-  drawKey.value++
-  await nextTick()
+  isAnimating.value = true;
+  drawCards();
+  drawKey.value++;
+  await nextTick();
   useTimeoutFn(() => {
-    isAnimating.value = false
-  }, 600)
-}
+    isAnimating.value = false;
+  }, 600);
+};
 
 const handleFlip = () => {
-  flipCard()
-}
+  flipCard();
+};
 
 const handleReset = async () => {
-  if (isAnimating.value) return
-  isAnimating.value = true
-  
-  Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.())
-  
-  await new Promise(resolve => setTimeout(resolve, 350))
-  
-  resetReading()
-  drawKey.value++
-  
-  await nextTick()
+  if (isAnimating.value) return;
+  isAnimating.value = true;
+
+  Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.());
+
+  await new Promise((resolve) => setTimeout(resolve, 350));
+
+  resetReading();
+  drawKey.value++;
+
+  await nextTick();
   useTimeoutFn(() => {
-    isAnimating.value = false
-  }, 100)
-}
+    isAnimating.value = false;
+  }, 100);
+};
 
 const goToReading = () => {
   if (allFlipped.value) {
-    router.push('/reading')
+    router.push("/reading");
   }
-}
+};
 </script>
 
 <template>
-  <div 
+  <div
     class="home-container"
-    :class="{ 
+    :class="{
       'is-mobile': isMobile,
-      'is-landscape': isMobileLandscape 
+      'is-landscape': isMobileLandscape,
     }"
   >
     <!-- Header Row: Title + Tips Icon -->
@@ -102,9 +109,9 @@ const goToReading = () => {
         <h1 class="title">✦ 塔罗占卜 ✦</h1>
         <p v-if="!isMobileLandscape" class="subtitle">聆听宇宙的低语</p>
       </div>
-      
+
       <!-- Tips Toggle Button -->
-      <button 
+      <button
         class="tips-toggle"
         :class="{ 'is-active': showTips }"
         @click="toggleTips()"
@@ -132,7 +139,9 @@ const goToReading = () => {
         </div>
         <p class="tips-text" v-html="currentTip.text"></p>
         <div class="tips-footer">
-          <span class="tips-count">{{ currentTipIndex + 1 }}/{{ tips.length }}</span>
+          <span class="tips-count"
+            >{{ currentTipIndex + 1 }}/{{ tips.length }}</span
+          >
           <button class="tips-next" @click="nextTip">下一条 →</button>
         </div>
       </Motion>
@@ -140,9 +149,15 @@ const goToReading = () => {
 
     <!-- Spread Info -->
     <div v-if="!isMobileLandscape" class="spread-info">
-      <div class="spread-badge" @click="goToSettings">
-        <span class="spread-name">{{ currentSpreadConfig?.name }}</span>
-        <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
+      <div class="spread-badges">
+        <div class="spread-badge" @click="goToSettings">
+          <span class="spread-name">{{ currentSpreadConfig?.name }}</span>
+          <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
+        </div>
+        <div class="spread-badge" @click="goToSettings">
+          <span class="spread-name">{{ deckRangeLabel }}</span>
+          <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
+        </div>
       </div>
       <p class="spread-desc">{{ currentSpreadConfig?.description }}</p>
     </div>
@@ -160,7 +175,7 @@ const goToReading = () => {
           :transition="{ duration: 0.3 }"
           class="draw-area"
         >
-          <Button 
+          <Button
             size="lg"
             :disabled="isAnimating"
             @click="handleDraw"
@@ -169,7 +184,7 @@ const goToReading = () => {
             开始抽牌
           </Button>
         </Motion>
-        
+
         <!-- 抽牌后：显示卡牌 -->
         <Motion
           v-else
@@ -186,10 +201,10 @@ const goToReading = () => {
             :class="['card-slot', `row-${card.row}`, `col-${card.col}`]"
             :initial="{ opacity: 0, scale: 0.6, y: 40 }"
             :animate="{ opacity: 1, scale: 1, y: 0 }"
-            :transition="{ 
-              duration: 0.5, 
+            :transition="{
+              duration: 0.5,
               delay: index * 0.1,
-              ease: [0.34, 1.56, 0.64, 1]
+              ease: [0.34, 1.56, 0.64, 1],
             }"
           >
             <TarotCard
@@ -218,19 +233,15 @@ const goToReading = () => {
           :transition="{ duration: 0.3 }"
           class="action-buttons"
         >
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             :disabled="isAnimating"
             @click="handleReset"
           >
             重新抽牌
           </Button>
-          <Button 
-            v-if="allFlipped"
-            size="sm"
-            @click="goToReading"
-          >
+          <Button v-if="allFlipped" size="sm" @click="goToReading">
             查看解读 →
           </Button>
           <span v-else class="hint-text">{{ hint }}</span>
@@ -337,11 +348,16 @@ const goToReading = () => {
   @apply flex flex-col items-center py-1 flex-shrink-0;
 }
 
+.spread-badges {
+  @apply flex items-center gap-2;
+}
+
 .spread-badge {
   @apply inline-flex items-center px-3 py-1 rounded-full;
   @apply bg-gold/15 text-gold text-xs md:text-sm;
   @apply cursor-pointer hover:bg-gold/25 transition-colors;
 }
+
 
 .spread-name {
   @apply font-medium;
@@ -410,11 +426,21 @@ const goToReading = () => {
   align-items: center;
 }
 
-.cards-area.spread-5 .row-0.col-1 { grid-area: 1 / 2 / 2 / 3; } /* 上：过去 */
-.cards-area.spread-5 .row-1.col-0 { grid-area: 2 / 1 / 3 / 2; } /* 左：建议 */
-.cards-area.spread-5 .row-1.col-1 { grid-area: 2 / 2 / 3 / 3; } /* 中：现状 */
-.cards-area.spread-5 .row-1.col-2 { grid-area: 2 / 3 / 3 / 4; } /* 右：未来 */
-.cards-area.spread-5 .row-2.col-1 { grid-area: 3 / 2 / 4 / 3; } /* 下：挑战 */
+.cards-area.spread-5 .row-0.col-1 {
+  grid-area: 1 / 2 / 2 / 3;
+} /* 上：过去 */
+.cards-area.spread-5 .row-1.col-0 {
+  grid-area: 2 / 1 / 3 / 2;
+} /* 左：建议 */
+.cards-area.spread-5 .row-1.col-1 {
+  grid-area: 2 / 2 / 3 / 3;
+} /* 中：现状 */
+.cards-area.spread-5 .row-1.col-2 {
+  grid-area: 2 / 3 / 3 / 4;
+} /* 右：未来 */
+.cards-area.spread-5 .row-2.col-1 {
+  grid-area: 3 / 2 / 4 / 3;
+} /* 下：挑战 */
 
 /* ========== Action Area ========== */
 .action-area {

@@ -14,6 +14,7 @@ const currentSpread = useStorage<SpreadType>('tarot-spread', 3)
 const drawnCards = useStorage<DrawnCard[]>('tarot-cards', [])
 const holoType = useStorage<HoloType>('tarot-holo-type', 'normal')
 const currentDeckId = useStorage<string>('tarot-deck-id', DEFAULT_DECK_ID)
+const useFullDeck = useStorage<boolean>('tarot-use-full-deck', false)
 const { count: flippedCount, inc: incFlipped, reset: resetFlipped } = useCounter(0)
 
 export function useTarot() {
@@ -32,7 +33,7 @@ export function useTarot() {
   }
 
   const drawCards = () => {
-    drawnCards.value = drawCardsUtil(currentSpread.value)
+    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value)
     resetFlipped()
   }
 
@@ -53,12 +54,20 @@ export function useTarot() {
     currentDeckId.value = deckId
   }
 
+  const setUseFullDeck = (value: boolean) => {
+    useFullDeck.value = value
+    // 切换牌组范围时重置当前抽牌
+    drawnCards.value = []
+    resetFlipped()
+  }
+
   return {
     currentSpread,
     drawnCards,
     flippedCount,
     holoType,
     currentDeckId,
+    useFullDeck,
     isDrawn,
     allFlipped,
     summary,
@@ -68,6 +77,7 @@ export function useTarot() {
     flipCard,
     resetReading,
     setHoloType,
-    setDeckId
+    setDeckId,
+    setUseFullDeck
   }
 }

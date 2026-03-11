@@ -4,10 +4,11 @@ import { useRouter } from 'vue-router'
 import { Motion } from 'motion-v'
 import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
+import TarotCard from '@/components/tarot/TarotCard.vue'
 import { useTarot } from '@/composables/useTarot'
 
 const router = useRouter()
-const { drawnCards, summary, isDrawn, resetReading } = useTarot()
+const { drawnCards, summary, isDrawn, resetReading, currentDeckId, holoType } = useTarot()
 
 onMounted(() => {
   if (!isDrawn.value) {
@@ -53,53 +54,66 @@ const handleReset = () => {
           :animate="{ opacity: 1, x: 0 }"
           :transition="{ duration: 0.4, delay: index * 0.15 }"
         >
-          <div class="glass-card p-4 md:p-6 border-l-4 border-l-gold">
-            <!-- Card Header -->
-            <div class="flex items-center gap-3 mb-4">
-              <span class="text-3xl md:text-4xl">{{ card.symbol }}</span>
-              <div class="flex-1">
-                <h3 class="text-lg md:text-xl font-semibold text-gold">{{ card.name }}</h3>
-                <p class="text-sm text-muted-foreground">{{ card.position }}</p>
-              </div>
-              <span 
-                :class="[
-                  'px-3 py-1 rounded-full text-xs font-medium',
-                  card.isReversed 
-                    ? 'bg-red-900/50 text-red-300' 
-                    : 'bg-green-900/50 text-green-300'
-                ]"
-              >
-                {{ card.isReversed ? '逆位' : '正位' }}
-              </span>
-            </div>
-            
-            <!-- Card Content -->
-            <div class="space-y-4 text-sm md:text-base">
-              <div>
-                <h4 class="text-foreground font-medium mb-2">牌义解读</h4>
-                <p class="text-muted-foreground leading-relaxed">
-                  {{ card.isReversed ? card.reversed : card.upright }}
-                </p>
+          <div class="glass-card p-4 md:p-6">
+            <div class="reading-card-layout">
+              <!-- 左侧：静态卡片展示 -->
+              <div class="reading-card-left">
+                <div class="reading-card-wrapper">
+                  <TarotCard
+                    :card="card"
+                    :deck-id="currentDeckId"
+                    :holo-type="holoType"
+                    :clickable="false"
+                    static
+                  />
+                </div>
               </div>
               
-              <div class="flex flex-wrap gap-2">
-                <span 
-                  v-for="kw in card.keywords.split('、')" 
-                  :key="kw"
-                  class="px-3 py-1 bg-gold/10 text-gold rounded-full text-xs"
-                >
-                  {{ kw }}
-                </span>
-              </div>
-              
-              <div v-if="card.note">
-                <h4 class="text-foreground font-medium mb-2">象征意义</h4>
-                <p class="text-muted-foreground leading-relaxed">{{ card.note }}</p>
-              </div>
-              
-              <div v-if="card.description">
-                <h4 class="text-foreground font-medium mb-2">卡面描述</h4>
-                <p class="text-muted-foreground leading-relaxed">{{ card.description }}</p>
+              <!-- 右侧：卡片信息和解读 -->
+              <div class="reading-card-right">
+                <!-- 卡片标题 -->
+                <div class="flex items-start justify-between gap-2 mb-3">
+                  <div>
+                    <h3 class="text-lg md:text-xl font-semibold text-gold">{{ card.name }}</h3>
+                    <p class="text-sm text-muted-foreground">{{ card.position }}</p>
+                  </div>
+                  <span 
+                    :class="[
+                      'px-3 py-1 rounded-full text-xs font-medium flex-shrink-0',
+                      card.isReversed 
+                        ? 'bg-red-900/50 text-red-300' 
+                        : 'bg-green-900/50 text-green-300'
+                    ]"
+                  >
+                    {{ card.isReversed ? '逆位' : '正位' }}
+                  </span>
+                </div>
+                
+                <!-- 关键词 -->
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span 
+                    v-for="kw in card.keywords.split('、')" 
+                    :key="kw"
+                    class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
+                  >
+                    {{ kw }}
+                  </span>
+                </div>
+                
+                <!-- 牌义解读 -->
+                <div class="space-y-3 text-sm md:text-base">
+                  <div>
+                    <h4 class="text-foreground font-medium mb-1.5">牌义解读</h4>
+                    <p class="text-muted-foreground leading-relaxed">
+                      {{ card.isReversed ? card.reversed : card.upright }}
+                    </p>
+                  </div>
+                  
+                  <div v-if="card.note">
+                    <h4 class="text-foreground font-medium mb-1.5">象征意义</h4>
+                    <p class="text-muted-foreground leading-relaxed">{{ card.note }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -120,3 +134,44 @@ const handleReset = () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.reading-card-layout {
+  display: flex;
+  gap: 1rem;
+}
+
+.reading-card-left {
+  flex-shrink: 0;
+}
+
+.reading-card-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.reading-card-wrapper {
+  --card-width: 90px;
+}
+
+@media (min-width: 640px) {
+  .reading-card-layout {
+    gap: 1.5rem;
+  }
+  
+  .reading-card-wrapper {
+    --card-width: 110px;
+  }
+}
+
+@media (min-width: 768px) {
+  .reading-card-wrapper {
+    --card-width: 130px;
+  }
+}
+
+.reading-card-wrapper :deep(.card-wrapper) {
+  width: var(--card-width);
+  height: calc(var(--card-width) * 1.709);
+}
+</style>

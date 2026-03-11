@@ -29,13 +29,39 @@ const useImages = computed(() => isImageDeck(props.deckId));
 
 const cardIndex = computed(() => {
   if (!props.card?.id) return 0;
-  // id 格式: "major-0", "major-1", ... "major-21"
-  const match = props.card.id.match(/(\d+)$/);
-  return match ? parseInt(match[1], 10) : 0;
+  const id = props.card.id;
+  
+  // 大阿尔卡纳: major-0 ~ major-21
+  if (id.startsWith('major-')) {
+    const num = parseInt(id.replace('major-', ''), 10);
+    return isNaN(num) ? 0 : num;
+  }
+  
+  // 小阿尔卡纳: minor-{suit}-{rank}
+  const match = id.match(/^minor-(\w+)-(.+)$/);
+  if (match) {
+    const suit = match[1];
+    const rankStr = match[2];
+    const suitOffset: Record<string, number> = {
+      wands: 22, cups: 36, swords: 50, pentacles: 64
+    };
+    const courtRanks: Record<string, number> = {
+      page: 11, knight: 12, queen: 13, king: 14
+    };
+    const rank = courtRanks[rankStr] || parseInt(rankStr, 10);
+    return (suitOffset[suit] || 22) + rank - 1;
+  }
+  
+  return 0;
 });
 
 const cardImageUrl = computed(() => {
   return getCardImageUrl(cardIndex.value, props.deckId);
+});
+
+// 是否有有效的图片 URL
+const hasValidImage = computed(() => {
+  return useImages.value && cardImageUrl.value !== '';
 });
 
 const cardEnglishName = computed(() => getCardEnglishName(cardIndex.value));
@@ -214,11 +240,11 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
       <div
         v-if="static"
         class="card-face card-front card-static"
-        :class="useImages ? 'has-image' : ''"
+        :class="hasValidImage ? 'has-image' : ''"
       >
         <template v-if="card">
-          <!-- 图片牌组 -->
-          <template v-if="useImages">
+          <!-- 图片牌组（有有效 URL） -->
+          <template v-if="hasValidImage">
             <span class="card-image-placeholder">{{ card.symbol }}</span>
             <img
               :src="cardImageUrl"
@@ -229,7 +255,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
               @error="($event.target as HTMLImageElement).classList.add('error')"
             />
           </template>
-          <!-- Emoji 牌组 -->
+          <!-- Emoji 牌组或无有效图片 -->
           <template v-else>
             <span class="card-number">{{ card.number }}</span>
             <div class="card-image">{{ card.symbol }}</div>
@@ -262,13 +288,13 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
           class="card-face card-front"
           :class="[
             { 'is-reversed': (card as DrawnCard)?.isReversed },
-            useImages ? 'has-image' : ''
+            hasValidImage ? 'has-image' : ''
           ]"
         >
           <slot name="front" :card="card">
             <template v-if="card">
-              <!-- 图片牌组 -->
-              <template v-if="useImages">
+              <!-- 图片牌组（有有效 URL） -->
+              <template v-if="hasValidImage">
                 <span class="card-image-placeholder">{{ card.symbol }}</span>
                 <img
                   :src="cardImageUrl"
@@ -279,7 +305,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
                   @error="($event.target as HTMLImageElement).classList.add('error')"
                 />
               </template>
-              <!-- Emoji 牌组 -->
+              <!-- Emoji 牌组或无有效图片 -->
               <template v-else>
                 <span class="card-number">{{ card.number }}</span>
                 <div class="card-image">{{ card.symbol }}</div>

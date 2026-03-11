@@ -2,7 +2,17 @@
 import { ref, computed } from 'vue'
 import { Motion, AnimatePresence } from 'motion-v'
 import { X, ChevronDown } from 'lucide-vue-next'
-import { majorArcana, type TarotCard, DECKS, getDeckConfig, getCardEnglishName } from '@/data'
+import { 
+  majorArcana, 
+  minorArcana, 
+  suits,
+  type TarotCard, 
+  type MinorArcanaCard,
+  type Suit,
+  DECKS, 
+  getDeckConfig, 
+  getCardEnglishName 
+} from '@/data'
 import { getCardImageUrl, isImageDeck } from '@/data/card-images'
 import { useTarot } from '@/composables/useTarot'
 import { vHoloFoil } from '@/directives/vHoloFoil'
@@ -10,13 +20,16 @@ import TarotCardComponent from '@/components/tarot/TarotCard.vue'
 
 const { currentDeckId, setDeckId, holoType } = useTarot()
 
-const selectedCard = ref<TarotCard | null>(null)
+const selectedCard = ref<TarotCard | MinorArcanaCard | null>(null)
 const showDeckPicker = ref(false)
 
 const currentDeck = computed(() => getDeckConfig(currentDeckId.value) || DECKS[1])
 const useImages = computed(() => isImageDeck(currentDeckId.value))
 
-const openCard = (card: TarotCard) => {
+// 花色顺序和配置
+const suitOrder: Suit[] = ['wands', 'cups', 'swords', 'pentacles']
+
+const openCard = (card: TarotCard | MinorArcanaCard) => {
   selectedCard.value = card
 }
 
@@ -29,10 +42,54 @@ const selectDeck = (deckId: string) => {
   showDeckPicker.value = false
 }
 
-const getCardIndex = (card: TarotCard): number => {
-  // id 格式: "major-0", "major-1", ... "major-21"
-  const match = card.id.match(/(\d+)$/)
-  return match ? parseInt(match[1], 10) : 0
+/**
+ * 根据卡片获取图片索引 (0-77)
+ * major-0 ~ major-21 => 0-21
+ * minor-wands-1~10, page, knight, queen, king => 22-35
+ * minor-cups-... => 36-49
+ * minor-swords-... => 50-63
+ * minor-pentacles-... => 64-77
+ */
+const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
+  const id = card.id
+  
+  // 大阿尔卡纳: major-0 ~ major-21
+  if (id.startsWith('major-')) {
+    const num = parseInt(id.replace('major-', ''), 10)
+    return isNaN(num) ? 0 : num
+  }
+  
+  // 小阿尔卡纳: minor-{suit}-{rank}
+  const match = id.match(/^minor-(\w+)-(.+)$/)
+  if (match) {
+    const suit = match[1] as Suit
+    const rankStr = match[2]
+    const suitOffset: Record<Suit, number> = {
+      wands: 22,
+      cups: 36,
+      swords: 50,
+      pentacles: 64
+    }
+    // 宫廷牌映射
+    const courtRanks: Record<string, number> = {
+      page: 11,
+      knight: 12,
+      queen: 13,
+      king: 14
+    }
+    const rank = courtRanks[rankStr] || parseInt(rankStr, 10)
+    return (suitOffset[suit] || 22) + rank - 1
+  }
+  
+  return 0
+}
+
+// 将 MinorArcanaCard 转换为兼容 TarotCard 的格式
+const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
+  return {
+    ...card,
+    number: String(card.rank)
+  } as TarotCard & MinorArcanaCard
 }
 </script>
 
@@ -105,13 +162,13 @@ const getCardIndex = (card: TarotCard): number => {
           </section>
         </Motion>
 
-        <!-- Minor Arcana Section (Coming Soon) -->
+        <!-- Minor Arcana Section -->
         <Motion
           :initial="{ opacity: 0, y: 20 }"
           :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, delay: 0.3 }"
+          :transition="{ duration: 0.5, delay: 0.2 }"
         >
-          <section class="opacity-60">
+          <section>
             <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
               小阿尔卡纳 (Minor Arcana)
             </h2>
@@ -119,8 +176,26 @@ const getCardIndex = (card: TarotCard): number => {
               56张反映日常生活细节的牌
             </p>
             
-            <div class="glass-card p-4 md:p-6 text-center border-dashed">
-              <span class="text-gold text-xs md:text-sm">即将推出</span>
+            <!-- 四种花色 -->
+            <div class="space-y-6">
+              <div v-for="suit in suitOrder" :key="suit" class="suit-section">
+                <h3 class="text-xs md:text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                  <span class="text-base">{{ suits[suit].symbol }}</span>
+                  <span>{{ suits[suit].name }} ({{ suits[suit].nameEn }})</span>
+                  <span class="text-muted-foreground text-[10px]">· {{ suits[suit].element === 'fire' ? '🔥 火' : suits[suit].element === 'water' ? '💧 水' : suits[suit].element === 'air' ? '💨 风' : '🌍 土' }}</span>
+                </h3>
+                <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-7 gap-3 md:gap-4">
+                  <TarotCardComponent
+                    v-for="card in minorArcana[suit]"
+                    :key="card.id"
+                    :card="toDisplayCard(card)"
+                    :deck-id="currentDeckId"
+                    :holo-type="holoType"
+                    static
+                    @click="openCard(card)"
+                  />
+                </div>
+              </div>
             </div>
           </section>
         </Motion>
@@ -172,7 +247,7 @@ const getCardIndex = (card: TarotCard): number => {
               </template>
               <div>
                 <h3 class="text-base md:text-lg font-bold text-gold">{{ selectedCard.name }}</h3>
-                <p class="text-xs text-muted-foreground">{{ selectedCard.nameEn }} · {{ selectedCard.number }}</p>
+                <p class="text-xs text-muted-foreground">{{ selectedCard.nameEn }}{{ (selectedCard as TarotCard).number ? ` · ${(selectedCard as TarotCard).number}` : '' }}</p>
               </div>
             </div>
             <button 
