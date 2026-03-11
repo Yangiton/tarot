@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "project-astrology-tarot-divination": {
+      "source": "vasilyu1983/ai-agents-public",
+      "sourceType": "github",
+      "computedHash": "43472a87dc40a540918e5a8373a174c9efc7c237c4942a7674d13ff0ec34b769"
+    }
+  }
+}

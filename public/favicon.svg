@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect x="20" y="10" width="60" height="80" rx="5" fill="url(#cardGrad)"/>
+  <circle cx="50" cy="50" r="20" fill="none" stroke="#fcd34d" stroke-width="2"/>
+  <polygon points="50,35 53,45 63,45 55,52 58,62 50,56 42,62 45,52 37,45 47,45" fill="#fcd34d"/>
+</svg>
