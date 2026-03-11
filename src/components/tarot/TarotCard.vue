@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import type { DrawnCard, SpreadType } from "@/data";
+import type { HoloType } from "@/directives/vHoloFoil";
 
 interface Props {
   card?: DrawnCard;
@@ -8,12 +9,14 @@ interface Props {
   clickable?: boolean;
   flipDuration?: number;
   spreadType?: SpreadType;
+  holoType?: HoloType; // 全息效果类型
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clickable: true,
   flipDuration: 600,
   spreadType: 3,
+  holoType: "normal",
 });
 
 // 根据牌阵类型决定标签位置：1、3 牌阵放下方，5+ 牌阵放内部左侧
@@ -24,14 +27,57 @@ const labelPosition = computed(() => {
 const emit = defineEmits<{
   flip: [];
   flipComplete: [];
+  activate: [];
+  deactivate: [];
 }>();
 
+const cardWrapper = ref<HTMLElement | null>(null);
 const isFlipped = ref(false);
-const isFlipping = ref(false); // 翻转动画进行中
+const isFlipping = ref(false);
+const isActive = ref(false); // 放大激活状态
 
+// 计算放大居中的 transform
+const popoverTransform = ref({
+  translateX: 0,
+  translateY: 0,
+  scale: 1,
+});
+
+// 计算居中位置和缩放
+const calculatePopover = () => {
+  if (!cardWrapper.value) return;
+
+  const rect = cardWrapper.value.getBoundingClientRect();
+  const viewWidth = window.innerWidth;
+  const viewHeight = window.innerHeight;
+
+  // 计算移动到屏幕中心的距离
+  const deltaX = viewWidth / 2 - rect.left - rect.width / 2;
+  const deltaY = viewHeight / 2 - rect.top - rect.height / 2;
+
+  // 计算缩放比例（最大填充屏幕 85%，但不超过 2 倍）
+  const scaleW = (viewWidth * 0.85) / rect.width;
+  const scaleH = (viewHeight * 0.85) / rect.height;
+  const scale = Math.min(scaleW, scaleH, 2);
+
+  popoverTransform.value = {
+    translateX: deltaX,
+    translateY: deltaY,
+    scale,
+  };
+};
+
+// 第一次点击：翻转
 const handleClick = () => {
-  if (!props.clickable || isFlipped.value || isFlipping.value || !props.card) return;
+  if (!props.clickable || isFlipping.value || !props.card) return;
 
+  // 如果已翻开，再次点击切换放大状态
+  if (isFlipped.value) {
+    toggleActive();
+    return;
+  }
+
+  // 首次点击：翻转卡片
   isFlipping.value = true;
   isFlipped.value = true;
   emit("flip");
@@ -42,18 +88,97 @@ const handleClick = () => {
   }, props.flipDuration);
 };
 
+// 切换放大状态
+const toggleActive = () => {
+  if (isActive.value) {
+    deactivate();
+  } else {
+    activate();
+  }
+};
+
+// 激活放大
+const activate = () => {
+  calculatePopover();
+  isActive.value = true;
+  emit("activate");
+
+  // 添加 ESC 键和点击背景关闭
+  document.addEventListener("keydown", handleKeydown);
+};
+
+// 取消放大
+const deactivate = () => {
+  isActive.value = false;
+  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 };
+  emit("deactivate");
+
+  document.removeEventListener("keydown", handleKeydown);
+};
+
+// ESC 键关闭
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && isActive.value) {
+    deactivate();
+  }
+};
+
+// 点击遮罩关闭
+const handleOverlayClick = () => {
+  if (isActive.value) {
+    deactivate();
+  }
+};
+
+// 窗口大小变化时重新计算
+const handleResize = () => {
+  if (isActive.value) {
+    calculatePopover();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+  document.removeEventListener("keydown", handleKeydown);
+});
+
 const reset = () => {
   isFlipped.value = false;
   isFlipping.value = false;
+  isActive.value = false;
+  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 };
 };
 
-defineExpose({ reset, isFlipped });
+defineExpose({ reset, isFlipped, isActive, activate, deactivate });
 </script>
 
 <template>
-  <div class="card-wrapper">
-    <!-- v-shine 外层：整体 3D 效果，翻转时禁用 -->
-    <div v-shine="{ disabled: isFlipping }" class="card-container">
+  <!-- 遮罩层 -->
+  <Teleport to="body">
+    <Transition name="overlay-fade">
+      <div v-if="isActive" class="card-overlay" @click="handleOverlayClick" />
+    </Transition>
+  </Teleport>
+
+  <div
+    ref="cardWrapper"
+    class="card-wrapper"
+    :class="{ 'is-active': isActive }"
+    :style="{
+      '--translate-x': `${popoverTransform.translateX}px`,
+      '--translate-y': `${popoverTransform.translateY}px`,
+      '--card-scale': popoverTransform.scale,
+    }"
+  >
+    <!-- v-holo-foil 外层：全息卡片效果，翻转时禁用 -->
+    <div
+      v-holo-foil="{ type: holoType, disabled: isFlipping }"
+      class="card-container"
+    >
       <div
         class="card"
         :class="{ 'is-flipped': isFlipped }"
@@ -91,7 +216,7 @@ defineExpose({ reset, isFlipped });
 
     <!-- 位置标签 -->
     <span
-      v-if="position"
+      v-if="position && !isActive"
       class="position-label"
       :class="labelPosition === 'inside' ? 'label-inside' : 'label-bottom'"
       >{{ position }}</span
@@ -100,19 +225,66 @@ defineExpose({ reset, isFlipped });
 </template>
 
 <style scoped>
+/* ========== 遮罩层 ========== */
+.card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+}
+
+.overlay-fade-enter-active,
+.overlay-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.overlay-fade-enter-from,
+.overlay-fade-leave-to {
+  opacity: 0;
+}
+
 /* ========== 外层包装（用于定位标签）========== */
 .card-wrapper {
   --card-width: 80px;
   --card-ratio: 1.6;
   --card-radius: 8px;
   --flip-duration: 600ms;
+  --translate-x: 0px;
+  --translate-y: 0px;
+  --card-scale: 1;
 
   position: relative;
   width: var(--card-width);
   height: calc(var(--card-width) * var(--card-ratio));
+  transform: translate3d(var(--translate-x), var(--translate-y), 0)
+    scale(var(--card-scale));
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    z-index 0s;
+  will-change: transform;
 }
 
-/* ========== v-shine 容器 ========== */
+/* 激活状态 */
+.card-wrapper.is-active {
+  z-index: 1001;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    z-index 0s;
+}
+
+/* 激活时的光晕效果 - 参考 pokemon-cards-css */
+.card-wrapper.is-active .card-face {
+  box-shadow:
+    0 0 3px -1px rgba(255, 255, 255, 0.5),
+    0 0 3px 1px hsl(47, 100%, 78%),
+    0 0 12px 2px hsl(45, 80%, 70%),
+    0 10px 20px -5px rgba(0, 0, 0, 0.5),
+    0 0 40px -30px hsl(45, 80%, 70%),
+    0 0 50px -20px hsl(45, 80%, 70%);
+}
+
+/* ========== v-holo-foil 容器 ========== */
 .card-container {
   position: relative;
   width: 100%;

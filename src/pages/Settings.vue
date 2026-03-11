@@ -4,8 +4,9 @@ import { Motion } from 'motion-v'
 import { ChevronDown } from 'lucide-vue-next'
 import { REVERSED_PROBABILITY, spreads, type SpreadType } from '@/data'
 import { useTarot } from '@/composables/useTarot'
+import type { HoloType } from '@/directives/vHoloFoil'
 
-const { currentSpread, selectSpread } = useTarot()
+const { currentSpread, selectSpread, holoType, setHoloType } = useTarot()
 
 const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
 
@@ -22,9 +23,28 @@ const currentSpreadConfig = computed(() => {
   return spreads[String(currentSpread.value)]
 })
 
+// 全息效果类型选项
+const holoOptions: { value: HoloType; name: string; description: string }[] = [
+  { value: 'normal', name: '普通全息', description: '经典彩虹条纹效果' },
+  { value: 'cosmos', name: '宇宙全息', description: '梦幻星空背景' },
+  { value: 'rainbow', name: '彩虹全息', description: '强烈彩虹渐变' },
+  { value: 'galaxy', name: '银河全息', description: '深空星云效果' },
+  { value: 'radiant', name: '光辉全息', description: '金属放射状' },
+  { value: 'pixel', name: '像素全息', description: '复古点阵效果' },
+]
+
+const currentHoloConfig = computed(() => {
+  return holoOptions.find(o => o.value === holoType.value)
+})
+
 const handleSpreadChange = (e: Event) => {
   const value = Number((e.target as HTMLSelectElement).value) as SpreadType
   selectSpread(value)
+}
+
+const handleHoloChange = (e: Event) => {
+  const value = (e.target as HTMLSelectElement).value as HoloType
+  setHoloType(value)
 }
 </script>
 
@@ -103,6 +123,52 @@ const handleSpreadChange = (e: Event) => {
                 <span class="px-3 py-1.5 bg-gold/15 text-gold rounded-full text-sm">
                   仅大阿尔卡纳
                 </span>
+              </div>
+            </div>
+          </section>
+        </Motion>
+
+        <!-- Visual Effects -->
+        <Motion
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.4, delay: 0.05 }"
+        >
+          <section>
+            <h2 class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15">
+              视觉效果
+            </h2>
+            
+            <div class="space-y-3">
+              <!-- 全息效果 -->
+              <div class="glass-card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm md:text-base text-foreground">全息效果</p>
+                    <p class="text-xs text-muted-foreground mt-1">选择卡片的全息光效类型</p>
+                  </div>
+                </div>
+                
+                <div class="relative">
+                  <select 
+                    :value="holoType"
+                    @change="handleHoloChange"
+                    class="spread-select"
+                  >
+                    <option 
+                      v-for="opt in holoOptions" 
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ opt.name }}
+                    </option>
+                  </select>
+                  <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold pointer-events-none" />
+                </div>
+                
+                <p class="text-xs text-muted-foreground mt-2 pl-1">
+                  {{ currentHoloConfig?.description }}
+                </p>
               </div>
             </div>
           </section>

@@ -16,6 +16,7 @@ const { isMobileLandscape, isMobile } = useDevice()
 const {
   currentSpread,
   drawnCards,
+  holoType,
   isDrawn,
   allFlipped,
   drawCards,
@@ -190,11 +191,12 @@ const goToReading = () => {
               ease: [0.34, 1.56, 0.64, 1]
             }"
           >
-            <TarotCard 
+            <TarotCard
               :ref="(el) => setCardRef(el, index)"
               :card="card"
               :position="card.position"
               :spread-type="currentSpread"
+              :holo-type="holoType"
               :clickable="!isAnimating"
               @flip="handleFlip"
             />
