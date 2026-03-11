@@ -17,6 +17,7 @@ const {
   currentSpread,
   drawnCards,
   holoType,
+  currentDeckId,
   isDrawn,
   allFlipped,
   drawCards,
@@ -197,6 +198,7 @@ const goToReading = () => {
               :position="card.position"
               :spread-type="currentSpread"
               :holo-type="holoType"
+              :deck-id="currentDeckId"
               :clickable="!isAnimating"
               @flip="handleFlip"
             />

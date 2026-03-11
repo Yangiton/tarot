@@ -1,5 +1,102 @@
 import tarotData from './tarot.json'
 
+// ============ 牌组配置 ============
+
+export interface DeckConfig {
+  id: string
+  name: string
+  nameEn: string
+  description: string
+  hasImages: boolean
+}
+
+/** 可用牌组列表 */
+export const DECKS: DeckConfig[] = [
+  {
+    id: '0',
+    name: 'Emoji 牌组',
+    nameEn: 'Emoji Deck',
+    description: '使用 Emoji 符号表示的简约牌组',
+    hasImages: false,
+  },
+  {
+    id: '178',
+    name: '莱德·韦特塔罗牌',
+    nameEn: 'Rider-Waite Tarot',
+    description: '1909 年经典版本，最广泛使用的塔罗牌',
+    hasImages: true,
+  },
+]
+
+/** 默认牌组 ID */
+export const DEFAULT_DECK_ID = '178'
+
+/** CDN 基础地址 */
+const CDN_BASE = 'https://t.8s8s.com/photo/tarotphoto'
+
+/**
+ * 78 张塔罗牌英文名（0-77）
+ * 0-21: 大阿尔卡纳
+ * 22-35: 权杖 (Wands)
+ * 36-49: 圣杯 (Cups)
+ * 50-63: 宝剑 (Swords)
+ * 64-77: 星币 (Pentacles)
+ */
+export const CARD_NAMES = [
+  // 大阿尔卡纳 0-21
+  'fool', 'magician', 'high-priestess', 'empress', 'emperor',
+  'hierophant', 'lovers', 'chariot', 'strength', 'hermit',
+  'fortune-wheel', 'justice', 'hanged-man', 'death', 'temperance',
+  'devil', 'tower', 'stars', 'moon', 'sun', 'judgement', 'world',
+  // 权杖 22-35
+  'ace-wands', 'two-wands', 'three-wands', 'four-wands', 'five-wands',
+  'six-wands', 'seven-wands', 'eight-wands', 'nine-wands', 'ten-wands',
+  'page-wands', 'knight-wands', 'queen-wands', 'king-wands',
+  // 圣杯 36-49
+  'ace-cups', 'two-cups', 'three-cups', 'four-cups', 'five-cups',
+  'six-cups', 'seven-cups', 'eight-cups', 'nine-cups', 'ten-cups',
+  'page-cups', 'knight-cups', 'queen-cups', 'king-cups',
+  // 宝剑 50-63
+  'ace-swords', 'two-swords', 'three-swords', 'four-swords', 'five-swords',
+  'six-swords', 'seven-swords', 'eight-swords', 'nine-swords', 'ten-swords',
+  'page-swords', 'knight-swords', 'queen-swords', 'king-swords',
+  // 星币 64-77
+  'ace-pentacles', 'two-pentacles', 'three-pentacles', 'four-pentacles', 'five-pentacles',
+  'six-pentacles', 'seven-pentacles', 'eight-pentacles', 'nine-pentacles', 'ten-pentacles',
+  'page-pentacles', 'knight-pentacles', 'queen-pentacles', 'king-pentacles',
+] as const
+
+/**
+ * 根据卡牌序号获取英文名
+ */
+export function getCardEnglishName(cardIndex: number): string {
+  return CARD_NAMES[cardIndex] || 'unknown'
+}
+
+/**
+ * 获取卡牌图片文件名
+ */
+export function getCardFilename(cardIndex: number): string {
+  const paddedIndex = String(cardIndex).padStart(2, '0')
+  return `${paddedIndex}-${getCardEnglishName(cardIndex)}.jpg`
+}
+
+/**
+ * 获取卡牌图片 URL（CDN）
+ */
+export function getCardCdnUrl(cardIndex: number, deckId = DEFAULT_DECK_ID): string {
+  return `${CDN_BASE}/${deckId}/${getCardEnglishName(cardIndex)}.jpg`
+}
+
+/**
+ * 获取牌组配置
+ */
+export function getDeckConfig(deckId: string): DeckConfig | undefined {
+  return DECKS.find(d => d.id === deckId)
+}
+
+// ============ 卡牌数据类型 ============
+
 export interface TarotCard {
   id: string
   number?: string

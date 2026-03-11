@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Motion, AnimatePresence } from 'motion-v'
-import { X } from 'lucide-vue-next'
-import { majorArcana, type TarotCard } from '@/data'
+import { X, ChevronDown } from 'lucide-vue-next'
+import { majorArcana, type TarotCard, DECKS, getDeckConfig, getCardEnglishName } from '@/data'
+import { getCardImageUrl, isImageDeck } from '@/data/card-images'
+import { useTarot } from '@/composables/useTarot'
+import { vHoloFoil } from '@/directives/vHoloFoil'
+import TarotCardComponent from '@/components/tarot/TarotCard.vue'
+
+const { currentDeckId, setDeckId, holoType } = useTarot()
 
 const selectedCard = ref<TarotCard | null>(null)
+const showDeckPicker = ref(false)
+
+const currentDeck = computed(() => getDeckConfig(currentDeckId.value) || DECKS[1])
+const useImages = computed(() => isImageDeck(currentDeckId.value))
 
 const openCard = (card: TarotCard) => {
   selectedCard.value = card
@@ -12,6 +22,17 @@ const openCard = (card: TarotCard) => {
 
 const closeCard = () => {
   selectedCard.value = null
+}
+
+const selectDeck = (deckId: string) => {
+  setDeckId(deckId)
+  showDeckPicker.value = false
+}
+
+const getCardIndex = (card: TarotCard): number => {
+  // id 格式: "major-0", "major-1", ... "major-21"
+  const match = card.id.match(/(\d+)$/)
+  return match ? parseInt(match[1], 10) : 0
 }
 </script>
 
@@ -21,6 +42,36 @@ const closeCard = () => {
     <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
       <h1 class="text-base md:text-xl font-bold gold-title">✦ 牌库 ✦</h1>
       <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">探索塔罗的奥秘</p>
+      
+      <!-- 牌组切换按钮 -->
+      <div class="relative inline-block mt-2">
+        <button
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 hover:bg-gold/20 border border-gold/30 rounded-full text-xs text-gold transition-colors"
+          @click="showDeckPicker = !showDeckPicker"
+        >
+          <span>{{ currentDeck.name }}</span>
+          <ChevronDown class="w-3.5 h-3.5" :class="showDeckPicker && 'rotate-180'" />
+        </button>
+        
+        <!-- 牌组选择器下拉 -->
+        <Transition name="fade">
+          <div
+            v-if="showDeckPicker"
+            class="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 min-w-[200px] glass-card border border-gold/30 rounded-lg overflow-hidden"
+          >
+            <button
+              v-for="deck in DECKS"
+              :key="deck.id"
+              class="w-full px-4 py-2.5 text-left hover:bg-gold/10 transition-colors"
+              :class="deck.id === currentDeckId && 'bg-gold/15'"
+              @click="selectDeck(deck.id)"
+            >
+              <span class="text-xs font-medium text-foreground block">{{ deck.name }}</span>
+              <span class="text-[10px] text-muted-foreground">{{ deck.description }}</span>
+            </button>
+          </div>
+        </Transition>
+      </div>
     </header>
 
     <!-- Scroll Content -->
@@ -40,17 +91,16 @@ const closeCard = () => {
               22张代表人生重大主题的牌
             </p>
             
-            <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
-              <div
+            <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3 md:gap-4">
+              <TarotCardComponent
                 v-for="card in majorArcana"
                 :key="card.id"
-                class="card-item glass-card p-2 md:p-3 text-center cursor-pointer hover:border-gold/50 transition-all hover:-translate-y-1"
+                :card="card"
+                :deck-id="currentDeckId"
+                :holo-type="holoType"
+                static
                 @click="openCard(card)"
-              >
-                <span class="text-xl md:text-2xl block mb-1">{{ card.symbol }}</span>
-                <span class="text-[8px] md:text-[10px] text-muted-foreground block">{{ card.number }}</span>
-                <span class="text-[10px] md:text-xs text-foreground block mt-0.5 truncate">{{ card.name }}</span>
-              </div>
+              />
             </div>
           </section>
         </Motion>
@@ -104,7 +154,22 @@ const closeCard = () => {
           <!-- Modal Header -->
           <div class="flex items-center justify-between p-3 md:p-4 border-b border-gold/20">
             <div class="flex items-center gap-3">
-              <span class="text-3xl md:text-4xl">{{ selectedCard.symbol }}</span>
+              <!-- 图片牌组显示缩略图 -->
+              <template v-if="useImages">
+                <div
+                  v-holo-foil="{ type: holoType }"
+                  class="w-12 h-16 md:w-14 md:h-20 rounded overflow-hidden flex-shrink-0"
+                >
+                  <img
+                    :src="getCardImageUrl(getCardIndex(selectedCard), currentDeckId)"
+                    :alt="getCardEnglishName(getCardIndex(selectedCard))"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <span class="text-3xl md:text-4xl">{{ selectedCard.symbol }}</span>
+              </template>
               <div>
                 <h3 class="text-base md:text-lg font-bold text-gold">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">{{ selectedCard.nameEn }} · {{ selectedCard.number }}</p>
@@ -165,11 +230,13 @@ const closeCard = () => {
 </template>
 
 <style scoped>
-.card-item {
-  transition: all 0.2s ease;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-.card-item:active {
-  transform: scale(0.95);
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

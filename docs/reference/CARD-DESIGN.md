@@ -28,7 +28,7 @@
 
 | 项目 | 规格 | 说明 |
 |:---|:---|:---|
-| 比例 | 约 1:1.71 | 标准版基于 70×120mm |
+| 比例 | 约 1:1.71 | 标准版基于 70×120mm，本项目图片 199×340px（1:1.709） |
 | 出血位 | 2-3mm | 印刷设计时需预留，防止切边偏差 |
 | 安全区 | 距边缘 5mm | 重要内容不应超出此区域 |
 | 分辨率 | 300 DPI | 印刷品质量标准 |
@@ -151,44 +151,56 @@
 
 ### 标准比例
 
-塔罗牌标准比例约为 **1:1.7**（基于 70×120mm）
+本项目使用图片尺寸 **199×340px**，比例为 **1:1.709**
 
 ```
-宽 : 高 = 1 : 1.7 (约等于 1:1.71)
+宽 : 高 = 199 : 340 ≈ 1 : 1.709
 ```
+
+> 注：实体塔罗牌标准尺寸为 70×120mm（比例 1:1.71），本项目图片比例与之接近
 
 ### 响应式尺寸
 
 | 屏幕 | 卡片宽度 | 卡片高度 | 场景 |
 |------|----------|----------|------|
-| Mobile (< 640px) | 80px | 128px | 首页占卜 |
-| Tablet (640-1024px) | 100px | 160px | 首页占卜 |
-| Desktop (> 1024px) | 120px | 192px | 首页占卜 |
-| 牌库缩略图 | 60px | 96px | 牌库浏览 |
-| 详情弹窗 | 200px | 320px | 牌详情 |
+| Mobile (< 640px) | 80px | 137px | 首页占卜 |
+| SM (640-768px) | 100px | 171px | 首页占卜 |
+| MD (768-1024px) | 110px | 188px | 首页占卜 |
+| LG (1024-1280px) | 120px | 205px | 首页占卜 |
+| XL (> 1280px) | 140px | 239px | 首页占卜 |
+| 牌库缩略图 | 60px | 103px | 牌库浏览 |
+| 详情弹窗 | 199px | 340px | 牌详情（原图） |
 
 ### CSS 实现
 
 ```css
 .tarot-card {
   --card-width: 80px;
-  --card-ratio: 1.7;
+  --card-ratio: 1.709; /* 340/199 */
   
   width: var(--card-width);
   height: calc(var(--card-width) * var(--card-ratio));
-  aspect-ratio: 1 / 1.7;
+}
+
+/* 或使用 aspect-ratio */
+.tarot-card-image {
+  aspect-ratio: 199 / 340;
 }
 
 @media (min-width: 640px) {
-  .tarot-card {
-    --card-width: 100px;
-  }
+  .tarot-card { --card-width: 100px; }
+}
+
+@media (min-width: 768px) {
+  .tarot-card { --card-width: 110px; }
 }
 
 @media (min-width: 1024px) {
-  .tarot-card {
-    --card-width: 120px;
-  }
+  .tarot-card { --card-width: 120px; }
+}
+
+@media (min-width: 1280px) {
+  .tarot-card { --card-width: 140px; }
 }
 ```
 

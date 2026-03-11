@@ -5,13 +5,15 @@ import {
   type SpreadType, 
   drawCards as drawCardsUtil, 
   generateSummary,
-  getSpreadConfig
+  getSpreadConfig,
+  DEFAULT_DECK_ID
 } from '@/data'
 import type { HoloType } from '@/directives/vHoloFoil'
 
 const currentSpread = useStorage<SpreadType>('tarot-spread', 3)
 const drawnCards = useStorage<DrawnCard[]>('tarot-cards', [])
 const holoType = useStorage<HoloType>('tarot-holo-type', 'normal')
+const currentDeckId = useStorage<string>('tarot-deck-id', DEFAULT_DECK_ID)
 const { count: flippedCount, inc: incFlipped, reset: resetFlipped } = useCounter(0)
 
 export function useTarot() {
@@ -47,11 +49,16 @@ export function useTarot() {
     holoType.value = type
   }
 
+  const setDeckId = (deckId: string) => {
+    currentDeckId.value = deckId
+  }
+
   return {
     currentSpread,
     drawnCards,
     flippedCount,
     holoType,
+    currentDeckId,
     isDrawn,
     allFlipped,
     summary,
@@ -60,6 +67,7 @@ export function useTarot() {
     drawCards,
     flipCard,
     resetReading,
-    setHoloType
+    setHoloType,
+    setDeckId
   }
 }

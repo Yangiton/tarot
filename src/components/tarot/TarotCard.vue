@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import type { DrawnCard, SpreadType } from "@/data";
+import type { DrawnCard, SpreadType, TarotCard as TarotCardType } from "@/data";
+import { DEFAULT_DECK_ID, getCardEnglishName } from "@/data";
+import { getCardImageUrl, isImageDeck } from "@/data/card-images";
 import type { HoloType } from "@/directives/vHoloFoil";
 
 interface Props {
-  card?: DrawnCard;
+  card?: DrawnCard | TarotCardType;
   position?: string;
   clickable?: boolean;
   flipDuration?: number;
   spreadType?: SpreadType;
-  holoType?: HoloType; // 全息效果类型
+  holoType?: HoloType;
+  deckId?: string;
+  static?: boolean; // 静态模式：直接显示正面，用于牌库展示
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,7 +21,24 @@ const props = withDefaults(defineProps<Props>(), {
   flipDuration: 600,
   spreadType: 3,
   holoType: "normal",
+  deckId: DEFAULT_DECK_ID,
+  static: false,
 });
+
+const useImages = computed(() => isImageDeck(props.deckId));
+
+const cardIndex = computed(() => {
+  if (!props.card?.id) return 0;
+  // id 格式: "major-0", "major-1", ... "major-21"
+  const match = props.card.id.match(/(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+});
+
+const cardImageUrl = computed(() => {
+  return getCardImageUrl(cardIndex.value, props.deckId);
+});
+
+const cardEnglishName = computed(() => getCardEnglishName(cardIndex.value));
 
 // 根据牌阵类型决定标签位置：1、3 牌阵放下方，5+ 牌阵放内部左侧
 const labelPosition = computed(() => {
@@ -29,6 +50,7 @@ const emit = defineEmits<{
   flipComplete: [];
   activate: [];
   deactivate: [];
+  click: [];
 }>();
 
 const cardWrapper = ref<HTMLElement | null>(null);
@@ -67,9 +89,17 @@ const calculatePopover = () => {
   };
 };
 
-// 第一次点击：翻转
+// 点击处理
 const handleClick = () => {
-  if (!props.clickable || isFlipping.value || !props.card) return;
+  if (!props.clickable || !props.card) return;
+
+  // 静态模式：直接触发 click 事件
+  if (props.static) {
+    emit("click");
+    return;
+  }
+
+  if (isFlipping.value) return;
 
   // 如果已翻开，再次点击切换放大状态
   if (isFlipped.value) {
@@ -157,8 +187,8 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
 </script>
 
 <template>
-  <!-- 遮罩层 -->
-  <Teleport to="body">
+  <!-- 遮罩层（静态模式不需要） -->
+  <Teleport v-if="!static" to="body">
     <Transition name="overlay-fade">
       <div v-if="isActive" class="card-overlay" @click="handleOverlayClick" />
     </Transition>
@@ -167,25 +197,56 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
   <div
     ref="cardWrapper"
     class="card-wrapper"
-    :class="{ 'is-active': isActive }"
+    :class="{ 'is-active': isActive, 'is-static': static }"
     :style="{
       '--translate-x': `${popoverTransform.translateX}px`,
       '--translate-y': `${popoverTransform.translateY}px`,
       '--card-scale': popoverTransform.scale,
     }"
+    @click="handleClick"
   >
-    <!-- v-holo-foil 外层：全息卡片效果，翻转时禁用 -->
+    <!-- v-holo-foil 外层：全息卡片效果 -->
     <div
       v-holo-foil="{ type: holoType, disabled: isFlipping }"
       class="card-container"
     >
+      <!-- 静态模式：直接显示正面 -->
       <div
+        v-if="static"
+        class="card-face card-front card-static"
+        :class="useImages ? 'has-image' : ''"
+      >
+        <template v-if="card">
+          <!-- 图片牌组 -->
+          <template v-if="useImages">
+            <span class="card-image-placeholder">{{ card.symbol }}</span>
+            <img
+              :src="cardImageUrl"
+              :alt="cardEnglishName"
+              class="card-image-full"
+              loading="lazy"
+              @load="($event.target as HTMLImageElement).classList.add('loaded')"
+              @error="($event.target as HTMLImageElement).classList.add('error')"
+            />
+          </template>
+          <!-- Emoji 牌组 -->
+          <template v-else>
+            <span class="card-number">{{ card.number }}</span>
+            <div class="card-image">{{ card.symbol }}</div>
+            <span class="card-name">{{ card.name }}</span>
+            <span class="card-name-en">{{ card.nameEn }}</span>
+          </template>
+        </template>
+      </div>
+
+      <!-- 翻转模式：占卜用 -->
+      <div
+        v-else
         class="card"
         :class="{ 'is-flipped': isFlipped }"
         :style="{ '--flip-duration': `${flipDuration}ms` }"
-        @click="handleClick"
       >
-        <!-- 卡背面 (初始显示) -->
+        <!-- 卡背面 -->
         <div class="card-face card-back">
           <slot name="back">
             <div class="card-back-content">
@@ -196,18 +257,36 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
           </slot>
         </div>
 
-        <!-- 卡正面 (翻转后显示) -->
+        <!-- 卡正面 -->
         <div
           class="card-face card-front"
-          :class="{ 'is-reversed': card?.isReversed }"
+          :class="[
+            { 'is-reversed': (card as DrawnCard)?.isReversed },
+            useImages ? 'has-image' : ''
+          ]"
         >
           <slot name="front" :card="card">
             <template v-if="card">
-              <span class="card-number">{{ card.number }}</span>
-              <div class="card-image">{{ card.symbol }}</div>
-              <span class="card-name">{{ card.name }}</span>
-              <span class="card-name-en">{{ card.nameEn }}</span>
-              <span class="card-keywords">{{ card.keywords }}</span>
+              <!-- 图片牌组 -->
+              <template v-if="useImages">
+                <span class="card-image-placeholder">{{ card.symbol }}</span>
+                <img
+                  :src="cardImageUrl"
+                  :alt="cardEnglishName"
+                  class="card-image-full"
+                  loading="lazy"
+                  @load="($event.target as HTMLImageElement).classList.add('loaded')"
+                  @error="($event.target as HTMLImageElement).classList.add('error')"
+                />
+              </template>
+              <!-- Emoji 牌组 -->
+              <template v-else>
+                <span class="card-number">{{ card.number }}</span>
+                <div class="card-image">{{ card.symbol }}</div>
+                <span class="card-name">{{ card.name }}</span>
+                <span class="card-name-en">{{ card.nameEn }}</span>
+                <span class="card-keywords">{{ card.keywords }}</span>
+              </template>
             </template>
           </slot>
         </div>
@@ -216,11 +295,10 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
 
     <!-- 位置标签 -->
     <span
-      v-if="position && !isActive"
+      v-if="position && !isActive && !static"
       class="position-label"
       :class="labelPosition === 'inside' ? 'label-inside' : 'label-bottom'"
-      >{{ position }}</span
-    >
+    >{{ position }}</span>
   </div>
 </template>
 
@@ -247,7 +325,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
 /* ========== 外层包装（用于定位标签）========== */
 .card-wrapper {
   --card-width: 80px;
-  --card-ratio: 1.6;
+  --card-ratio: 1.709; /* 340/199 */
   --card-radius: 8px;
   --flip-duration: 600ms;
   --translate-x: 0px;
@@ -263,6 +341,27 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
     transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
     z-index 0s;
   will-change: transform;
+}
+
+/* 静态模式（牌库展示） */
+.card-wrapper.is-static {
+  cursor: pointer;
+}
+
+.card-wrapper.is-static:hover {
+  transform: translateY(-4px);
+}
+
+.card-wrapper.is-static:active {
+  transform: scale(0.95);
+}
+
+/* 静态卡片正面（覆盖翻转变换） */
+.card-static.card-front {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: none !important;
 }
 
 /* 激活状态 */
@@ -446,6 +545,11 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
   padding: 6px;
 }
 
+.card-front.has-image {
+  padding: 0;
+  border-width: 0;
+}
+
 @media (min-width: 640px) {
   .card-front {
     padding: 8px;
@@ -549,6 +653,49 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
   .card-image {
     font-size: 2.5rem;
   }
+}
+
+/* 图片牌组 - emoji 占位符 */
+.card-image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #e8dcc8 0%, #d4c4a8 50%, #c9b898 100%);
+}
+
+@media (min-width: 640px) {
+  .card-image-placeholder {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-image-placeholder {
+    font-size: 2.5rem;
+  }
+}
+
+/* 图片牌组 - 全尺寸图片 */
+.card-image-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-image-full.loaded {
+  opacity: 1;
+}
+
+.card-image-full.error {
+  display: none;
 }
 
 .card-name {
