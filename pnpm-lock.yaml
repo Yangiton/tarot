@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@vueuse/core':
-        specifier: ^10.9.0
+        specifier: ^10.11.1
         version: 10.11.1(vue@3.5.30(typescript@5.9.3))
       class-variance-authority:
         specifier: ^0.7.0

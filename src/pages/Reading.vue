@@ -34,7 +34,7 @@ const handleReset = () => {
         <span class="hidden sm:inline">返回</span>
       </Button>
       
-      <h2 class="text-lg md:text-xl font-bold gold-title">✦ 牌阵解读 ✦</h2>
+      <h2 class="text-sm md:text-lg font-bold gold-title">✦ 牌阵解读 ✦</h2>
       
       <Button variant="outline" size="sm" @click="handleReset">
         <RefreshCw class="w-4 h-4 sm:mr-1" />

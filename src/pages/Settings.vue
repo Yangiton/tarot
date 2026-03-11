@@ -8,9 +8,9 @@ const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Header -->
-    <header class="flex-shrink-0 text-center py-4 md:py-6 px-4 border-b border-gold/15">
-      <h1 class="text-xl md:text-2xl font-bold gold-title">✦ 设置 ✦</h1>
-      <p class="text-muted-foreground text-sm mt-1">个性化你的占卜体验</p>
+    <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
+      <h1 class="text-base md:text-xl font-bold gold-title">✦ 设置 ✦</h1>
+      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">个性化你的占卜体验</p>
     </header>
 
     <!-- Scroll Content -->

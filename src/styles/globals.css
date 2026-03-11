@@ -106,3 +106,41 @@
   color: var(--gold);
   font-weight: 500;
 }
+
+/* ========== 移动端横屏适配 ========== */
+/* 基于 User Agent 检测的移动设备类 */
+body.is-mobile-landscape {
+  --mobile-landscape-card-width: min(18vh, 90px);
+}
+
+body.is-mobile-landscape .card-container {
+  --card-width: var(--mobile-landscape-card-width) !important;
+  --card-radius: 6px !important;
+}
+
+body.is-mobile-landscape .card-back-symbol {
+  font-size: 1.2rem !important;
+}
+
+body.is-mobile-landscape .card-front {
+  padding: 4px !important;
+}
+
+body.is-mobile-landscape .card-number,
+body.is-mobile-landscape .card-name,
+body.is-mobile-landscape .card-name-en {
+  font-size: 0.5rem !important;
+}
+
+body.is-mobile-landscape .card-image {
+  font-size: 1.5rem !important;
+}
+
+body.is-mobile-landscape .card-keywords {
+  display: none !important;
+}
+
+body.is-mobile-landscape .position-label {
+  font-size: 0.5rem !important;
+  bottom: -12px !important;
+}

@@ -3,13 +3,16 @@ import { computed, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Motion, AnimatePresence } from 'motion-v'
 import { Lightbulb, X } from 'lucide-vue-next'
+import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
 import TarotCard from '@/components/tarot/TarotCard.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
+import { useDevice } from '@/composables/useDevice'
 import { tips } from '@/data'
 
 const router = useRouter()
+const { isMobileLandscape, isMobile } = useDevice()
 const {
   currentSpread,
   drawnCards,
@@ -31,17 +34,13 @@ const spreads = [
 const cardRefs = ref<Record<number, any>>({})
 const isAnimating = ref(false)
 const drawKey = ref(0)
-const showTips = ref(false)
-const currentTipIndex = ref(0)
+
+const [showTips, toggleTips] = useToggle(false)
+const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips)
+const nextTip = () => { next() }
 
 const setCardRef = (el: unknown, index: number) => {
   cardRefs.value[index] = el
-}
-
-const currentTip = computed(() => tips[currentTipIndex.value])
-
-const nextTip = () => {
-  currentTipIndex.value = (currentTipIndex.value + 1) % tips.length
 }
 
 const hint = computed(() => {
@@ -58,7 +57,7 @@ const handleDraw = async () => {
   drawCards()
   drawKey.value++
   await nextTick()
-  setTimeout(() => {
+  useTimeoutFn(() => {
     isAnimating.value = false
   }, 600)
 }
@@ -79,7 +78,7 @@ const handleReset = async () => {
   drawKey.value++
   
   await nextTick()
-  setTimeout(() => {
+  useTimeoutFn(() => {
     isAnimating.value = false
   }, 100)
 }
@@ -92,19 +91,25 @@ const goToReading = () => {
 </script>
 
 <template>
-  <div class="home-container">
+  <div 
+    class="home-container"
+    :class="{ 
+      'is-mobile': isMobile,
+      'is-landscape': isMobileLandscape 
+    }"
+  >
     <!-- Header Row: Title + Tips Icon -->
     <header class="header-row">
       <div class="header-content">
         <h1 class="title">✦ 塔罗占卜 ✦</h1>
-        <p class="subtitle">聆听宇宙的低语</p>
+        <p v-if="!isMobileLandscape" class="subtitle">聆听宇宙的低语</p>
       </div>
       
       <!-- Tips Toggle Button -->
       <button 
         class="tips-toggle"
         :class="{ 'is-active': showTips }"
-        @click="showTips = !showTips"
+        @click="toggleTips()"
         title="占卜小贴士"
       >
         <Lightbulb class="w-4 h-4 md:w-5 md:h-5" />
@@ -123,7 +128,7 @@ const goToReading = () => {
       >
         <div class="tips-header">
           <span class="tips-title">💡 小贴士</span>
-          <button class="tips-close" @click="showTips = false">
+          <button class="tips-close" @click="toggleTips(false)">
             <X class="w-4 h-4" />
           </button>
         </div>
@@ -383,5 +388,55 @@ const goToReading = () => {
 /* ========== Footer ========== */
 .footer-area {
   @apply flex-shrink-0 py-2;
+}
+
+/* ========== Mobile Landscape Mode ========== */
+.home-container.is-landscape {
+  @apply px-4;
+}
+
+/* 横屏：隐藏标题和副标题 */
+.home-container.is-landscape .header-row {
+  @apply hidden;
+}
+
+/* 横屏：牌阵选择器横向排列在顶部 */
+.home-container.is-landscape .spread-selector {
+  @apply py-1 gap-2;
+}
+
+.home-container.is-landscape .spread-btn {
+  @apply px-3 py-1 text-[10px];
+}
+
+/* 横屏：主区域最大化 */
+.home-container.is-landscape .main-area {
+  @apply flex-1 py-0;
+}
+
+.home-container.is-landscape .cards-area {
+  @apply gap-2;
+}
+
+/* 横屏：底部操作区紧凑 */
+.home-container.is-landscape .action-area {
+  @apply h-10;
+}
+
+.home-container.is-landscape .action-buttons {
+  @apply gap-2;
+}
+
+.home-container.is-landscape .draw-btn {
+  @apply px-6 py-1.5 text-xs;
+}
+
+/* 横屏：隐藏 footer */
+.home-container.is-landscape .footer-area {
+  @apply hidden;
+}
+
+.home-container.is-landscape .hint-text {
+  @apply text-[10px];
 }
 </style>

@@ -1,26 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useIntervalFn, useCycleList } from '@vueuse/core'
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-vue-next'
 import { tips } from '@/data'
 
-const currentIndex = ref(0)
-let timer: number | null = null
+const { state: currentTip, index: currentIndex, next, prev, go } = useCycleList(tips)
 
-const nextTip = () => {
-  currentIndex.value = (currentIndex.value + 1) % tips.length
-}
+const handleNext = () => { next() }
+const handlePrev = () => { prev() }
+const handleGo = (i: number) => { go(i) }
 
-const prevTip = () => {
-  currentIndex.value = (currentIndex.value - 1 + tips.length) % tips.length
-}
-
-onMounted(() => {
-  timer = window.setInterval(nextTip, 8000)
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
+useIntervalFn(handleNext, 8000)
 </script>
 
 <template>
@@ -34,7 +23,7 @@ onUnmounted(() => {
       <div class="flex items-center gap-2">
         <button 
           class="w-7 h-7 rounded-full border border-gold/40 text-gold flex items-center justify-center hover:bg-gold/10 transition-colors"
-          @click="prevTip"
+          @click="handlePrev"
         >
           <ChevronLeft class="w-4 h-4" />
         </button>
@@ -43,7 +32,7 @@ onUnmounted(() => {
         </span>
         <button 
           class="w-7 h-7 rounded-full border border-gold/40 text-gold flex items-center justify-center hover:bg-gold/10 transition-colors"
-          @click="nextTip"
+          @click="handleNext"
         >
           <ChevronRight class="w-4 h-4" />
         </button>
@@ -53,7 +42,7 @@ onUnmounted(() => {
     <div class="tips-content">
       <p 
         class="text-sm text-muted-foreground leading-relaxed"
-        v-html="tips[currentIndex].text"
+        v-html="currentTip.text"
       ></p>
     </div>
     
@@ -65,7 +54,7 @@ onUnmounted(() => {
           'h-1.5 rounded-full cursor-pointer transition-all',
           index === currentIndex ? 'w-5 bg-gold' : 'w-1.5 bg-gold/30 hover:bg-gold/50'
         ]"
-        @click="currentIndex = index"
+        @click="handleGo(index)"
       ></span>
     </div>
   </div>

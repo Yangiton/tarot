@@ -1,4 +1,5 @@
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useStorage, useCounter } from '@vueuse/core'
 import { 
   type DrawnCard, 
   type SpreadType, 
@@ -7,9 +8,9 @@ import {
   getSpreadPositions
 } from '@/data'
 
-const currentSpread = ref<SpreadType>(3)
-const drawnCards = ref<DrawnCard[]>([])
-const flippedCount = ref(0)
+const currentSpread = useStorage<SpreadType>('tarot-spread', 3)
+const drawnCards = useStorage<DrawnCard[]>('tarot-cards', [])
+const { count: flippedCount, inc: incFlipped, reset: resetFlipped } = useCounter(0)
 
 export function useTarot() {
   const isDrawn = computed(() => drawnCards.value.length > 0)
@@ -23,16 +24,16 @@ export function useTarot() {
 
   const drawCards = () => {
     drawnCards.value = drawCardsUtil(currentSpread.value)
-    flippedCount.value = 0
+    resetFlipped()
   }
 
   const flipCard = () => {
-    flippedCount.value++
+    incFlipped()
   }
 
   const resetReading = () => {
     drawnCards.value = []
-    flippedCount.value = 0
+    resetFlipped()
   }
 
   return {

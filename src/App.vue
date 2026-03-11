@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useDevice } from '@/composables/useDevice'
+
+// 初始化设备检测，自动在 body 上添加设备类
+useDevice()
 </script>
 
 <template>
