@@ -1,8 +1,31 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Motion } from 'motion-v'
-import { REVERSED_PROBABILITY } from '@/data'
+import { ChevronDown } from 'lucide-vue-next'
+import { REVERSED_PROBABILITY, spreads, type SpreadType } from '@/data'
+import { useTarot } from '@/composables/useTarot'
+
+const { currentSpread, selectSpread } = useTarot()
 
 const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
+
+const spreadOptions = computed(() => {
+  return Object.entries(spreads).map(([key, config]) => ({
+    value: Number(key) as SpreadType,
+    name: config.name,
+    description: config.description,
+    count: config.positions.length
+  }))
+})
+
+const currentSpreadConfig = computed(() => {
+  return spreads[String(currentSpread.value)]
+})
+
+const handleSpreadChange = (e: Event) => {
+  const value = Number((e.target as HTMLSelectElement).value) as SpreadType
+  selectSpread(value)
+}
 </script>
 
 <template>
@@ -29,6 +52,38 @@ const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
             </h2>
             
             <div class="space-y-3">
+              <!-- 牌阵选择 -->
+              <div class="glass-card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm md:text-base text-foreground">牌阵选择</p>
+                    <p class="text-xs text-muted-foreground mt-1">选择占卜使用的牌阵</p>
+                  </div>
+                </div>
+                
+                <div class="relative">
+                  <select 
+                    :value="currentSpread"
+                    @change="handleSpreadChange"
+                    class="spread-select"
+                  >
+                    <option 
+                      v-for="opt in spreadOptions" 
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ opt.name }} ({{ opt.count }}张)
+                    </option>
+                  </select>
+                  <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold pointer-events-none" />
+                </div>
+                
+                <p class="text-xs text-muted-foreground mt-2 pl-1">
+                  {{ currentSpreadConfig?.description }}
+                </p>
+              </div>
+
+              <!-- 逆位概率 -->
               <div class="glass-card p-4 flex items-center justify-between">
                 <div>
                   <p class="text-sm md:text-base text-foreground">逆位概率</p>
@@ -39,6 +94,7 @@ const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
                 </span>
               </div>
               
+              <!-- 牌组选择 -->
               <div class="glass-card p-4 flex items-center justify-between opacity-50">
                 <div>
                   <p class="text-sm md:text-base text-foreground">牌组选择</p>
@@ -95,3 +151,18 @@ const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
     </div>
   </div>
 </template>
+
+<style scoped>
+.spread-select {
+  @apply w-full py-2.5 px-4 pr-10;
+  @apply bg-background/50 border border-gold/30 rounded-lg;
+  @apply text-sm text-foreground;
+  @apply appearance-none cursor-pointer;
+  @apply focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30;
+  @apply transition-colors;
+}
+
+.spread-select option {
+  @apply bg-background text-foreground py-2;
+}
+</style>

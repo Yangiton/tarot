@@ -1,17 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { DrawnCard } from '@/data'
+import { ref, computed } from 'vue'
+import type { DrawnCard, SpreadType } from '@/data'
 
 interface Props {
   card?: DrawnCard
   position?: string
   clickable?: boolean
   flipDuration?: number
+  spreadType?: SpreadType
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clickable: true,
-  flipDuration: 600
+  flipDuration: 600,
+  spreadType: 3
+})
+
+// 根据牌阵类型决定标签位置：1、3 牌阵放下方，5+ 牌阵放内部左侧
+const labelPosition = computed(() => {
+  return props.spreadType <= 3 ? 'bottom' : 'inside'
 })
 
 const emit = defineEmits<{
@@ -76,7 +83,11 @@ defineExpose({ reset, isFlipped })
     </div>
     
     <!-- 位置标签 -->
-    <span v-if="position" class="position-label">{{ position }}</span>
+    <span 
+      v-if="position" 
+      class="position-label"
+      :class="labelPosition === 'inside' ? 'label-inside' : 'label-bottom'"
+    >{{ position }}</span>
   </div>
 </template>
 
@@ -422,25 +433,62 @@ defineExpose({ reset, isFlipped })
 /* ========== 位置标签 ========== */
 .position-label {
   position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 0.6rem;
   color: hsl(var(--muted-foreground));
   white-space: nowrap;
+  z-index: 10;
+}
+
+/* 标签在下方（1、3 牌阵）*/
+.position-label.label-bottom {
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @media (min-width: 640px) {
-  .position-label {
+  .position-label.label-bottom {
     bottom: -20px;
     font-size: 0.7rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .position-label {
+  .position-label.label-bottom {
     bottom: -24px;
     font-size: 0.8rem;
+  }
+}
+
+/* 标签在内部左侧（5+ 牌阵）*/
+.position-label.label-inside {
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.45rem;
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 3px;
+  border-radius: 3px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 1px;
+}
+
+@media (min-width: 640px) {
+  .position-label.label-inside {
+    left: 4px;
+    font-size: 0.55rem;
+    padding: 6px 4px;
+    letter-spacing: 2px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .position-label.label-inside {
+    left: 5px;
+    font-size: 0.65rem;
+    padding: 8px 5px;
   }
 }
 </style>

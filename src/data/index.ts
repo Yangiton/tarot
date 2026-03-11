@@ -28,9 +28,23 @@ export interface MinorArcanaCard {
   note?: string
 }
 
+export interface SpreadPosition {
+  name: string
+  row: number
+  col: number
+}
+
+export interface SpreadConfig {
+  name: string
+  description: string
+  positions: SpreadPosition[]
+}
+
 export interface DrawnCard extends TarotCard {
   isReversed: boolean
   position: string
+  row: number
+  col: number
 }
 
 export type SpreadType = 1 | 3 | 5
@@ -47,7 +61,7 @@ export interface SuitConfig {
 }
 
 export const config = tarotData.config
-export const spreads = tarotData.spreads as Record<string, string[]>
+export const spreads = tarotData.spreads as Record<string, SpreadConfig>
 export const tips = tarotData.tips
 export const majorArcana = tarotData.majorArcana as TarotCard[]
 export const suits = tarotData.suits as Record<Suit, SuitConfig>
@@ -55,8 +69,12 @@ export const minorArcana = tarotData.minorArcana as Record<Suit, MinorArcanaCard
 
 export const REVERSED_PROBABILITY = config.reversedProbability
 
-export function getSpreadPositions(type: SpreadType): string[] {
-  return spreads[String(type)] || []
+export function getSpreadConfig(type: SpreadType): SpreadConfig {
+  return spreads[String(type)]
+}
+
+export function getSpreadPositions(type: SpreadType): SpreadPosition[] {
+  return spreads[String(type)]?.positions || []
 }
 
 export function getAllMinorArcana(): MinorArcanaCard[] {
@@ -97,7 +115,9 @@ export function drawCards(count: SpreadType, useFullDeck = false): DrawnCard[] {
   return shuffled.slice(0, count).map((card, i) => ({
     ...card,
     isReversed: Math.random() < REVERSED_PROBABILITY,
-    position: positions[i]
+    position: positions[i].name,
+    row: positions[i].row,
+    col: positions[i].col
   }))
 }
 

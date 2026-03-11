@@ -3,9 +3,33 @@
     "reversedProbability": 0.3
   },
   "spreads": {
-    "1": ["今日指引"],
-    "3": ["过去", "现在", "未来"],
-    "5": ["现状", "挑战", "过去", "未来", "建议"]
+    "1": {
+      "name": "单牌占卜",
+      "description": "最简单的牌阵，适合每日指引或快速问答",
+      "positions": [
+        { "name": "今日指引", "row": 0, "col": 0 }
+      ]
+    },
+    "3": {
+      "name": "三牌阵",
+      "description": "经典时间线牌阵：过去 → 现在 → 未来",
+      "positions": [
+        { "name": "过去", "row": 0, "col": 0 },
+        { "name": "现在", "row": 0, "col": 1 },
+        { "name": "未来", "row": 0, "col": 2 }
+      ]
+    },
+    "5": {
+      "name": "五牌十字阵",
+      "description": "深度分析：现状、挑战、过去、未来、建议",
+      "positions": [
+        { "name": "现状", "row": 1, "col": 1 },
+        { "name": "挑战", "row": 2, "col": 1 },
+        { "name": "过去", "row": 0, "col": 1 },
+        { "name": "未来", "row": 1, "col": 2 },
+        { "name": "建议", "row": 1, "col": 0 }
+      ]
+    }
   },
   "tips": [
     { "text": "塔罗牌共有 <span class=\"highlight\">78 张</span>，其中大阿尔卡纳 22 张代表人生重大主题，小阿尔卡纳 56 张反映日常生活细节。" },

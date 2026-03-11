@@ -2,14 +2,14 @@
 import { computed, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Motion, AnimatePresence } from 'motion-v'
-import { Lightbulb, X } from 'lucide-vue-next'
+import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
 import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
 import TarotCard from '@/components/tarot/TarotCard.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
 import { useDevice } from '@/composables/useDevice'
-import { tips } from '@/data'
+import { tips, spreads } from '@/data'
 
 const router = useRouter()
 const { isMobileLandscape, isMobile } = useDevice()
@@ -18,18 +18,10 @@ const {
   drawnCards,
   isDrawn,
   allFlipped,
-  positions,
-  selectSpread,
   drawCards,
   flipCard,
   resetReading
 } = useTarot()
-
-const spreads = [
-  { count: 1, name: '单牌' },
-  { count: 3, name: '三牌阵' },
-  { count: 5, name: '五牌阵' }
-] as const
 
 const cardRefs = ref<Record<number, any>>({})
 const isAnimating = ref(false)
@@ -43,13 +35,17 @@ const setCardRef = (el: unknown, index: number) => {
   cardRefs.value[index] = el
 }
 
+const currentSpreadConfig = computed(() => {
+  return spreads[String(currentSpread.value)]
+})
+
 const hint = computed(() => {
   if (!allFlipped.value) return '点击卡牌翻开'
   return '查看解读 →'
 })
 
-const handleSelectSpread = (count: number) => {
-  selectSpread(count as 1 | 3 | 5)
+const goToSettings = () => {
+  router.push('/settings')
 }
 
 const handleDraw = async () => {
@@ -140,21 +136,13 @@ const goToReading = () => {
       </Motion>
     </AnimatePresence>
 
-    <!-- Spread Selector -->
-    <div class="spread-selector">
-      <button 
-        v-for="spread in spreads" 
-        :key="spread.count"
-        :class="[
-          'spread-btn',
-          currentSpread === spread.count ? 'is-active' : '',
-          isDrawn ? 'is-disabled' : ''
-        ]"
-        :disabled="isDrawn"
-        @click="handleSelectSpread(spread.count)"
-      >
-        {{ spread.name }}
-      </button>
+    <!-- Spread Info -->
+    <div v-if="!isMobileLandscape" class="spread-info">
+      <div class="spread-badge" @click="goToSettings">
+        <span class="spread-name">{{ currentSpreadConfig?.name }}</span>
+        <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
+      </div>
+      <p class="spread-desc">{{ currentSpreadConfig?.description }}</p>
     </div>
 
     <!-- Main Card Area -->
@@ -188,11 +176,12 @@ const goToReading = () => {
           :animate="{ opacity: 1 }"
           :exit="{ opacity: 0 }"
           :transition="{ duration: 0.3 }"
-          class="cards-area"
+          :class="['cards-area', `spread-${currentSpread}`]"
         >
           <Motion
             v-for="(card, index) in drawnCards"
             :key="card.id + '-' + index"
+            :class="['card-slot', `row-${card.row}`, `col-${card.col}`]"
             :initial="{ opacity: 0, scale: 0.6, y: 40 }"
             :animate="{ opacity: 1, scale: 1, y: 0 }"
             :transition="{ 
@@ -204,7 +193,8 @@ const goToReading = () => {
             <TarotCard 
               :ref="(el) => setCardRef(el, index)"
               :card="card"
-              :position="positions[index]"
+              :position="card.position"
+              :spread-type="currentSpread"
               :clickable="!isAnimating"
               @flip="handleFlip"
             />
@@ -338,20 +328,23 @@ const goToReading = () => {
   @apply flex justify-center gap-2 md:gap-3 py-2 flex-shrink-0;
 }
 
-.spread-btn {
-  @apply px-3 md:px-5 py-1.5 md:py-2 text-xs md:text-sm rounded-full;
-  @apply border-2 border-gold/40 text-gold;
-  @apply hover:border-gold hover:bg-gold/10;
-  @apply transition-all duration-200;
+/* ========== Spread Info ========== */
+.spread-info {
+  @apply flex flex-col items-center py-1 flex-shrink-0;
 }
 
-.spread-btn.is-active {
-  @apply bg-gradient-to-r from-gold to-gold-light text-background;
-  @apply border-transparent shadow-lg shadow-gold/25;
+.spread-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full;
+  @apply bg-gold/15 text-gold text-xs md:text-sm;
+  @apply cursor-pointer hover:bg-gold/25 transition-colors;
 }
 
-.spread-btn.is-disabled {
-  @apply opacity-50 cursor-not-allowed pointer-events-none;
+.spread-name {
+  @apply font-medium;
+}
+
+.spread-desc {
+  @apply text-[10px] md:text-xs text-muted-foreground mt-1;
 }
 
 /* ========== Main Card Area ========== */
@@ -368,9 +361,56 @@ const goToReading = () => {
   @apply px-8 md:px-10 py-2.5 md:py-3 text-base md:text-lg;
 }
 
+/* ========== 牌阵布局 ========== */
 .cards-area {
-  @apply flex items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5;
+  @apply flex items-center justify-center;
 }
+
+/* 单牌阵 - 居中一张 */
+.cards-area.spread-1 {
+  @apply flex items-center justify-center;
+}
+
+/* 三牌阵 - 横向一排 */
+.cards-area.spread-3 {
+  @apply flex flex-row items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5;
+}
+
+/* 五牌十字阵 - 使用 CSS Grid */
+.cards-area.spread-5 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.25rem;
+  justify-items: center;
+  align-items: center;
+  width: fit-content;
+}
+
+@media (min-width: 640px) {
+  .cards-area.spread-5 {
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .cards-area.spread-5 {
+    gap: 0.75rem;
+  }
+}
+
+/* 五牌阵位置映射 */
+.cards-area.spread-5 .card-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cards-area.spread-5 .row-0.col-1 { grid-area: 1 / 2 / 2 / 3; } /* 上：过去 */
+.cards-area.spread-5 .row-1.col-0 { grid-area: 2 / 1 / 3 / 2; } /* 左：建议 */
+.cards-area.spread-5 .row-1.col-1 { grid-area: 2 / 2 / 3 / 3; } /* 中：现状 */
+.cards-area.spread-5 .row-1.col-2 { grid-area: 2 / 3 / 3 / 4; } /* 右：未来 */
+.cards-area.spread-5 .row-2.col-1 { grid-area: 3 / 2 / 4 / 3; } /* 下：挑战 */
 
 /* ========== Action Area ========== */
 .action-area {
@@ -395,18 +435,9 @@ const goToReading = () => {
   @apply px-4;
 }
 
-/* 横屏：隐藏标题和副标题 */
+/* 横屏：隐藏标题 */
 .home-container.is-landscape .header-row {
   @apply hidden;
-}
-
-/* 横屏：牌阵选择器横向排列在顶部 */
-.home-container.is-landscape .spread-selector {
-  @apply py-1 gap-2;
-}
-
-.home-container.is-landscape .spread-btn {
-  @apply px-3 py-1 text-[10px];
 }
 
 /* 横屏：主区域最大化 */

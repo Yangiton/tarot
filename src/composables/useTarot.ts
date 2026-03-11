@@ -5,7 +5,7 @@ import {
   type SpreadType, 
   drawCards as drawCardsUtil, 
   generateSummary,
-  getSpreadPositions
+  getSpreadConfig
 } from '@/data'
 
 const currentSpread = useStorage<SpreadType>('tarot-spread', 3)
@@ -16,10 +16,15 @@ export function useTarot() {
   const isDrawn = computed(() => drawnCards.value.length > 0)
   const allFlipped = computed(() => isDrawn.value && flippedCount.value >= drawnCards.value.length)
   const summary = computed(() => generateSummary(drawnCards.value, currentSpread.value))
-  const positions = computed(() => getSpreadPositions(currentSpread.value))
+  const spreadConfig = computed(() => getSpreadConfig(currentSpread.value))
 
   const selectSpread = (count: SpreadType) => {
-    currentSpread.value = count
+    if (currentSpread.value !== count) {
+      currentSpread.value = count
+      // 切换牌阵时自动重置
+      drawnCards.value = []
+      resetFlipped()
+    }
   }
 
   const drawCards = () => {
@@ -43,7 +48,7 @@ export function useTarot() {
     isDrawn,
     allFlipped,
     summary,
-    positions,
+    spreadConfig,
     selectSpread,
     drawCards,
     flipCard,
