@@ -31,9 +31,6 @@ export const DECKS: DeckConfig[] = [
 /** 默认牌组 ID */
 export const DEFAULT_DECK_ID = '178'
 
-/** CDN 基础地址 */
-const CDN_BASE = 'https://t.8s8s.com/photo/tarotphoto'
-
 /**
  * 78 张塔罗牌英文名（0-77）
  * 0-21: 大阿尔卡纳
@@ -44,26 +41,88 @@ const CDN_BASE = 'https://t.8s8s.com/photo/tarotphoto'
  */
 export const CARD_NAMES = [
   // 大阿尔卡纳 0-21
-  'fool', 'magician', 'high-priestess', 'empress', 'emperor',
-  'hierophant', 'lovers', 'chariot', 'strength', 'hermit',
-  'fortune-wheel', 'justice', 'hanged-man', 'death', 'temperance',
-  'devil', 'tower', 'stars', 'moon', 'sun', 'judgement', 'world',
+  'fool',
+  'magician',
+  'high-priestess',
+  'empress',
+  'emperor',
+  'hierophant',
+  'lovers',
+  'chariot',
+  'strength',
+  'hermit',
+  'fortune-wheel',
+  'justice',
+  'hanged-man',
+  'death',
+  'temperance',
+  'devil',
+  'tower',
+  'stars',
+  'moon',
+  'sun',
+  'judgement',
+  'world',
   // 权杖 22-35
-  'ace-wands', 'two-wands', 'three-wands', 'four-wands', 'five-wands',
-  'six-wands', 'seven-wands', 'eight-wands', 'nine-wands', 'ten-wands',
-  'page-wands', 'knight-wands', 'queen-wands', 'king-wands',
+  'ace-wands',
+  'two-wands',
+  'three-wands',
+  'four-wands',
+  'five-wands',
+  'six-wands',
+  'seven-wands',
+  'eight-wands',
+  'nine-wands',
+  'ten-wands',
+  'page-wands',
+  'knight-wands',
+  'queen-wands',
+  'king-wands',
   // 圣杯 36-49
-  'ace-cups', 'two-cups', 'three-cups', 'four-cups', 'five-cups',
-  'six-cups', 'seven-cups', 'eight-cups', 'nine-cups', 'ten-cups',
-  'page-cups', 'knight-cups', 'queen-cups', 'king-cups',
+  'ace-cups',
+  'two-cups',
+  'three-cups',
+  'four-cups',
+  'five-cups',
+  'six-cups',
+  'seven-cups',
+  'eight-cups',
+  'nine-cups',
+  'ten-cups',
+  'page-cups',
+  'knight-cups',
+  'queen-cups',
+  'king-cups',
   // 宝剑 50-63
-  'ace-swords', 'two-swords', 'three-swords', 'four-swords', 'five-swords',
-  'six-swords', 'seven-swords', 'eight-swords', 'nine-swords', 'ten-swords',
-  'page-swords', 'knight-swords', 'queen-swords', 'king-swords',
+  'ace-swords',
+  'two-swords',
+  'three-swords',
+  'four-swords',
+  'five-swords',
+  'six-swords',
+  'seven-swords',
+  'eight-swords',
+  'nine-swords',
+  'ten-swords',
+  'page-swords',
+  'knight-swords',
+  'queen-swords',
+  'king-swords',
   // 星币 64-77
-  'ace-pentacles', 'two-pentacles', 'three-pentacles', 'four-pentacles', 'five-pentacles',
-  'six-pentacles', 'seven-pentacles', 'eight-pentacles', 'nine-pentacles', 'ten-pentacles',
-  'page-pentacles', 'knight-pentacles', 'queen-pentacles', 'king-pentacles',
+  'ace-pentacles',
+  'two-pentacles',
+  'three-pentacles',
+  'four-pentacles',
+  'five-pentacles',
+  'six-pentacles',
+  'seven-pentacles',
+  'eight-pentacles',
+  'nine-pentacles',
+  'ten-pentacles',
+  'page-pentacles',
+  'knight-pentacles',
+  'queen-pentacles',
+  'king-pentacles',
 ] as const
 
 /**
@@ -79,13 +138,6 @@ export function getCardEnglishName(cardIndex: number): string {
 export function getCardFilename(cardIndex: number): string {
   const paddedIndex = String(cardIndex).padStart(2, '0')
   return `${paddedIndex}-${getCardEnglishName(cardIndex)}.jpg`
-}
-
-/**
- * 获取卡牌图片 URL（CDN）
- */
-export function getCardCdnUrl(cardIndex: number, deckId = DEFAULT_DECK_ID): string {
-  return `${CDN_BASE}/${deckId}/${getCardEnglishName(cardIndex)}.jpg`
 }
 
 /**
@@ -179,7 +231,7 @@ export function getAllMinorArcana(): MinorArcanaCard[] {
     ...minorArcana.wands,
     ...minorArcana.cups,
     ...minorArcana.swords,
-    ...minorArcana.pentacles
+    ...minorArcana.pentacles,
   ]
 }
 
@@ -190,7 +242,7 @@ export function getMinorArcanaBySuit(suit: Suit): MinorArcanaCard[] {
 export function getAllCards(): TarotCard[] {
   const minorCards = getAllMinorArcana().map(card => ({
     ...card,
-    number: typeof card.rank === 'number' ? String(card.rank) : card.rank
+    number: typeof card.rank === 'number' ? String(card.rank) : card.rank,
   }))
   return [...majorArcana, ...minorCards]
 }
@@ -208,23 +260,23 @@ export function drawCards(count: SpreadType, useFullDeck = false): DrawnCard[] {
   const deck = useFullDeck ? getAllCards() : majorArcana
   const shuffled = shuffle(deck)
   const positions = getSpreadPositions(count)
-  
+
   return shuffled.slice(0, count).map((card, i) => ({
     ...card,
     isReversed: Math.random() < REVERSED_PROBABILITY,
     position: positions[i].name,
     row: positions[i].row,
-    col: positions[i].col
+    col: positions[i].col,
   }))
 }
 
 export function generateSummary(cards: DrawnCard[], spreadType: SpreadType): string {
   if (cards.length === 0) return ''
-  
+
   if (spreadType === 1) {
     const card = cards[0]
     let text = `今日的指引是「${card.name}」${card.isReversed ? '（逆位）' : ''}。`
-    text += card.isReversed 
+    text += card.isReversed
       ? `这张牌提醒你注意：${card.reversed.split('、')[0]}。今天可能需要反思${card.keywords.split('、')[0]}相关的问题。`
       : `这是一个关于${card.keywords}的信息。今天适合${card.upright.split('、')[0]}。`
     return text

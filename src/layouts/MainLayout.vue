@@ -15,10 +15,7 @@ const showNav = computed(() => {
   <div class="app-layout">
     <StarBackground />
     <NavBar v-if="showNav" />
-    <main 
-      class="main-content"
-      :class="{ 'has-nav': showNav }"
-    >
+    <main class="main-content" :class="{ 'has-nav': showNav }">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />

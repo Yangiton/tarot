@@ -11,26 +11,26 @@ const router = createRouter({
         {
           path: '',
           name: 'home',
-          component: () => import('@/pages/Home.vue')
+          component: () => import('@/pages/Home.vue'),
         },
         {
           path: 'reading',
           name: 'reading',
-          component: () => import('@/pages/Reading.vue')
+          component: () => import('@/pages/Reading.vue'),
         },
         {
           path: 'library',
           name: 'library',
-          component: () => import('@/pages/Library.vue')
+          component: () => import('@/pages/Library.vue'),
         },
         {
           path: 'settings',
           name: 'settings',
-          component: () => import('@/pages/Settings.vue')
-        }
-      ]
-    }
-  ]
+          component: () => import('@/pages/Settings.vue'),
+        },
+      ],
+    },
+  ],
 })
 
 export default router

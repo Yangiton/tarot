@@ -1,215 +1,221 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import type { DrawnCard, SpreadType, TarotCard as TarotCardType } from "@/data";
-import { DEFAULT_DECK_ID, getCardEnglishName } from "@/data";
-import { getCardImageUrl, isImageDeck } from "@/data/card-images";
-import type { HoloType } from "@/directives/vHoloFoil";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import type { DrawnCard, SpreadType, TarotCard as TarotCardType } from '@/data'
+import { DEFAULT_DECK_ID, getCardEnglishName } from '@/data'
+import { getCardImageUrl, isImageDeck } from '@/data/card-images'
+import type { HoloType } from '@/directives/vHoloFoil'
 
 interface Props {
-  card?: DrawnCard | TarotCardType;
-  position?: string;
-  clickable?: boolean;
-  flipDuration?: number;
-  spreadType?: SpreadType;
-  holoType?: HoloType;
-  deckId?: string;
-  static?: boolean; // 静态模式：直接显示正面，用于牌库展示
+  card?: DrawnCard | TarotCardType
+  position?: string
+  clickable?: boolean
+  flipDuration?: number
+  spreadType?: SpreadType
+  holoType?: HoloType
+  deckId?: string
+  static?: boolean // 静态模式：直接显示正面，用于牌库展示
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clickable: true,
   flipDuration: 600,
   spreadType: 3,
-  holoType: "normal",
+  holoType: 'normal',
   deckId: DEFAULT_DECK_ID,
   static: false,
-});
+})
 
-const useImages = computed(() => isImageDeck(props.deckId));
+const useImages = computed(() => isImageDeck(props.deckId))
 
 const cardIndex = computed(() => {
-  if (!props.card?.id) return 0;
-  const id = props.card.id;
-  
+  if (!props.card?.id) return 0
+  const id = props.card.id
+
   // 大阿尔卡纳: major-0 ~ major-21
   if (id.startsWith('major-')) {
-    const num = parseInt(id.replace('major-', ''), 10);
-    return isNaN(num) ? 0 : num;
+    const num = parseInt(id.replace('major-', ''), 10)
+    return isNaN(num) ? 0 : num
   }
-  
+
   // 小阿尔卡纳: minor-{suit}-{rank}
-  const match = id.match(/^minor-(\w+)-(.+)$/);
+  const match = id.match(/^minor-(\w+)-(.+)$/)
   if (match) {
-    const suit = match[1];
-    const rankStr = match[2];
+    const suit = match[1]
+    const rankStr = match[2]
     const suitOffset: Record<string, number> = {
-      wands: 22, cups: 36, swords: 50, pentacles: 64
-    };
+      wands: 22,
+      cups: 36,
+      swords: 50,
+      pentacles: 64,
+    }
     const courtRanks: Record<string, number> = {
-      page: 11, knight: 12, queen: 13, king: 14
-    };
-    const rank = courtRanks[rankStr] || parseInt(rankStr, 10);
-    return (suitOffset[suit] || 22) + rank - 1;
+      page: 11,
+      knight: 12,
+      queen: 13,
+      king: 14,
+    }
+    const rank = courtRanks[rankStr] || parseInt(rankStr, 10)
+    return (suitOffset[suit] || 22) + rank - 1
   }
-  
-  return 0;
-});
+
+  return 0
+})
 
 const cardImageUrl = computed(() => {
-  return getCardImageUrl(cardIndex.value, props.deckId);
-});
+  return getCardImageUrl(cardIndex.value, props.deckId)
+})
 
 // 是否有有效的图片 URL
 const hasValidImage = computed(() => {
-  return useImages.value && cardImageUrl.value !== '';
-});
+  return useImages.value && cardImageUrl.value !== ''
+})
 
-const cardEnglishName = computed(() => getCardEnglishName(cardIndex.value));
+const cardEnglishName = computed(() => getCardEnglishName(cardIndex.value))
 
 // 根据牌阵类型决定标签位置：1、3 牌阵放下方，5+ 牌阵放内部左侧
 const labelPosition = computed(() => {
-  return props.spreadType <= 3 ? "bottom" : "inside";
-});
+  return props.spreadType <= 3 ? 'bottom' : 'inside'
+})
 
 const emit = defineEmits<{
-  flip: [];
-  flipComplete: [];
-  activate: [];
-  deactivate: [];
-  click: [];
-}>();
+  flip: []
+  flipComplete: []
+  activate: []
+  deactivate: []
+  click: []
+}>()
 
-const cardWrapper = ref<HTMLElement | null>(null);
-const isFlipped = ref(false);
-const isFlipping = ref(false);
-const isActive = ref(false); // 放大激活状态
+const cardWrapper = ref<HTMLElement | null>(null)
+const isFlipped = ref(false)
+const isFlipping = ref(false)
+const isActive = ref(false) // 放大激活状态
 
 // 计算放大居中的 transform
 const popoverTransform = ref({
   translateX: 0,
   translateY: 0,
   scale: 1,
-});
+})
 
 // 计算居中位置和缩放
 const calculatePopover = () => {
-  if (!cardWrapper.value) return;
+  if (!cardWrapper.value) return
 
-  const rect = cardWrapper.value.getBoundingClientRect();
-  const viewWidth = window.innerWidth;
-  const viewHeight = window.innerHeight;
+  const rect = cardWrapper.value.getBoundingClientRect()
+  const viewWidth = window.innerWidth
+  const viewHeight = window.innerHeight
 
   // 计算移动到屏幕中心的距离
-  const deltaX = viewWidth / 2 - rect.left - rect.width / 2;
-  const deltaY = viewHeight / 2 - rect.top - rect.height / 2;
+  const deltaX = viewWidth / 2 - rect.left - rect.width / 2
+  const deltaY = viewHeight / 2 - rect.top - rect.height / 2
 
   // 计算缩放比例（最大填充屏幕 85%，但不超过 2 倍）
-  const scaleW = (viewWidth * 0.85) / rect.width;
-  const scaleH = (viewHeight * 0.85) / rect.height;
-  const scale = Math.min(scaleW, scaleH, 2);
+  const scaleW = (viewWidth * 0.85) / rect.width
+  const scaleH = (viewHeight * 0.85) / rect.height
+  const scale = Math.min(scaleW, scaleH, 2)
 
   popoverTransform.value = {
     translateX: deltaX,
     translateY: deltaY,
     scale,
-  };
-};
+  }
+}
 
 // 点击处理
 const handleClick = () => {
-  if (!props.clickable || !props.card) return;
+  if (!props.clickable || !props.card) return
 
   // 静态模式：直接触发 click 事件
   if (props.static) {
-    emit("click");
-    return;
+    emit('click')
+    return
   }
 
-  if (isFlipping.value) return;
+  if (isFlipping.value) return
 
   // 如果已翻开，再次点击切换放大状态
   if (isFlipped.value) {
-    toggleActive();
-    return;
+    toggleActive()
+    return
   }
 
   // 首次点击：翻转卡片
-  isFlipping.value = true;
-  isFlipped.value = true;
-  emit("flip");
+  isFlipping.value = true
+  isFlipped.value = true
+  emit('flip')
 
   setTimeout(() => {
-    isFlipping.value = false;
-    emit("flipComplete");
-  }, props.flipDuration);
-};
+    isFlipping.value = false
+    emit('flipComplete')
+  }, props.flipDuration)
+}
 
 // 切换放大状态
 const toggleActive = () => {
   if (isActive.value) {
-    deactivate();
+    deactivate()
   } else {
-    activate();
+    activate()
   }
-};
+}
 
 // 激活放大
 const activate = () => {
-  calculatePopover();
-  isActive.value = true;
-  emit("activate");
+  calculatePopover()
+  isActive.value = true
+  emit('activate')
 
   // 添加 ESC 键和点击背景关闭
-  document.addEventListener("keydown", handleKeydown);
-};
+  document.addEventListener('keydown', handleKeydown)
+}
 
 // 取消放大
 const deactivate = () => {
-  isActive.value = false;
-  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 };
-  emit("deactivate");
+  isActive.value = false
+  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 }
+  emit('deactivate')
 
-  document.removeEventListener("keydown", handleKeydown);
-};
+  document.removeEventListener('keydown', handleKeydown)
+}
 
 // ESC 键关闭
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === "Escape" && isActive.value) {
-    deactivate();
+  if (e.key === 'Escape' && isActive.value) {
+    deactivate()
   }
-};
+}
 
 // 点击遮罩关闭
 const handleOverlayClick = () => {
   if (isActive.value) {
-    deactivate();
+    deactivate()
   }
-};
+}
 
 // 窗口大小变化时重新计算
 const handleResize = () => {
   if (isActive.value) {
-    calculatePopover();
+    calculatePopover()
   }
-};
+}
 
 onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
+  window.addEventListener('resize', handleResize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-  document.removeEventListener("keydown", handleKeydown);
-});
+  window.removeEventListener('resize', handleResize)
+  document.removeEventListener('keydown', handleKeydown)
+})
 
 const reset = () => {
-  isFlipped.value = false;
-  isFlipping.value = false;
-  isActive.value = false;
-  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 };
-};
+  isFlipped.value = false
+  isFlipping.value = false
+  isActive.value = false
+  popoverTransform.value = { translateX: 0, translateY: 0, scale: 1 }
+}
 
-defineExpose({ reset, isFlipped, isActive, activate, deactivate });
+defineExpose({ reset, isFlipped, isActive, activate, deactivate })
 </script>
 
 <template>
@@ -232,10 +238,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
     @click="handleClick"
   >
     <!-- v-holo-foil 外层：全息卡片效果 -->
-    <div
-      v-holo-foil="{ type: holoType, disabled: isFlipping }"
-      class="card-container"
-    >
+    <div v-holo-foil="{ type: holoType, disabled: isFlipping }" class="card-container">
       <!-- 静态模式：直接显示正面 -->
       <div
         v-if="static"
@@ -288,7 +291,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
           class="card-face card-front"
           :class="[
             { 'is-reversed': (card as DrawnCard)?.isReversed },
-            hasValidImage ? 'has-image' : ''
+            hasValidImage ? 'has-image' : '',
           ]"
         >
           <slot name="front" :card="card">
@@ -324,7 +327,8 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
       v-if="position && !isActive && !static"
       class="position-label"
       :class="labelPosition === 'inside' ? 'label-inside' : 'label-bottom'"
-    >{{ position }}</span>
+      >{{ position }}</span
+    >
   </div>
 </template>
 
@@ -361,8 +365,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
   position: relative;
   width: var(--card-width);
   height: calc(var(--card-width) * var(--card-ratio));
-  transform: translate3d(var(--translate-x), var(--translate-y), 0)
-    scale(var(--card-scale));
+  transform: translate3d(var(--translate-x), var(--translate-y), 0) scale(var(--card-scale));
   transition:
     transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
     z-index 0s;
@@ -512,18 +515,8 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
   align-items: center;
   justify-content: center;
   background:
-    linear-gradient(
-      45deg,
-      transparent 48%,
-      rgba(255, 215, 0, 0.03) 50%,
-      transparent 52%
-    ),
-    linear-gradient(
-      -45deg,
-      transparent 48%,
-      rgba(255, 215, 0, 0.03) 50%,
-      transparent 52%
-    );
+    linear-gradient(45deg, transparent 48%, rgba(255, 215, 0, 0.03) 50%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, rgba(255, 215, 0, 0.03) 50%, transparent 52%);
   background-size: 20px 20px;
 }
 
@@ -602,7 +595,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate });
 
 /* 光泽层 */
 .card-front::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(

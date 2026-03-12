@@ -18,10 +18,10 @@ export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): stri
   if (deckId === '0') return '' // Emoji 牌组无图片
   if (deckId !== IMAGE_DECK_ID) return '' // 暂只支持 178
   if (cardIndex < 0 || cardIndex > 77 || isNaN(cardIndex)) return '' // 无效索引
-  
+
   const filename = getCardFilename(cardIndex)
   if (filename.includes('unknown')) return '' // 文件名无效
-  
+
   try {
     return new URL(`../assets/tarot/${deckId}/${filename}`, import.meta.url).href
   } catch {

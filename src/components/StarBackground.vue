@@ -11,9 +11,9 @@ const starsRef = useTemplateRef<HTMLDivElement>('starsRef')
 onMounted(() => {
   const container = starsRef.value
   if (!container) return
-  
+
   const fragment = document.createDocumentFragment()
-  
+
   for (let i = 0; i < 100; i++) {
     const star = document.createElement('div')
     star.className = 'star'
@@ -25,7 +25,7 @@ onMounted(() => {
     star.style.height = size
     fragment.appendChild(star)
   }
-  
+
   container.appendChild(fragment)
 })
 </script>

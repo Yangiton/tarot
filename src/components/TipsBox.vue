@@ -5,9 +5,15 @@ import { tips } from '@/data'
 
 const { state: currentTip, index: currentIndex, next, prev, go } = useCycleList(tips)
 
-const handleNext = () => { next() }
-const handlePrev = () => { prev() }
-const handleGo = (i: number) => { go(i) }
+const handleNext = () => {
+  next()
+}
+const handlePrev = () => {
+  prev()
+}
+const handleGo = (i: number) => {
+  go(i)
+}
 
 useIntervalFn(handleNext, 8000)
 </script>
@@ -19,9 +25,9 @@ useIntervalFn(handleNext, 8000)
         <Lightbulb class="w-4 h-4" />
         <span>占卜小贴士</span>
       </div>
-      
+
       <div class="flex items-center gap-2">
-        <button 
+        <button
           class="w-7 h-7 rounded-full border border-gold/40 text-gold flex items-center justify-center hover:bg-gold/10 transition-colors"
           @click="handlePrev"
         >
@@ -30,7 +36,7 @@ useIntervalFn(handleNext, 8000)
         <span class="text-xs text-muted-foreground min-w-[40px] text-center">
           {{ currentIndex + 1 }}/{{ tips.length }}
         </span>
-        <button 
+        <button
           class="w-7 h-7 rounded-full border border-gold/40 text-gold flex items-center justify-center hover:bg-gold/10 transition-colors"
           @click="handleNext"
         >
@@ -38,21 +44,18 @@ useIntervalFn(handleNext, 8000)
         </button>
       </div>
     </div>
-    
+
     <div class="tips-content">
-      <p 
-        class="text-sm text-muted-foreground leading-relaxed"
-        v-html="currentTip.text"
-      ></p>
+      <p class="text-sm text-muted-foreground leading-relaxed" v-html="currentTip.text"></p>
     </div>
-    
+
     <div class="flex justify-center gap-1.5 mt-3">
-      <span 
-        v-for="(_, index) in tips" 
+      <span
+        v-for="(_, index) in tips"
         :key="index"
         :class="[
           'h-1.5 rounded-full cursor-pointer transition-all',
-          index === currentIndex ? 'w-5 bg-gold' : 'w-1.5 bg-gold/30 hover:bg-gold/50'
+          index === currentIndex ? 'w-5 bg-gold' : 'w-1.5 bg-gold/30 hover:bg-gold/50',
         ]"
         @click="handleGo(index)"
       ></span>

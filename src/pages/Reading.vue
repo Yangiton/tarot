@@ -29,14 +29,16 @@ const handleReset = () => {
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Header Bar -->
-    <header class="flex-shrink-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-gold/15 bg-background/50 backdrop-blur-sm">
+    <header
+      class="flex-shrink-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-gold/15 bg-background/50 backdrop-blur-sm"
+    >
       <Button variant="ghost" size="sm" @click="goBack">
         <ArrowLeft class="w-4 h-4 mr-1" />
         <span class="hidden sm:inline">返回</span>
       </Button>
-      
+
       <h2 class="text-sm md:text-lg font-bold gold-title">✦ 牌阵解读 ✦</h2>
-      
+
       <Button variant="outline" size="sm" @click="handleReset">
         <RefreshCw class="w-4 h-4 sm:mr-1" />
         <span class="hidden sm:inline">重新抽牌</span>
@@ -68,7 +70,7 @@ const handleReset = () => {
                   />
                 </div>
               </div>
-              
+
               <!-- 右侧：卡片信息和解读 -->
               <div class="reading-card-right">
                 <!-- 卡片标题 -->
@@ -77,29 +79,29 @@ const handleReset = () => {
                     <h3 class="text-lg md:text-xl font-semibold text-gold">{{ card.name }}</h3>
                     <p class="text-sm text-muted-foreground">{{ card.position }}</p>
                   </div>
-                  <span 
+                  <span
                     :class="[
                       'px-3 py-1 rounded-full text-xs font-medium flex-shrink-0',
-                      card.isReversed 
-                        ? 'bg-red-900/50 text-red-300' 
-                        : 'bg-green-900/50 text-green-300'
+                      card.isReversed
+                        ? 'bg-red-900/50 text-red-300'
+                        : 'bg-green-900/50 text-green-300',
                     ]"
                   >
                     {{ card.isReversed ? '逆位' : '正位' }}
                   </span>
                 </div>
-                
+
                 <!-- 关键词 -->
                 <div class="flex flex-wrap gap-1.5 mb-4">
-                  <span 
-                    v-for="kw in card.keywords.split('、')" 
+                  <span
+                    v-for="kw in card.keywords.split('、')"
                     :key="kw"
                     class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
                   >
                     {{ kw }}
                   </span>
                 </div>
-                
+
                 <!-- 牌义解读 -->
                 <div class="space-y-3 text-sm md:text-base">
                   <div>
@@ -108,7 +110,7 @@ const handleReset = () => {
                       {{ card.isReversed ? card.reversed : card.upright }}
                     </p>
                   </div>
-                  
+
                   <div v-if="card.note">
                     <h4 class="text-foreground font-medium mb-1.5">象征意义</h4>
                     <p class="text-muted-foreground leading-relaxed">{{ card.note }}</p>
@@ -158,7 +160,7 @@ const handleReset = () => {
   .reading-card-layout {
     gap: 1.5rem;
   }
-  
+
   .reading-card-wrapper {
     --card-width: 110px;
   }

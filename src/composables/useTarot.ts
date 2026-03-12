@@ -1,12 +1,12 @@
 import { computed } from 'vue'
 import { useStorage, useCounter } from '@vueuse/core'
-import { 
-  type DrawnCard, 
-  type SpreadType, 
-  drawCards as drawCardsUtil, 
+import {
+  type DrawnCard,
+  type SpreadType,
+  drawCards as drawCardsUtil,
   generateSummary,
   getSpreadConfig,
-  DEFAULT_DECK_ID
+  DEFAULT_DECK_ID,
 } from '@/data'
 import type { HoloType } from '@/directives/vHoloFoil'
 
@@ -78,6 +78,6 @@ export function useTarot() {
     resetReading,
     setHoloType,
     setDeckId,
-    setUseFullDeck
+    setUseFullDeck,
   }
 }

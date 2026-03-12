@@ -9,7 +9,9 @@
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "deploy": "pnpm build && gh-pages -d dist",
-    "dl:tarot": "node scripts/dl-tarot.mjs"
+    "dl:tarot": "node scripts/dl-tarot.mjs",
+    "lint": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{ts,vue,js}\""
   },
   "dependencies": {
     "@vueuse/core": "^10.11.1",
@@ -23,15 +25,25 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.19",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-vue": "^10.8.0",
     "gh-pages": "^6.1.1",
+    "globals": "^17.4.0",
     "postcss": "^8.4.38",
+    "prettier": "^3.8.1",
     "tailwindcss": "^3.4.3",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.2",
     "vite": "^5.2.0",
+    "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^2.0.6"
   }
 }

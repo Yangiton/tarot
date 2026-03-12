@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from "vue";
-import { useRouter } from "vue-router";
-import { Motion, AnimatePresence } from "motion-v";
-import { Lightbulb, X, ChevronRight } from "lucide-vue-next";
-import { useToggle, useCycleList, useTimeoutFn } from "@vueuse/core";
-import TarotCard from "@/components/tarot/TarotCard.vue";
-import AppFooter from "@/components/AppFooter.vue";
-import Button from "@/components/ui/button.vue";
-import { useTarot } from "@/composables/useTarot";
-import { useDevice } from "@/composables/useDevice";
-import { tips, spreads } from "@/data";
+import { computed, ref, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { Motion, AnimatePresence } from 'motion-v'
+import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
+import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
+import TarotCard from '@/components/tarot/TarotCard.vue'
+import AppFooter from '@/components/AppFooter.vue'
+import Button from '@/components/ui/button.vue'
+import { useTarot } from '@/composables/useTarot'
+import { useDevice } from '@/composables/useDevice'
+import { tips, spreads } from '@/data'
 
-const router = useRouter();
-const { isMobileLandscape, isMobile } = useDevice();
+const router = useRouter()
+const { isMobileLandscape, isMobile } = useDevice()
 const {
   currentSpread,
   drawnCards,
@@ -24,75 +24,73 @@ const {
   drawCards,
   flipCard,
   resetReading,
-} = useTarot();
+} = useTarot()
 
-const deckRangeLabel = computed(() =>
-  useFullDeck.value ? "完整牌组" : "大阿尔卡纳",
-);
+const deckRangeLabel = computed(() => (useFullDeck.value ? '完整牌组' : '大阿尔卡纳'))
 
-const cardRefs = ref<Record<number, any>>({});
-const isAnimating = ref(false);
-const drawKey = ref(0);
+const cardRefs = ref<Record<number, any>>({})
+const isAnimating = ref(false)
+const drawKey = ref(0)
 
-const [showTips, toggleTips] = useToggle(false);
-const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips);
+const [showTips, toggleTips] = useToggle(false)
+const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips)
 const nextTip = () => {
-  next();
-};
+  next()
+}
 
 const setCardRef = (el: unknown, index: number) => {
-  cardRefs.value[index] = el;
-};
+  cardRefs.value[index] = el
+}
 
 const currentSpreadConfig = computed(() => {
-  return spreads[String(currentSpread.value)];
-});
+  return spreads[String(currentSpread.value)]
+})
 
 const hint = computed(() => {
-  if (!allFlipped.value) return "点击卡牌翻开";
-  return "查看解读 →";
-});
+  if (!allFlipped.value) return '点击卡牌翻开'
+  return '查看解读 →'
+})
 
 const goToSettings = () => {
-  router.push("/settings");
-};
+  router.push('/settings')
+}
 
 const handleDraw = async () => {
-  isAnimating.value = true;
-  drawCards();
-  drawKey.value++;
-  await nextTick();
+  isAnimating.value = true
+  drawCards()
+  drawKey.value++
+  await nextTick()
   useTimeoutFn(() => {
-    isAnimating.value = false;
-  }, 600);
-};
+    isAnimating.value = false
+  }, 600)
+}
 
 const handleFlip = () => {
-  flipCard();
-};
+  flipCard()
+}
 
 const handleReset = async () => {
-  if (isAnimating.value) return;
-  isAnimating.value = true;
+  if (isAnimating.value) return
+  isAnimating.value = true
 
-  Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.());
+  Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.())
 
-  await new Promise((resolve) => setTimeout(resolve, 350));
+  await new Promise(resolve => setTimeout(resolve, 350))
 
-  resetReading();
-  drawKey.value++;
+  resetReading()
+  drawKey.value++
 
-  await nextTick();
+  await nextTick()
   useTimeoutFn(() => {
-    isAnimating.value = false;
-  }, 100);
-};
+    isAnimating.value = false
+  }, 100)
+}
 
 const goToReading = () => {
   if (allFlipped.value) {
-    router.push("/reading");
+    router.push('/reading')
   }
-};
+}
 </script>
 
 <template>
@@ -139,9 +137,7 @@ const goToReading = () => {
         </div>
         <p class="tips-text" v-html="currentTip.text"></p>
         <div class="tips-footer">
-          <span class="tips-count"
-            >{{ currentTipIndex + 1 }}/{{ tips.length }}</span
-          >
+          <span class="tips-count">{{ currentTipIndex + 1 }}/{{ tips.length }}</span>
           <button class="tips-next" @click="nextTip">下一条 →</button>
         </div>
       </Motion>
@@ -175,12 +171,7 @@ const goToReading = () => {
           :transition="{ duration: 0.3 }"
           class="draw-area"
         >
-          <Button
-            size="lg"
-            :disabled="isAnimating"
-            @click="handleDraw"
-            class="draw-btn"
-          >
+          <Button size="lg" :disabled="isAnimating" @click="handleDraw" class="draw-btn">
             开始抽牌
           </Button>
         </Motion>
@@ -208,7 +199,7 @@ const goToReading = () => {
             }"
           >
             <TarotCard
-              :ref="(el) => setCardRef(el, index)"
+              :ref="el => setCardRef(el, index)"
               :card="card"
               :position="card.position"
               :spread-type="currentSpread"
@@ -233,17 +224,10 @@ const goToReading = () => {
           :transition="{ duration: 0.3 }"
           class="action-buttons"
         >
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="isAnimating"
-            @click="handleReset"
-          >
+          <Button variant="outline" size="sm" :disabled="isAnimating" @click="handleReset">
             重新抽牌
           </Button>
-          <Button v-if="allFlipped" size="sm" @click="goToReading">
-            查看解读 →
-          </Button>
+          <Button v-if="allFlipped" size="sm" @click="goToReading"> 查看解读 → </Button>
           <span v-else class="hint-text">{{ hint }}</span>
         </Motion>
       </AnimatePresence>
@@ -357,7 +341,6 @@ const goToReading = () => {
   @apply bg-gold/15 text-gold text-xs md:text-sm;
   @apply cursor-pointer hover:bg-gold/25 transition-colors;
 }
-
 
 .spread-name {
   @apply font-medium;
