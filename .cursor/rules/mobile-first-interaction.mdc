@@ -1,0 +1,61 @@
+---
+description: 移动端优先的交互适配准则，使用 Pointer Events 统一处理
+globs: "**/*.vue"
+alwaysApply: false
+---
+
+# 移动端优先交互适配
+
+PC 的 hover（悬停）在移动端不存在。**优先保证移动端体验**，使用 **Pointer Events** 统一处理。
+
+## 使用 Pointer Events（推荐）
+
+避免 touch/click 事件冲突，统一使用 `pointer` 系列事件：
+
+```typescript
+// ❌ 不推荐：touch 和 click 可能冲突
+@click="handleClick"
+@touchstart="handleTouch"
+
+// ✅ 推荐：Pointer Events 统一处理
+@pointerdown="handlePointerDown"
+@pointerup="handlePointerUp"
+```
+
+### 有效点击判断（防止滑动误触）
+
+```typescript
+let startTime = 0, startPos = { x: 0, y: 0 }
+const CLICK_THRESHOLD = 200 // ms
+const MOVE_THRESHOLD = 10  // px
+
+const handlePointerDown = (e: PointerEvent) => {
+  startTime = Date.now()
+  startPos = { x: e.clientX, y: e.clientY }
+}
+
+const handlePointerUp = (e: PointerEvent) => {
+  const duration = Date.now() - startTime
+  const distance = Math.hypot(e.clientX - startPos.x, e.clientY - startPos.y)
+  if (duration < CLICK_THRESHOLD && distance < MOVE_THRESHOLD) {
+    // 有效点击
+  }
+}
+```
+
+## 交互替代方案
+
+| PC hover | 移动端替代 | 实现方式 |
+|----------|-----------|---------|
+| hover 显示遮罩 | **点击切换** | 状态控制 + pointerup |
+| hover 动画 | **按压反馈** | `:active` 伪类 |
+| hover 按钮 | **遮罩内显示** | 点击后可操作 |
+
+## 必须遵循
+
+1. **使用 Pointer Events** - 避免 touch/click 冲突
+2. **禁止单独使用 `:hover`** - 必须配合 `@media (hover: hover)`
+3. **按压反馈** - 可点击元素必须有 `:active` 样式
+4. **移除点击高亮** - `-webkit-tap-highlight-color: transparent`
+5. **触摸友好** - `touch-action: manipulation`、`user-select: none`
+6. **点击外部关闭** - 遮罩/弹窗需监听 `document.pointerdown`

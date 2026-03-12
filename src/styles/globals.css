@@ -40,6 +40,34 @@
     @apply h-full w-full overflow-hidden;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 全局禁用图片拖拽 */
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    draggable: false;
+  }
+
+  /* 全局禁用文本选择（移动端友好） */
+  body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* 允许特定区域的文本选择（解读结果） */
+  .selectable,
+  .selectable * {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 
   body {

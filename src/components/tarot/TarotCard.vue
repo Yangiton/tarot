@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { DrawnCard, SpreadType, TarotCard as TarotCardType } from '@/data'
-import { DEFAULT_DECK_ID, getCardEnglishName } from '@/data'
+import { DEFAULT_DECK_ID, DEFAULT_ASPECT_RATIO, getCardEnglishName } from '@/data'
 import { getCardImageUrl, isImageDeck } from '@/data/card-images'
 import type { HoloType } from '@/directives/vHoloFoil'
 
@@ -14,6 +14,7 @@ interface Props {
   holoType?: HoloType
   deckId?: string
   static?: boolean // 静态模式：直接显示正面，用于牌库展示
+  aspectRatio?: number // 卡牌宽高比 (width/height)，不同牌组比例不同
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,7 +24,11 @@ const props = withDefaults(defineProps<Props>(), {
   holoType: 'normal',
   deckId: DEFAULT_DECK_ID,
   static: false,
+  aspectRatio: DEFAULT_ASPECT_RATIO,
 })
+
+// 计算高度比 (height/width) 用于 CSS
+const cardRatio = computed(() => 1 / props.aspectRatio)
 
 const useImages = computed(() => isImageDeck(props.deckId))
 
@@ -234,6 +239,7 @@ defineExpose({ reset, isFlipped, isActive, activate, deactivate })
       '--translate-x': `${popoverTransform.translateX}px`,
       '--translate-y': `${popoverTransform.translateY}px`,
       '--card-scale': popoverTransform.scale,
+      '--card-ratio': cardRatio,
     }"
     @click="handleClick"
   >

@@ -24,6 +24,11 @@ const router = createRouter({
           component: () => import('@/pages/Library.vue'),
         },
         {
+          path: 'library/:deckId',
+          name: 'library-deck',
+          component: () => import('@/pages/Library.vue'),
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('@/pages/Settings.vue'),

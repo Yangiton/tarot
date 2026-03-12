@@ -522,7 +522,7 @@ Mobile                        Desktop
 
 <!-- 塔罗牌 -->
 <div role="button" aria-label="点击翻开第1张牌" tabindex="0">
-  <span aria-hidden="true">🎴</span>
+  <span aria-hidden="true">🔮</span>
 </div>
 
 <!-- 解读区域 -->

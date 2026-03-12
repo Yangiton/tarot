@@ -30,6 +30,10 @@
   "library": {
     "title": "✦ 牌库 ✦",
     "subtitle": "探索塔罗的奥秘",
+    "backToDecks": "返回",
+    "viewDeck": "查看牌组",
+    "setAsDefault": "设为默认",
+    "currentDeck": "当前牌组",
     "majorArcana": "大阿尔卡纳",
     "majorArcanaFull": "大阿尔卡纳 (Major Arcana)",
     "majorArcanaDesc": "22张代表人生重大主题的牌",

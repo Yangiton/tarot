@@ -4,22 +4,63 @@ import baseConfig from './tarot-base.json'
 import zhCards from '@/i18n/locales/cards/zh.json'
 import enCards from '@/i18n/locales/cards/en.json'
 
+// 导入牌组元数据
+import chineseMeta from '@/assets/tarot/chinese/meta.json'
+import riderMeta from '@/assets/tarot/rider/meta.json'
+
 // ============ 牌组配置 ============
+
+export interface DeckMeta {
+  id: string
+  source: string
+  width?: number
+  height?: number
+  aspectRatio?: string
+}
 
 export interface DeckConfig {
   id: string
   hasImages: boolean
+  meta?: DeckMeta
+}
+
+export interface DeckDisplayConfig extends DeckConfig {
+  name: string
+  description: string
+  aspectRatio: number
+}
+
+/** 牌组元数据映射 */
+const DECK_META: Record<string, DeckMeta> = {
+  chinese: chineseMeta as DeckMeta,
+  rider: riderMeta as DeckMeta,
 }
 
 /** 可用牌组 ID 列表（静态配置） */
 export const DECK_IDS: DeckConfig[] = [
   { id: 'emoji', hasImages: false },
-  { id: 'chinese', hasImages: true },
-  { id: 'rider', hasImages: true },
+  { id: 'chinese', hasImages: true, meta: DECK_META.chinese },
+  { id: 'rider', hasImages: true, meta: DECK_META.rider },
 ]
 
 /** 默认牌组 ID */
 export const DEFAULT_DECK_ID = 'rider'
+
+/** 默认卡牌宽高比 (标准韦特) */
+export const DEFAULT_ASPECT_RATIO = 0.585
+
+/**
+ * 解析宽高比字符串为数字
+ * 支持格式: "2:3", "0.667", "3:5"
+ */
+export function parseAspectRatio(ratio: string | undefined): number {
+  if (!ratio) return DEFAULT_ASPECT_RATIO
+  if (ratio.includes(':')) {
+    const [w, h] = ratio.split(':').map(Number)
+    return w / h
+  }
+  return parseFloat(ratio) || DEFAULT_ASPECT_RATIO
+}
 
 /** 获取牌组配置（需要在 setup 中调用以获取翻译） */
 export function useDeckConfig() {
@@ -30,14 +71,20 @@ export function useDeckConfig() {
       ...deck,
       name: t(`decks.${deck.id}.name`),
       description: t(`decks.${deck.id}.description`),
-    })),
+      aspectRatio: deck.meta ? parseAspectRatio(deck.meta.aspectRatio) : DEFAULT_ASPECT_RATIO,
+    }))
   )
 
   const getDeckConfig = (deckId: string) => {
     return decks.value.find(d => d.id === deckId)
   }
 
-  return { decks, getDeckConfig }
+  const getDeckAspectRatio = (deckId: string): number => {
+    const deck = DECK_IDS.find(d => d.id === deckId)
+    return deck?.meta ? parseAspectRatio(deck.meta.aspectRatio) : DEFAULT_ASPECT_RATIO
+  }
+
+  return { decks, getDeckConfig, getDeckAspectRatio }
 }
 
 /**

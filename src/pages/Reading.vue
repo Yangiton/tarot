@@ -48,8 +48,8 @@ const handleReset = () => {
       </Button>
     </header>
 
-    <!-- Scroll Content -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-6">
+    <!-- Scroll Content (允许文本选择) -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-6 selectable">
       <div class="max-w-2xl mx-auto space-y-4">
         <!-- Card Interpretations -->
         <Motion

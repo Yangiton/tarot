@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Motion, AnimatePresence } from 'motion-v'
-import { X, ChevronDown } from 'lucide-vue-next'
+import { X, ChevronLeft } from 'lucide-vue-next'
 import {
   type TarotCard,
   type MinorArcanaCard,
   type Suit,
   useDeckConfig,
-  getCardEnglishName,
   splitKeywords,
 } from '@/data'
 import { getCardImageUrl, isImageDeck } from '@/data/card-images'
@@ -15,21 +15,68 @@ import { useI18n } from 'vue-i18n'
 import { useTarot } from '@/composables/useTarot'
 import { vHoloFoil } from '@/directives/vHoloFoil'
 import TarotCardComponent from '@/components/tarot/TarotCard.vue'
+import DeckCover from '@/components/deck/DeckCover.vue'
 
+const route = useRoute()
+const router = useRouter()
 const { locale } = useI18n()
-const { currentDeckId, setDeckId, holoType, majorArcana, minorArcana, suits } = useTarot()
-const { decks, getDeckConfig } = useDeckConfig()
+const {
+  holoType,
+  majorArcana,
+  minorArcana,
+  suits,
+  currentDeckId: globalDeckId,
+  setDeckId,
+} = useTarot()
+const { decks, getDeckConfig, getDeckAspectRatio } = useDeckConfig()
 
+// 从路由参数获取当前牌组 ID
+const selectedDeckId = computed(() => (route.params.deckId as string) || null)
+
+// 卡牌详情弹窗
 const selectedCard = ref<TarotCard | MinorArcanaCard | null>(null)
-const showDeckPicker = ref(false)
 
-const currentDeck = computed(() => getDeckConfig(currentDeckId.value) || decks.value[1])
-const useImages = computed(() => isImageDeck(currentDeckId.value))
+// 路由刚进入牌组详情时的时间戳，用于忽略随后几百毫秒内的“合成点击”穿透
+const deckDetailEnteredAt = ref<number>(0)
+watch(
+  () => route.params.deckId,
+  deckId => {
+    if (deckId) deckDetailEnteredAt.value = Date.now()
+  },
+  { immediate: true }
+)
 
-// 花色顺序和配置
+// 当前牌组配置
+const currentDeck = computed(() =>
+  selectedDeckId.value ? getDeckConfig(selectedDeckId.value) : null
+)
+const currentAspectRatio = computed(() =>
+  selectedDeckId.value ? getDeckAspectRatio(selectedDeckId.value) : 0.585
+)
+const useImages = computed(() => (selectedDeckId.value ? isImageDeck(selectedDeckId.value) : false))
+
+// 花色顺序
 const suitOrder: Suit[] = ['wands', 'cups', 'swords', 'pentacles']
 
+// 选择牌组进入详情（通过路由跳转）
+const selectDeck = (deckId: string) => {
+  router.push(`/library/${deckId}`)
+}
+
+// 返回牌组列表
+const backToList = () => {
+  router.push('/library')
+}
+
+// 设置默认牌组
+const handleSetDefault = (deckId: string) => {
+  setDeckId(deckId)
+}
+
+// 打开卡牌详情（路由刚切换后 400ms 内忽略，防止移动端合成点击穿透）
+const OPEN_GUARD_MS = 400
 const openCard = (card: TarotCard | MinorArcanaCard) => {
+  if (deckDetailEnteredAt.value && Date.now() - deckDetailEnteredAt.value < OPEN_GUARD_MS) return
   selectedCard.value = card
 }
 
@@ -37,29 +84,25 @@ const closeCard = () => {
   selectedCard.value = null
 }
 
-const selectDeck = (deckId: string) => {
-  setDeckId(deckId)
-  showDeckPicker.value = false
+// 将 MinorArcanaCard 转换为兼容 TarotCard 的格式
+const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
+  return {
+    ...card,
+    number: String(card.rank),
+  } as TarotCard & MinorArcanaCard
 }
 
 /**
  * 根据卡片获取图片索引 (0-77)
- * major-0 ~ major-21 => 0-21
- * minor-wands-1~10, page, knight, queen, king => 22-35
- * minor-cups-... => 36-49
- * minor-swords-... => 50-63
- * minor-pentacles-... => 64-77
  */
 const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
   const id = card.id
 
-  // 大阿尔卡纳: major-0 ~ major-21
   if (id.startsWith('major-')) {
     const num = parseInt(id.replace('major-', ''), 10)
     return isNaN(num) ? 0 : num
   }
 
-  // 小阿尔卡纳: minor-{suit}-{rank}
   const match = id.match(/^minor-(\w+)-(.+)$/)
   if (match) {
     const suit = match[1] as Suit
@@ -70,7 +113,6 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
       swords: 50,
       pentacles: 64,
     }
-    // 宫廷牌映射
     const courtRanks: Record<string, number> = {
       page: 11,
       knight: 12,
@@ -83,64 +125,62 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
 
   return 0
 }
-
-// 将 MinorArcanaCard 转换为兼容 TarotCard 的格式
-const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
-  return {
-    ...card,
-    number: String(card.rank),
-  } as TarotCard & MinorArcanaCard
-}
 </script>
 
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Header -->
     <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
-      <h1 class="text-base md:text-xl font-bold gold-title">{{ $t('library.title') }}</h1>
-      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
-        {{ $t('library.subtitle') }}
-      </p>
-
-      <!-- 牌组切换按钮 -->
-      <div class="relative inline-block mt-2">
+      <div class="flex items-center justify-center gap-2">
+        <!-- 返回按钮（在牌组详情时显示） -->
         <button
-          class="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 hover:bg-gold/20 border border-gold/30 rounded-full text-xs text-gold transition-colors"
-          @click="showDeckPicker = !showDeckPicker"
+          v-if="selectedDeckId"
+          class="absolute left-4 flex items-center gap-1 text-muted-foreground hover:text-gold transition-colors"
+          @click="backToList"
         >
-          <span>{{ currentDeck.name }}</span>
-          <ChevronDown class="w-3.5 h-3.5" :class="showDeckPicker && 'rotate-180'" />
+          <ChevronLeft class="w-4 h-4" />
+          <span class="text-xs hidden sm:inline">{{ $t('library.backToDecks') }}</span>
         </button>
 
-        <!-- 牌组选择器下拉 -->
-        <Transition name="fade">
-          <div
-            v-if="showDeckPicker"
-            class="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 min-w-[200px] glass-card border border-gold/30 rounded-lg overflow-hidden"
-          >
-            <button
-              v-for="deck in decks"
-              :key="deck.id"
-              class="w-full px-4 py-2.5 text-left hover:bg-gold/10 transition-colors"
-              :class="deck.id === currentDeckId && 'bg-gold/15'"
-              @click="selectDeck(deck.id)"
-            >
-              <span class="text-xs font-medium text-foreground block">{{ deck.name }}</span>
-              <span class="text-[10px] text-muted-foreground">{{ deck.description }}</span>
-            </button>
-          </div>
-        </Transition>
+        <h1 class="text-base md:text-xl font-bold gold-title">
+          {{ selectedDeckId ? currentDeck?.name : $t('library.title') }}
+        </h1>
       </div>
+      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
+        {{ selectedDeckId ? currentDeck?.description : $t('library.subtitle') }}
+      </p>
     </header>
 
-    <!-- Scroll Content -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6">
+    <!-- 牌组列表视图 -->
+    <div v-if="!selectedDeckId" class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-6">
+      <div class="max-w-4xl mx-auto">
+        <Motion
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.4 }"
+        >
+          <div class="deck-grid">
+            <DeckCover
+              v-for="deck in decks"
+              :key="deck.id"
+              :deck="deck"
+              :selected="deck.id === globalDeckId"
+              @select="selectDeck"
+              @set-default="handleSetDefault"
+            />
+          </div>
+        </Motion>
+      </div>
+    </div>
+
+    <!-- 牌组详情视图（78张牌） -->
+    <div v-else class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6">
       <div class="max-w-4xl mx-auto">
         <!-- Major Arcana Section -->
         <Motion
           :initial="{ opacity: 0, y: 20 }"
           :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5 }"
+          :transition="{ duration: 0.4 }"
         >
           <section class="mb-8">
             <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
@@ -157,8 +197,9 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
                 v-for="card in majorArcana"
                 :key="card.id"
                 :card="card"
-                :deck-id="currentDeckId"
+                :deck-id="selectedDeckId!"
                 :holo-type="holoType"
+                :aspect-ratio="currentAspectRatio"
                 static
                 @click="openCard(card)"
               />
@@ -170,7 +211,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
         <Motion
           :initial="{ opacity: 0, y: 20 }"
           :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, delay: 0.2 }"
+          :transition="{ duration: 0.4, delay: 0.15 }"
         >
           <section>
             <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
@@ -181,14 +222,14 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
             </p>
 
             <!-- 四种花色 -->
-            <div class="space-y-6">
+            <div class="space-y-8">
               <div v-for="suit in suitOrder" :key="suit" class="suit-section">
                 <h3
-                  class="text-xs md:text-sm font-medium text-foreground mb-3 flex items-center gap-2"
+                  class="text-sm md:text-base font-semibold text-foreground mb-4 flex items-center gap-2"
                 >
-                  <span class="text-base">{{ suits[suit].symbol }}</span>
+                  <span class="text-lg md:text-xl">{{ suits[suit].symbol }}</span>
                   <span>{{ suits[suit].name }} ({{ suits[suit].nameEn }})</span>
-                  <span class="text-muted-foreground text-[10px]"
+                  <span class="text-muted-foreground text-xs"
                     >· {{ $t('library.elements.' + suits[suit].element) }}</span
                   >
                 </h3>
@@ -199,8 +240,9 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
                     v-for="card in minorArcana[suit]"
                     :key="card.id"
                     :card="toDisplayCard(card)"
-                    :deck-id="currentDeckId"
+                    :deck-id="selectedDeckId!"
                     :holo-type="holoType"
+                    :aspect-ratio="currentAspectRatio"
                     static
                     @click="openCard(card)"
                   />
@@ -240,15 +282,17 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
           <div class="flex items-center justify-between p-3 md:p-4 border-b border-gold/20">
             <div class="flex items-center gap-3">
               <!-- 图片牌组显示缩略图 -->
-              <template v-if="useImages">
+              <template v-if="useImages && selectedDeckId">
                 <div
                   v-holo-foil="{ type: holoType }"
                   class="w-12 h-16 md:w-14 md:h-20 rounded overflow-hidden flex-shrink-0"
+                  :style="{ aspectRatio: currentAspectRatio }"
                 >
                   <img
-                    :src="getCardImageUrl(getCardIndex(selectedCard), currentDeckId)"
-                    :alt="getCardEnglishName(getCardIndex(selectedCard))"
+                    :src="getCardImageUrl(getCardIndex(selectedCard), selectedDeckId)"
+                    :alt="selectedCard.nameEn"
                     class="w-full h-full object-cover"
+                    @error="($event.target as HTMLImageElement).style.display = 'none'"
                   />
                 </div>
               </template>
@@ -336,13 +380,25 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+/* ========== 牌组网格 ========== */
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  justify-items: center;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+@media (min-width: 640px) {
+  .deck-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .deck-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 24px;
+  }
 }
 </style>

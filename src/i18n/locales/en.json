@@ -30,6 +30,10 @@
   "library": {
     "title": "✦ Library ✦",
     "subtitle": "Explore the mysteries of Tarot",
+    "backToDecks": "Back",
+    "viewDeck": "View Deck",
+    "setAsDefault": "Set Default",
+    "currentDeck": "Current Deck",
     "majorArcana": "Major Arcana",
     "majorArcanaFull": "Major Arcana",
     "majorArcanaDesc": "22 cards representing major life themes",

@@ -18,6 +18,11 @@
  *
  * 本地路径：src/assets/tarot/{local_id}/{序号}-{英文名}.jpg
  *   如: src/assets/tarot/chinese/00-fool.jpg
+ *
+ * 输出文件：
+ *   - cover.jpg          封面图
+ *   - 00-fool.jpg ~ 77-king-pentacles.jpg  78张牌
+ *   - meta.json          牌组元数据（宽高比等）
  */
 
 import fs from 'fs'
@@ -132,6 +137,58 @@ function downloadFile(url, dest) {
 
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
+/**
+ * 获取 JPEG 图片尺寸（解析 JPEG 头部）
+ */
+function getJpegSize(filePath) {
+  try {
+    const buffer = fs.readFileSync(filePath)
+    if (buffer[0] !== 0xff || buffer[1] !== 0xd8) return null
+
+    let offset = 2
+    while (offset < buffer.length) {
+      if (buffer[offset] !== 0xff) {
+        offset++
+        continue
+      }
+      const marker = buffer[offset + 1]
+      if (marker >= 0xc0 && marker <= 0xc3) {
+        return {
+          width: buffer.readUInt16BE(offset + 7),
+          height: buffer.readUInt16BE(offset + 5),
+        }
+      }
+      if (marker === 0xd8 || marker === 0xd9) {
+        offset += 2
+      } else if (marker === 0x00 || marker === 0xff) {
+        offset++
+      } else {
+        offset += 2 + buffer.readUInt16BE(offset + 2)
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 计算宽高比字符串
+ */
+function calcAspectRatio(width, height) {
+  const ratio = width / height
+  const commonRatios = [
+    { r: 2 / 3, s: '2:3' },
+    { r: 3 / 5, s: '3:5' },
+    { r: 9 / 16, s: '9:16' },
+    { r: 1 / 1.618, s: '1:φ' },
+  ]
+  for (const { r, s } of commonRatios) {
+    if (Math.abs(ratio - r) < 0.02) return s
+  }
+  return ratio.toFixed(3)
+}
+
 function printHelp() {
   console.log(`
 塔罗牌图片下载脚本 (tarot.com 来源)
@@ -139,18 +196,16 @@ function printHelp() {
 用法: pnpm dl:tarot <deck_name> [options]
 
 参数:
-  deck_name       牌组名称（如 chinese, rider-waite）
+  deck_name       牌组名称（如 chinese, rider）
 
 选项:
   --local-id <id> 本地保存的牌组 ID（默认使用牌组名）
   --list          列出常用牌组预设
-  --cover-only    仅下载封面图
   -h, --help      显示帮助
 
 示例:
   pnpm dl:tarot chinese                    # 下载中国人塔罗牌
-  pnpm dl:tarot rider-waite                # 下载韦特塔罗牌
-  pnpm dl:tarot chinese --cover-only       # 仅下载封面
+  pnpm dl:tarot rider                      # 下载韦特塔罗牌
 
 来源: https://www.tarot.com/tarot/decks
 输出: src/assets/tarot/{local_id}/
@@ -189,7 +244,6 @@ async function main() {
   )
   const localIdIndex = args.indexOf('--local-id')
   let localId = localIdIndex >= 0 ? args[localIdIndex + 1] : null
-  const coverOnly = args.includes('--cover-only')
 
   if (!deckName) {
     console.error('错误: 请指定牌组名称\n')
@@ -229,12 +283,6 @@ async function main() {
     console.log('跳过封面: 已存在')
   }
 
-  if (coverOnly) {
-    console.log('='.repeat(55))
-    console.log('完成! (仅封面模式)')
-    return
-  }
-
   // 下载所有卡牌
   let success = 0,
     skip = 0,
@@ -264,6 +312,30 @@ async function main() {
 
   console.log('='.repeat(55))
   console.log(`完成! 成功: ${success}, 跳过: ${skip}, 失败: ${fail}`)
+
+  // 生成 meta.json
+  console.log('\n生成 meta.json...')
+  const firstCardPath = path.join(outDir, '00-fool.jpg')
+  const size = getJpegSize(firstCardPath)
+
+  const meta = {
+    id: localId,
+    source: deckName,
+  }
+
+  if (size) {
+    meta.width = size.width
+    meta.height = size.height
+    meta.aspectRatio = calcAspectRatio(size.width, size.height)
+    console.log(`  尺寸: ${size.width} x ${size.height}`)
+    console.log(`  宽高比: ${meta.aspectRatio}`)
+  } else {
+    console.log('  警告: 无法读取图片尺寸')
+  }
+
+  const metaPath = path.join(outDir, 'meta.json')
+  fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
+  console.log(`  已保存: ${metaPath}`)
 
   if (success > 0 || skip === 78) {
     console.log(`\n提示: 如需在应用中使用此牌组，请更新以下文件:`)

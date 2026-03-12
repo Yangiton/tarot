@@ -12,17 +12,27 @@ export const IMAGE_DECK_ID = 'rider'
 const IMAGE_DECK_IDS = ['chinese', 'rider']
 
 /**
+ * 获取牌组封面图 URL
+ * @param deckId 牌组 ID
+ * @returns 封面图 URL，无图片牌组返回空字符串
+ */
+export function getDeckCoverUrl(deckId: string): string {
+  if (!IMAGE_DECK_IDS.includes(deckId)) return ''
+  return new URL(`../assets/tarot/${deckId}/cover.jpg`, import.meta.url).href
+}
+
+/**
  * 获取卡牌图片 URL
  * @param cardIndex 卡牌序号 0-77
  * @param deckId 牌组 ID
  * @returns 图片 URL，无效时返回空字符串
  */
 export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): string {
-  if (!IMAGE_DECK_IDS.includes(deckId)) return '' // 非图片牌组
-  if (cardIndex < 0 || cardIndex > 77 || isNaN(cardIndex)) return '' // 无效索引
+  if (!IMAGE_DECK_IDS.includes(deckId)) return ''
+  if (cardIndex < 0 || cardIndex > 77 || isNaN(cardIndex)) return ''
 
   const filename = getCardFilename(cardIndex)
-  if (filename.includes('unknown')) return '' // 文件名无效
+  if (filename.includes('unknown')) return ''
 
   try {
     return new URL(`../assets/tarot/${deckId}/${filename}`, import.meta.url).href
@@ -35,5 +45,5 @@ export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): stri
  * 检查是否为图片牌组
  */
 export function isImageDeck(deckId: string): boolean {
-  return deckId !== 'emoji'
+  return IMAGE_DECK_IDS.includes(deckId)
 }
