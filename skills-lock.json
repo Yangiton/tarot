@@ -1,10 +1,35 @@
 {
   "version": 1,
   "skills": {
+    "capacitor-best-practices": {
+      "source": "cap-go/capacitor-skills",
+      "sourceType": "github",
+      "computedHash": "161003d785ea4a8e23147d316b74e6f0495c1685c7641493ec047afa9fb93bd7"
+    },
+    "capacitor-security": {
+      "source": "cap-go/capacitor-skills",
+      "sourceType": "github",
+      "computedHash": "0b6e3b5dfc434a0e0617efd30d87631ab477aa43714912a1ce42db202d02fbe7"
+    },
     "project-astrology-tarot-divination": {
       "source": "vasilyu1983/ai-agents-public",
       "sourceType": "github",
       "computedHash": "43472a87dc40a540918e5a8373a174c9efc7c237c4942a7674d13ff0ec34b769"
+    },
+    "seo-audit": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "ec3109d213dde1747614ad1112ef0e498e04b24e464538968e156dfbfadb2121"
+    },
+    "tailwindcss-mobile-first": {
+      "source": "josiahsiegel/claude-plugin-marketplace",
+      "sourceType": "github",
+      "computedHash": "e7eae643c341b3aa2b645cf8425842ba1893735c48ca40d24429a866a9dbee9e"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "8cd1b83a60e8d0a95c332d2baeffad9053617b286beb96bbe13e818507343f47"
     }
   }
 }
