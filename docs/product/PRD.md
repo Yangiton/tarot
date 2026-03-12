@@ -565,13 +565,26 @@ mindmap
 - [ ] 图鉴收集界面
 - [ ] 收集进度展示
 - [ ] 闪卡分享卡片生成
-- [ ] 56 张小阿尔卡纳完整牌组
+- [x] 56 张小阿尔卡纳完整牌组 ✅
 
-### Phase 4: 智能化 + 商业化
+### Phase 4: i18n + iOS 上架 ⭐
+
+> 核心目标：App Store 全球发布
+
+- [ ] vue-i18n 国际化配置
+- [ ] 中英双语 UI 文案
+- [ ] 中英双语牌义翻译
+- [ ] Capacitor 集成
+- [ ] iOS App 打包（Codemagic）
+- [ ] App Store Connect 配置
+- [ ] 提交审核 → 上架
+
+### Phase 5: 智能化 + Android
 
 - [ ] AI 解读集成（多模型支持）
 - [ ] 黑米角色对话式解读
 - [ ] 个性化推荐牌阵
+- [ ] Android App 上架 Google Play
 - [ ] 占卜历史记录
 - [ ] 高级牌阵（凯尔特十字）
 - [ ] 付费闪卡盲盒（长远）
@@ -597,9 +610,12 @@ mindmap
 |--------|------|---------|
 | Three.js | 3D 场景渲染 | Babylon.js / CSS 3D 降级 |
 | Cannon.js | 物理模拟 | Oimo.js / 简化动画 |
+| vue-i18n | 国际化 (中/英) | - |
+| Capacitor | 移动端打包 | Tauri Mobile / PWA |
 | GitHub Pages | 静态托管 | Vercel, Netlify |
-| Google Fonts | 字体服务     | 本地字体        |
-| OpenAI API   | AI 解读 (V2) | 本地规则引擎    |
+| Codemagic CI | iOS 云构建 | MacStadium / 本地 Mac |
+| Google Fonts | 字体服务 | 本地字体 |
+| OpenAI API | AI 解读 (V2) | 本地规则引擎 |
 
 ---
 

@@ -362,21 +362,27 @@ export default defineConfig({
 
 ### 6.1 功能展望
 
-| 功能 | 描述 |
-|------|------|
-| 多语言支持 | 中/英/日 |
-| 用户账号 | 云端同步历史 |
-| 社区功能 | 分享、评论 |
-| 付费解读 | 高级 AI 解读 |
-| 小程序版 | 微信小程序 |
-| App 版 | Capacitor / React Native |
+| 功能 | 描述 | 技术方案 | 优先级 |
+|------|------|----------|:------:|
+| 🌍 i18n 国际化 | 中英双语 | vue-i18n | **P0** |
+| 📱 iOS App | 上架 App Store | Capacitor + Codemagic CI | **P0** |
+| 🤖 Android App | 上架 Google Play | Capacitor | P2 |
+| 👤 用户账号 | 云端同步历史 | Supabase / Firebase | P2 |
+| 💬 社区功能 | 分享、评论 | 后端 API | P3 |
+| 💎 付费解读 | 高级 AI 解读 | App 内购 | P3 |
+| 📦 闪卡盲盒 | 付费收集系统 | App 内购 | P3 |
+
+> ⚠️ **策略**：iOS 优先上架，Android 后续跟进
+> 
+> 移动端发布详细指南见 [MOBILE-RELEASE.md](./MOBILE-RELEASE.md)
 
 ### 6.2 技术升级路径
 
 ```mermaid
 flowchart LR
     A[当前] --> B[V2]
-    B --> C[V3]
+    B --> C[V2.5]
+    C --> D[V3]
     
     subgraph 当前
         A1[Vue 3 SPA]
@@ -384,21 +390,29 @@ flowchart LR
     end
     
     subgraph V2
-        B1[+ AI API]
-        B2[+ PWA]
-        B3[+ Analytics]
+        B1[+ 每日一卡]
+        B2[+ 图鉴收集]
+        B3[+ 闪卡分享]
+    end
+    
+    subgraph V2.5
+        C1[+ i18n 中英双语]
+        C2[+ Capacitor]
+        C3[+ iOS 上架 ⭐]
     end
     
     subgraph V3
-        C1[+ 后端服务]
-        C2[+ 用户系统]
-        C3[+ 数据库]
+        D1[+ AI 解读]
+        D2[+ Android 上架]
+        D3[+ 付费功能]
     end
     
     A1 --> B1
     A2 --> B2
     B1 --> C1
     B2 --> C2
+    C1 --> D1
+    C2 --> D2
 ```
 
 ---

@@ -60,10 +60,20 @@
 - [x] TECH-STACK.md - 技术架构
 - [x] ROADMAP.md - 迭代路线图
 - [x] API-DESIGN.md - API 设计
+- [x] MOBILE-RELEASE.md - 移动端发布指南
 - [x] MAJOR-ARCANA.md - 大阿尔卡纳参考
 - [x] MINOR-ARCANA.md - 小阿尔卡纳参考
 - [x] CARD-DESIGN.md - 卡面设计规范
 - [x] SPREADS.md - 牌阵参考
+
+### Agent Skills
+
+- [x] capacitor-best-practices - Capacitor 最佳实践
+- [x] capacitor-security - Capacitor 安全指南
+- [x] project-astrology-tarot-divination - 塔罗占卜知识
+- [x] ui-ux-pro-max - UI/UX 设计专家
+- [x] tailwindcss-mobile-first - 移动优先设计
+- [x] seo-audit - SEO 审计
 
 ---
 
@@ -128,6 +138,58 @@
 
 ---
 
+## 📱 移动端发布 (V3 App)
+
+> 技术方案：Capacitor（零代码改动，打包成原生 App）
+> 详细指南：[MOBILE-RELEASE.md](./technical/MOBILE-RELEASE.md)
+> 
+> ⚠️ **策略调整**：iOS 优先上架，Android 后续跟进
+
+### Capacitor 集成 [P0]
+
+- [ ] 安装 Capacitor 核心依赖
+- [ ] 配置 `capacitor.config.ts`
+- [ ] 添加 iOS 平台
+- [ ] 集成原生插件（震动、分享、本地存储）
+
+### i18n 国际化 [P0] ⭐ App Store 必需
+
+- [ ] 安装 vue-i18n
+- [ ] 创建语言文件结构 (`/locales/zh.json`, `/locales/en.json`)
+- [ ] 提取所有中文文案到语言文件
+- [ ] 实现语言切换功能
+- [ ] 翻译牌义内容（22 大 + 56 小阿尔卡纳）
+- [ ] 翻译 UI 文案
+- [ ] 设置页添加语言选择
+
+### iOS 发布 [P0] ⭐ 优先
+
+- [ ] 注册 Apple Developer ($99/年)
+- [ ] 准备 App 图标 + 启动屏
+- [ ] 配置证书和描述文件
+- [ ] 使用 Codemagic 云构建（无需 Mac）
+- [ ] App Store Connect 填写信息（中英双语）
+- [ ] 添加免责声明（娱乐用途）
+- [ ] 准备中英文 App 截图
+- [ ] 提交审核 → 上架
+
+### CI/CD 自动化 [P1]
+
+- [ ] 配置 Codemagic iOS 自动构建
+- [ ] 自动上传到 App Store Connect
+
+### Android 发布 [P2] 后续
+
+- [ ] 添加 Android 平台
+- [ ] 注册 Google Play Console ($25)
+- [ ] 准备 App 图标套件
+- [ ] 生成签名密钥 (keystore)
+- [ ] 构建 Release APK/AAB
+- [ ] 填写商店信息 + 截图
+- [ ] 提交审核 → 上架
+
+---
+
 ## 📅 里程碑
 
 | 阶段 | 目标 | 状态 |
@@ -135,7 +197,8 @@
 | MVP v1.0 | 核心占卜功能上线 | ✅ |
 | V1.5 | 沉浸式交互体验 | 🚧 |
 | V2.0 | 每日一卡 + 图鉴系统 | 📋 |
-| V3.0 | AI 解读 + 商业化 | 📋 |
+| V2.5 | i18n + iOS App 上架 | 📋 |
+| V3.0 | AI 解读 + Android 上架 | 📋 |
 
 ---
 
@@ -150,9 +213,17 @@
        ↓
 4. 黑米角色引入 ────→ IP 建设开始
        ↓
-5. 3D 洗牌/翻牌 ────→ 沉浸式体验核心
+5. 闪卡分享 ────────→ 病毒式传播
        ↓
-6. 闪卡分享 ────────→ 病毒式传播
+6. i18n 国际化 ────→ 中英双语支持 ⭐
+       ↓
+7. Capacitor + iOS ─→ App Store 上架 ⭐
+       ↓
+8. 3D 洗牌/翻牌 ────→ 沉浸式体验核心
+       ↓
+9. AI 解读 ────────→ 智能化升级
+       ↓
+10. Android 上架 ──→ Google Play 扩展
 ```
 
 ---
@@ -165,3 +236,8 @@
 - MVP v1.0 功能已全部完成
 - 规划 V1.5 沉浸式交互升级
 - 规划 V2 每日一卡 + 图鉴系统
+- 新增移动端发布计划（Capacitor 方案）
+- 新增 [MOBILE-RELEASE.md](./technical/MOBILE-RELEASE.md) 详细指南
+- 新增 i18n 国际化任务（App Store 上架必需）
+- 新增 Agent Skills 清单
+- 调整移动端策略：iOS 优先，Android 后续

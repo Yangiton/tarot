@@ -25,8 +25,21 @@
 | lucide-vue-next | latest | 图标库 |
 | clsx | latest | 条件类名合并 |
 | tailwind-merge | latest | Tailwind 类名去重 |
+| vue-i18n | 9.x | 国际化（规划中） |
 
-### 1.3 开发工具
+### 1.3 移动端技术（规划中）
+
+| 技术 | 版本 | 用途 | 说明 |
+|------|------|------|------|
+| Capacitor | 5.x | 原生打包 | Web → iOS/Android App |
+| @capacitor/haptics | latest | 震动反馈 | 翻牌触觉体验 |
+| @capacitor/share | latest | 系统分享 | 闪卡分享功能 |
+| @capacitor/preferences | latest | 本地存储 | 替代 localStorage |
+| @capacitor/splash-screen | latest | 启动屏 | App 启动动画 |
+
+> 详细指南见 [MOBILE-RELEASE.md](./MOBILE-RELEASE.md)
+
+### 1.4 开发工具
 
 | 工具 | 用途 |
 |------|------|

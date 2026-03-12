@@ -34,7 +34,8 @@ docs/
 ├── technical/                          # 💻 技术文档
 │   ├── TECH-STACK.md                   # 技术架构
 │   ├── ROADMAP.md                      # 迭代路径
-│   └── API-DESIGN.md                   # API 设计
+│   ├── API-DESIGN.md                   # API 设计
+│   └── MOBILE-RELEASE.md              # 📱 移动端发布指南 ⭐
 │
 └── reference/                          # 📚 参考资料
     ├── MAJOR-ARCANA.md                 # 大阿尔卡纳完整参考
@@ -81,6 +82,7 @@ docs/
 | [TECH-STACK.md](./technical/TECH-STACK.md) | 技术架构 | 技术栈、项目结构、核心模块、开发规范 |
 | [ROADMAP.md](./technical/ROADMAP.md) | 迭代路径 | 版本规划、功能清单、技术债务、里程碑 |
 | [API-DESIGN.md](./technical/API-DESIGN.md) | API 设计 | 内部 API、后端 API (V2)、本地存储、类型定义 |
+| [MOBILE-RELEASE.md](./technical/MOBILE-RELEASE.md) | 📱 移动端发布 | Capacitor 集成、iOS/Android 上架、CI/CD |
 
 ### 快速链接
 
@@ -91,6 +93,12 @@ docs/
 - [版本迭代计划](./technical/ROADMAP.md#二mvp-v10---已完成-)
 - [V2 功能规划](./technical/ROADMAP.md#五v20---重大升级)
 - [数据模型定义](./technical/API-DESIGN.md#五类型定义汇总)
+
+**移动端发布**
+- [Capacitor 集成指南](./technical/MOBILE-RELEASE.md#三capacitor-集成)
+- [Android 上架流程](./technical/MOBILE-RELEASE.md#72-google-play)
+- [iOS 上架流程](./technical/MOBILE-RELEASE.md#71-ios-app-store)
+- [CI/CD 自动构建](./technical/MOBILE-RELEASE.md#八cicd-自动构建)
 
 ---
 
@@ -230,6 +238,20 @@ Vue 3 + TypeScript + Vite + Tailwind CSS + Vue Router + Three.js
 - 项目代码：`/src`
 - 项目配置：`/.cursor/context.md`
 - 部署配置：`/.github/workflows/deploy.yml`
+- Agent Skills：`/.agents/skills/`
+
+---
+
+## 九、已安装 Skills
+
+| Skill | 用途 |
+|-------|------|
+| capacitor-best-practices | Capacitor 最佳实践 |
+| capacitor-security | Capacitor 安全指南 |
+| project-astrology-tarot-divination | 塔罗占卜知识 |
+| ui-ux-pro-max | UI/UX 设计专家 |
+| tailwindcss-mobile-first | 移动优先设计 |
+| seo-audit | SEO 审计 |
 
 ---
 
