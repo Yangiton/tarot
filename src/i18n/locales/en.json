@@ -95,11 +95,15 @@
     "cards": " cards"
   },
   "decks": {
-    "0": {
+    "emoji": {
       "name": "Emoji Deck",
       "description": "A minimalist deck using emoji symbols"
     },
-    "178": {
+    "chinese": {
+      "name": "Chinese Tarot",
+      "description": "Chinese Taoist mythology & zodiac, ink painting style"
+    },
+    "rider": {
       "name": "Rider-Waite Tarot",
       "description": "The 1909 classic, most widely used tarot deck"
     }

@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "deploy": "pnpm build && gh-pages -d dist",
     "dl:tarot": "node scripts/dl-tarot.mjs",
+    "dl:tarot:8s8s": "node scripts/dl-tarot-8s8s.mjs",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",

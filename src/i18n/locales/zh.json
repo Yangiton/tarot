@@ -95,11 +95,15 @@
     "cards": "张"
   },
   "decks": {
-    "0": {
+    "emoji": {
       "name": "Emoji 牌组",
       "description": "使用 Emoji 符号表示的简约牌组"
     },
-    "178": {
+    "chinese": {
+      "name": "中国人塔罗牌",
+      "description": "中国道家神话与十二生肖，水墨国画风格"
+    },
+    "rider": {
       "name": "莱德·韦特塔罗牌",
       "description": "1909 年经典版本，最广泛使用的塔罗牌"
     }

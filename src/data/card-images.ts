@@ -6,7 +6,10 @@
 import { getCardFilename } from './index'
 
 /** 默认图片牌组 */
-export const IMAGE_DECK_ID = '178'
+export const IMAGE_DECK_ID = 'rider'
+
+/** 支持图片的牌组 ID 列表 */
+const IMAGE_DECK_IDS = ['chinese', 'rider']
 
 /**
  * 获取卡牌图片 URL
@@ -15,8 +18,7 @@ export const IMAGE_DECK_ID = '178'
  * @returns 图片 URL，无效时返回空字符串
  */
 export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): string {
-  if (deckId === '0') return '' // Emoji 牌组无图片
-  if (deckId !== IMAGE_DECK_ID) return '' // 暂只支持 178
+  if (!IMAGE_DECK_IDS.includes(deckId)) return '' // 非图片牌组
   if (cardIndex < 0 || cardIndex > 77 || isNaN(cardIndex)) return '' // 无效索引
 
   const filename = getCardFilename(cardIndex)
@@ -33,5 +35,5 @@ export function getCardImageUrl(cardIndex: number, deckId = IMAGE_DECK_ID): stri
  * 检查是否为图片牌组
  */
 export function isImageDeck(deckId: string): boolean {
-  return deckId !== '0'
+  return deckId !== 'emoji'
 }

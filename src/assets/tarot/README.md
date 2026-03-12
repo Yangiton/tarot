@@ -2,17 +2,23 @@
 
 ## 牌组列表
 
-| 牌组号 | 名称 | 描述 |
+| 牌组ID | 名称 | 描述 |
 |--------|------|------|
-| 0 | Emoji 牌组 | 内置虚拟牌组，使用 Emoji 符号表示，无需下载图片 |
-| 178 | 莱德·韦特塔罗牌 | Rider-Waite Tarot，1909 年由亚瑟·韦特设计，帕梅拉·科尔曼·史密斯绘制，最经典的塔罗牌版本（**默认**） |
+| emoji | Emoji 牌组 | 内置虚拟牌组，使用 Emoji 符号表示，无需下载图片 |
+| chinese | 中国人塔罗牌 | The Wisdom of Tao，以中国道家神话人物及十二生肖为主轴，水墨国画风格 |
+| rider | 莱德·韦特塔罗牌 | Rider-Waite Tarot，1909 年由亚瑟·韦特设计，帕梅拉·科尔曼·史密斯绘制，最经典的塔罗牌版本（**默认**） |
+
+## 参考文献
+
+- 孙云华 (2019). 中国历史神话于塔罗牌之图像脉络研究——以 The Wisdom of Tao 为例. 国立台湾师范大学设计学系硕士论文. https://doi.org/10.6345/NTNU201900261
 
 ## 目录结构
 
 ```
 tarot/
 ├── README.md
-└── {牌组号}/
+└── {牌组ID}/
+    ├── cover.jpg            # 牌组封面
     ├── 00-fool.jpg          # 大阿尔卡纳 0-21
     ├── 01-magician.jpg
     ├── ...
@@ -33,11 +39,29 @@ tarot/
 
 ## 下载命令
 
+### 默认：tarot.com 源 (dl:tarot)
+
 ```bash
-pnpm dl:tarot <牌组号>
+pnpm dl:tarot <牌组名> [--local-id <本地ID>]
 
 # 示例
-pnpm dl:tarot 178
+pnpm dl:tarot chinese                      # 下载中国人塔罗牌
+pnpm dl:tarot rider                        # 下载韦特塔罗牌
+pnpm dl:tarot --list                       # 列出预设牌组
+
+# 图片来源
+# 卡牌: https://gfx.tarot.com/images/site/decks/{deck_name}/full_size/{0-77}.jpg
+# 封面: https://gfx.tarot.com/images/decks/deck-image/{deck_name}.jpg
+# 牌组列表: https://www.tarot.com/tarot/decks
+```
+
+### 备用：8s8s.com 源 (dl:tarot:8s8s)
+
+```bash
+pnpm dl:tarot:8s8s <牌组号>
+
+# 示例
+pnpm dl:tarot:8s8s 178
 ```
 
 ## 文件命名规则

@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 /**
- * 塔罗牌图片下载脚本
+ * 塔罗牌图片下载脚本 (默认)
+ *
+ * 来源: https://www.tarot.com/tarot/decks
  *
  * 用法：
- *   pnpm dl:tarot <deck_id>
+ *   pnpm dl:tarot <deck_name> [--local-id <id>]
  *
  * 示例：
- *   pnpm dl:tarot 178    # 下载牌组 178
- *   pnpm dl:tarot 179    # 下载牌组 179
+ *   pnpm dl:tarot chinese                  # 下载中国人塔罗牌
+ *   pnpm dl:tarot rider                    # 下载韦特塔罗牌
+ *   pnpm dl:tarot --list                   # 列出常用牌组
  *
- * URL 规则：{CDN_BASE}/{牌组号}/{英文名}.jpg
- * 本地路径：src/assets/tarot/{牌组号}/{序号}-{英文名}.jpg
+ * URL 规则：
+ *   图片: https://gfx.tarot.com/images/site/decks/{deck_name}/full_size/{0-77}.jpg
+ *   封面: https://gfx.tarot.com/images/decks/deck-image/{deck_name}.jpg
  *
- * 排序规则（0-77）：
- * - 0-21: 大阿尔卡纳（Major Arcana）
- * - 22-35: 权杖（Wands）
- * - 36-49: 圣杯（Cups）
- * - 50-63: 宝剑（Swords）
- * - 64-77: 星币（Pentacles）
+ * 本地路径：src/assets/tarot/{local_id}/{序号}-{英文名}.jpg
+ *   如: src/assets/tarot/chinese/00-fool.jpg
  */
 
 import fs from 'fs'
@@ -29,38 +29,45 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // ============ 配置 ============
 
-const CDN_BASE = 'https://t.8s8s.com/photo/tarotphoto'
+const CDN_BASE = 'https://gfx.tarot.com/images/site/decks'
+const COVER_BASE = 'https://gfx.tarot.com/images/decks/deck-image'
+
+/** 常用牌组映射 (deck_name -> 推荐本地 ID) */
+const DECK_PRESETS = {
+  rider: { localId: 'rider', name: '莱德·韦特塔罗牌' },
+  chinese: { localId: 'chinese', name: '中国人塔罗牌' },
+  // 可扩展更多牌组
+}
 
 /**
  * 大阿尔卡纳英文名（0-21）
- * 注意特殊命名：10 是 fortune-wheel，17 是 stars
  */
 const MAJOR_ARCANA = [
-  'fool', // 0 - 愚者
-  'magician', // 1 - 魔术师
-  'high-priestess', // 2 - 女祭司
-  'empress', // 3 - 女皇
-  'emperor', // 4 - 皇帝
-  'hierophant', // 5 - 教皇
-  'lovers', // 6 - 恋人
-  'chariot', // 7 - 战车
-  'strength', // 8 - 力量
-  'hermit', // 9 - 隐士
-  'fortune-wheel', // 10 - 命运之轮
-  'justice', // 11 - 正义
-  'hanged-man', // 12 - 倒吊人
-  'death', // 13 - 死神
-  'temperance', // 14 - 节制
-  'devil', // 15 - 恶魔
-  'tower', // 16 - 塔
-  'stars', // 17 - 星星
-  'moon', // 18 - 月亮
-  'sun', // 19 - 太阳
-  'judgement', // 20 - 审判
-  'world', // 21 - 世界
+  'fool',
+  'magician',
+  'high-priestess',
+  'empress',
+  'emperor',
+  'hierophant',
+  'lovers',
+  'chariot',
+  'strength',
+  'hermit',
+  'fortune-wheel',
+  'justice',
+  'hanged-man',
+  'death',
+  'temperance',
+  'devil',
+  'tower',
+  'stars',
+  'moon',
+  'sun',
+  'judgement',
+  'world',
 ]
 
-/** 小阿尔卡纳数字名（1=Ace, 11=Page, 12=Knight, 13=Queen, 14=King） */
+/** 小阿尔卡纳数字名 */
 const NUMBERS = [
   '',
   'ace',
@@ -79,7 +86,7 @@ const NUMBERS = [
   'king',
 ]
 
-/** 四种花色（按 22-77 排序） */
+/** 四种花色 */
 const SUITS = ['wands', 'cups', 'swords', 'pentacles']
 
 // ============ 工具函数 ============
@@ -125,70 +132,146 @@ function downloadFile(url, dest) {
 
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
+function printHelp() {
+  console.log(`
+塔罗牌图片下载脚本 (tarot.com 来源)
+
+用法: pnpm dl:tarot <deck_name> [options]
+
+参数:
+  deck_name       牌组名称（如 chinese, rider-waite）
+
+选项:
+  --local-id <id> 本地保存的牌组 ID（默认使用牌组名）
+  --list          列出常用牌组预设
+  --cover-only    仅下载封面图
+  -h, --help      显示帮助
+
+示例:
+  pnpm dl:tarot chinese                    # 下载中国人塔罗牌
+  pnpm dl:tarot rider-waite                # 下载韦特塔罗牌
+  pnpm dl:tarot chinese --cover-only       # 仅下载封面
+
+来源: https://www.tarot.com/tarot/decks
+输出: src/assets/tarot/{local_id}/
+命名: {序号}-{英文名}.jpg (如 00-fool.jpg)
+`)
+}
+
+function printList() {
+  console.log('\n常用牌组预设:\n')
+  console.log('  牌组名称       本地ID          中文名')
+  console.log('  ' + '-'.repeat(50))
+  for (const [name, info] of Object.entries(DECK_PRESETS)) {
+    console.log(`  ${name.padEnd(15)} ${info.localId.padEnd(15)} ${info.name}`)
+  }
+  console.log('\n更多牌组请访问: https://www.tarot.com/tarot/decks\n')
+}
+
 // ============ 主函数 ============
 
 async function main() {
   const args = process.argv.slice(2)
-  const deckId = args.find(a => /^\d+$/.test(a))
 
-  if (!deckId || args.includes('-h') || args.includes('--help')) {
-    console.log(`
-塔罗牌图片下载脚本
-
-用法: pnpm dl:tarot <deck_id>
-
-参数:
-  deck_id    牌组号（必填，如 178）
-
-示例:
-  pnpm dl:tarot 178    # 下载牌组 178
-  pnpm dl:tarot 179    # 下载牌组 179
-
-输出: src/assets/tarot/{牌组号}/
-命名: {序号}-{英文名}.jpg
-`)
+  if (args.includes('-h') || args.includes('--help')) {
+    printHelp()
     return
   }
 
-  const baseUrl = `${CDN_BASE}/${deckId}`
-  const outDir = path.resolve(__dirname, `../src/assets/tarot/${deckId}`)
+  if (args.includes('--list')) {
+    printList()
+    return
+  }
 
+  // 解析参数
+  const deckName = args.find(
+    a => !a.startsWith('-') && !args[args.indexOf(a) - 1]?.startsWith('--')
+  )
+  const localIdIndex = args.indexOf('--local-id')
+  let localId = localIdIndex >= 0 ? args[localIdIndex + 1] : null
+  const coverOnly = args.includes('--cover-only')
+
+  if (!deckName) {
+    console.error('错误: 请指定牌组名称\n')
+    printHelp()
+    process.exit(1)
+  }
+
+  // 使用预设或自定义
+  const preset = DECK_PRESETS[deckName]
+  if (!localId) {
+    localId = preset?.localId || deckName
+  }
+
+  const outDir = path.resolve(__dirname, `../src/assets/tarot/${localId}`)
   fs.mkdirSync(outDir, { recursive: true })
 
-  console.log('='.repeat(50))
-  console.log(`塔罗牌下载 | 牌组: ${deckId} | 共 78 张`)
+  console.log('='.repeat(55))
+  console.log(`塔罗牌下载 (tarot.com)`)
+  console.log(`牌组: ${deckName}${preset ? ` (${preset.name})` : ''}`)
+  console.log(`本地ID: ${localId}`)
   console.log(`输出: ${outDir}`)
-  console.log('='.repeat(50))
+  console.log('='.repeat(55))
 
+  // 下载封面
+  const coverUrl = `${COVER_BASE}/${deckName}.jpg`
+  const coverPath = path.join(outDir, 'cover.jpg')
+
+  if (!fs.existsSync(coverPath)) {
+    try {
+      console.log(`下载封面: ${coverUrl}`)
+      await downloadFile(coverUrl, coverPath)
+      console.log('  ✓ 封面下载成功')
+    } catch (e) {
+      console.log(`  ✗ 封面下载失败: ${e.message}`)
+    }
+  } else {
+    console.log('跳过封面: 已存在')
+  }
+
+  if (coverOnly) {
+    console.log('='.repeat(55))
+    console.log('完成! (仅封面模式)')
+    return
+  }
+
+  // 下载所有卡牌
   let success = 0,
     skip = 0,
     fail = 0
 
   for (let id = 0; id < 78; id++) {
-    const name = getCardName(id)
     const localFile = getLocalFilename(id)
     const localPath = path.join(outDir, localFile)
-    const url = `${baseUrl}/${name}.jpg`
+    const url = `${CDN_BASE}/${deckName}/full_size/${id}.jpg`
 
     if (fs.existsSync(localPath)) {
-      console.log(`[${id + 1}/78] 跳过: ${localFile}`)
+      console.log(`[${String(id + 1).padStart(2)}/78] 跳过: ${localFile}`)
       skip++
       continue
     }
 
     try {
-      console.log(`[${id + 1}/78] 下载: ${name}.jpg -> ${localFile}`)
+      console.log(`[${String(id + 1).padStart(2)}/78] 下载: ${id}.jpg -> ${localFile}`)
       await downloadFile(url, localPath)
       success++
-      await delay(150)
+      await delay(200)
     } catch (e) {
       console.error(`  ✗ ${e.message}`)
       fail++
     }
   }
 
-  console.log('='.repeat(50))
+  console.log('='.repeat(55))
   console.log(`完成! 成功: ${success}, 跳过: ${skip}, 失败: ${fail}`)
+
+  if (success > 0 || skip === 78) {
+    console.log(`\n提示: 如需在应用中使用此牌组，请更新以下文件:`)
+    console.log(`  1. src/data/index.ts - DECK_IDS 数组`)
+    console.log(`  2. src/data/card-images.ts - IMAGE_DECK_IDS 数组`)
+    console.log(`  3. src/i18n/locales/zh.json - decks.${localId}`)
+    console.log(`  4. src/i18n/locales/en.json - decks.${localId}`)
+  }
 }
 
 main().catch(console.error)

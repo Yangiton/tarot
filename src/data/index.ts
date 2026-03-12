@@ -13,12 +13,13 @@ export interface DeckConfig {
 
 /** 可用牌组 ID 列表（静态配置） */
 export const DECK_IDS: DeckConfig[] = [
-  { id: '0', hasImages: false },
-  { id: '178', hasImages: true },
+  { id: 'emoji', hasImages: false },
+  { id: 'chinese', hasImages: true },
+  { id: 'rider', hasImages: true },
 ]
 
 /** 默认牌组 ID */
-export const DEFAULT_DECK_ID = '178'
+export const DEFAULT_DECK_ID = 'rider'
 
 /** 获取牌组配置（需要在 setup 中调用以获取翻译） */
 export function useDeckConfig() {
