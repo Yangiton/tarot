@@ -3,27 +3,27 @@ import { ref, computed } from 'vue'
 import { Motion, AnimatePresence } from 'motion-v'
 import { X, ChevronDown } from 'lucide-vue-next'
 import {
-  majorArcana,
-  minorArcana,
-  suits,
   type TarotCard,
   type MinorArcanaCard,
   type Suit,
-  DECKS,
-  getDeckConfig,
+  useDeckConfig,
   getCardEnglishName,
+  splitKeywords,
 } from '@/data'
 import { getCardImageUrl, isImageDeck } from '@/data/card-images'
+import { useI18n } from 'vue-i18n'
 import { useTarot } from '@/composables/useTarot'
 import { vHoloFoil } from '@/directives/vHoloFoil'
 import TarotCardComponent from '@/components/tarot/TarotCard.vue'
 
-const { currentDeckId, setDeckId, holoType } = useTarot()
+const { locale } = useI18n()
+const { currentDeckId, setDeckId, holoType, majorArcana, minorArcana, suits } = useTarot()
+const { decks, getDeckConfig } = useDeckConfig()
 
 const selectedCard = ref<TarotCard | MinorArcanaCard | null>(null)
 const showDeckPicker = ref(false)
 
-const currentDeck = computed(() => getDeckConfig(currentDeckId.value) || DECKS[1])
+const currentDeck = computed(() => getDeckConfig(currentDeckId.value) || decks.value[1])
 const useImages = computed(() => isImageDeck(currentDeckId.value))
 
 // 花色顺序和配置
@@ -97,8 +97,10 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Header -->
     <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
-      <h1 class="text-base md:text-xl font-bold gold-title">✦ 牌库 ✦</h1>
-      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">探索塔罗的奥秘</p>
+      <h1 class="text-base md:text-xl font-bold gold-title">{{ $t('library.title') }}</h1>
+      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
+        {{ $t('library.subtitle') }}
+      </p>
 
       <!-- 牌组切换按钮 -->
       <div class="relative inline-block mt-2">
@@ -117,7 +119,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
             class="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 min-w-[200px] glass-card border border-gold/30 rounded-lg overflow-hidden"
           >
             <button
-              v-for="deck in DECKS"
+              v-for="deck in decks"
               :key="deck.id"
               class="w-full px-4 py-2.5 text-left hover:bg-gold/10 transition-colors"
               :class="deck.id === currentDeckId && 'bg-gold/15'"
@@ -142,10 +144,10 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
         >
           <section class="mb-8">
             <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
-              大阿尔卡纳 (Major Arcana)
+              {{ $t('library.majorArcanaFull') }}
             </h2>
             <p class="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
-              22张代表人生重大主题的牌
+              {{ $t('library.majorArcanaDesc') }}
             </p>
 
             <div
@@ -172,10 +174,10 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
         >
           <section>
             <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
-              小阿尔卡纳 (Minor Arcana)
+              {{ $t('library.minorArcanaFull') }}
             </h2>
             <p class="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
-              56张反映日常生活细节的牌
+              {{ $t('library.minorArcanaDesc') }}
             </p>
 
             <!-- 四种花色 -->
@@ -187,16 +189,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
                   <span class="text-base">{{ suits[suit].symbol }}</span>
                   <span>{{ suits[suit].name }} ({{ suits[suit].nameEn }})</span>
                   <span class="text-muted-foreground text-[10px]"
-                    >·
-                    {{
-                      suits[suit].element === 'fire'
-                        ? '🔥 火'
-                        : suits[suit].element === 'water'
-                          ? '💧 水'
-                          : suits[suit].element === 'air'
-                            ? '💨 风'
-                            : '🌍 土'
-                    }}</span
+                    >· {{ $t('library.elements.' + suits[suit].element) }}</span
                   >
                 </h3>
                 <div
@@ -286,10 +279,10 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
           <div class="p-3 md:p-4 overflow-y-auto max-h-[60vh] custom-scrollbar space-y-4">
             <!-- Keywords -->
             <div>
-              <h4 class="text-xs text-gold font-medium mb-2">关键词</h4>
+              <h4 class="text-xs text-gold font-medium mb-2">{{ $t('library.keywords') }}</h4>
               <div class="flex flex-wrap gap-1.5">
                 <span
-                  v-for="kw in selectedCard.keywords.split('、')"
+                  v-for="kw in splitKeywords(selectedCard.keywords, locale)"
                   :key="kw"
                   class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
                 >
@@ -300,7 +293,9 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
 
             <!-- Upright -->
             <div>
-              <h4 class="text-xs text-green-400 font-medium mb-2">✦ 正位含义</h4>
+              <h4 class="text-xs text-green-400 font-medium mb-2">
+                {{ $t('library.uprightMeaning') }}
+              </h4>
               <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
                 {{ selectedCard.upright }}
               </p>
@@ -308,7 +303,9 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
 
             <!-- Reversed -->
             <div>
-              <h4 class="text-xs text-red-400 font-medium mb-2">✦ 逆位含义</h4>
+              <h4 class="text-xs text-red-400 font-medium mb-2">
+                {{ $t('library.reversedMeaning') }}
+              </h4>
               <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
                 {{ selectedCard.reversed }}
               </p>
@@ -316,7 +313,9 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
 
             <!-- Description -->
             <div v-if="selectedCard.description">
-              <h4 class="text-xs text-gold font-medium mb-2">卡面描述</h4>
+              <h4 class="text-xs text-gold font-medium mb-2">
+                {{ $t('library.cardDescription') }}
+              </h4>
               <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
                 {{ selectedCard.description }}
               </p>
@@ -324,7 +323,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
 
             <!-- Note -->
             <div v-if="selectedCard.note">
-              <h4 class="text-xs text-gold font-medium mb-2">象征意义</h4>
+              <h4 class="text-xs text-gold font-medium mb-2">{{ $t('library.symbolism') }}</h4>
               <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
                 {{ selectedCard.note }}
               </p>

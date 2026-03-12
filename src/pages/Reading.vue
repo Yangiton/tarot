@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Motion } from 'motion-v'
 import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import TarotCard from '@/components/tarot/TarotCard.vue'
 import { useTarot } from '@/composables/useTarot'
+import { splitKeywords } from '@/data'
 
 const router = useRouter()
+const { locale } = useI18n()
 const { drawnCards, summary, isDrawn, resetReading, currentDeckId, holoType } = useTarot()
 
 onMounted(() => {
@@ -34,14 +37,14 @@ const handleReset = () => {
     >
       <Button variant="ghost" size="sm" @click="goBack">
         <ArrowLeft class="w-4 h-4 mr-1" />
-        <span class="hidden sm:inline">返回</span>
+        <span class="hidden sm:inline">{{ $t('reading.back') }}</span>
       </Button>
 
-      <h2 class="text-sm md:text-lg font-bold gold-title">✦ 牌阵解读 ✦</h2>
+      <h2 class="text-sm md:text-lg font-bold gold-title">{{ $t('reading.title') }}</h2>
 
       <Button variant="outline" size="sm" @click="handleReset">
         <RefreshCw class="w-4 h-4 sm:mr-1" />
-        <span class="hidden sm:inline">重新抽牌</span>
+        <span class="hidden sm:inline">{{ $t('reading.reset') }}</span>
       </Button>
     </header>
 
@@ -87,14 +90,14 @@ const handleReset = () => {
                         : 'bg-green-900/50 text-green-300',
                     ]"
                   >
-                    {{ card.isReversed ? '逆位' : '正位' }}
+                    {{ card.isReversed ? $t('reading.reversed') : $t('reading.upright') }}
                   </span>
                 </div>
 
                 <!-- 关键词 -->
                 <div class="flex flex-wrap gap-1.5 mb-4">
                   <span
-                    v-for="kw in card.keywords.split('、')"
+                    v-for="kw in splitKeywords(card.keywords, locale)"
                     :key="kw"
                     class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
                   >
@@ -105,14 +108,18 @@ const handleReset = () => {
                 <!-- 牌义解读 -->
                 <div class="space-y-3 text-sm md:text-base">
                   <div>
-                    <h4 class="text-foreground font-medium mb-1.5">牌义解读</h4>
+                    <h4 class="text-foreground font-medium mb-1.5">
+                      {{ $t('reading.interpretation') }}
+                    </h4>
                     <p class="text-muted-foreground leading-relaxed">
                       {{ card.isReversed ? card.reversed : card.upright }}
                     </p>
                   </div>
 
                   <div v-if="card.note">
-                    <h4 class="text-foreground font-medium mb-1.5">象征意义</h4>
+                    <h4 class="text-foreground font-medium mb-1.5">
+                      {{ $t('reading.symbolism') }}
+                    </h4>
                     <p class="text-muted-foreground leading-relaxed">{{ card.note }}</p>
                   </div>
                 </div>
@@ -128,7 +135,9 @@ const handleReset = () => {
           :transition="{ duration: 0.5, delay: drawnCards.length * 0.15 }"
         >
           <div class="glass-card p-4 md:p-6 border border-gold/20 bg-gold/5">
-            <h3 class="text-lg md:text-xl font-semibold text-gold mb-4">✦ 综合指引 ✦</h3>
+            <h3 class="text-lg md:text-xl font-semibold text-gold mb-4">
+              {{ $t('reading.summary') }}
+            </h3>
             <p class="text-muted-foreground leading-loose text-sm md:text-base">{{ summary }}</p>
           </div>
         </Motion>

@@ -147,20 +147,24 @@
 
 ### Capacitor 集成 [P0]
 
-- [ ] 安装 Capacitor 核心依赖
-- [ ] 配置 `capacitor.config.ts`
-- [ ] 添加 iOS 平台
-- [ ] 集成原生插件（震动、分享、本地存储）
+- [x] 安装 Capacitor 核心依赖
+- [x] 配置 `capacitor.config.ts`
+- [ ] 添加 iOS 平台（`npx cap add ios`，需 Mac 或 Codemagic）
+- [x] 集成原生插件（震动、分享、本地存储）
+- [x] 创建 `useNative.ts` composable
+- [x] 添加 Capacitor 构建脚本 (`build:cap`, `app:ios`, `app:android`)
 
 ### i18n 国际化 [P0] ⭐ App Store 必需
 
-- [ ] 安装 vue-i18n
-- [ ] 创建语言文件结构 (`/locales/zh.json`, `/locales/en.json`)
-- [ ] 提取所有中文文案到语言文件
-- [ ] 实现语言切换功能
-- [ ] 翻译牌义内容（22 大 + 56 小阿尔卡纳）
-- [ ] 翻译 UI 文案
-- [ ] 设置页添加语言选择
+- [x] 安装 vue-i18n
+- [x] 创建语言文件结构 (`src/i18n/locales/zh.json`, `en.json`)
+- [x] 提取所有中文文案到语言文件
+- [x] 实现语言切换功能
+- [x] 翻译牌义内容（22 大 + 56 小阿尔卡纳）
+- [x] 翻译 UI 文案
+- [x] 设置页添加语言选择
+- [x] 重构数据层支持多语言卡牌数据
+- [x] generateSummary 中英双语支持
 
 ### iOS 发布 [P0] ⭐ 优先
 
@@ -197,7 +201,7 @@
 | MVP v1.0 | 核心占卜功能上线 | ✅ |
 | V1.5 | 沉浸式交互体验 | 🚧 |
 | V2.0 | 每日一卡 + 图鉴系统 | 📋 |
-| V2.5 | i18n + iOS App 上架 | 📋 |
+| V2.5 | i18n + iOS App 上架 | 🚧 |
 | V3.0 | AI 解读 + Android 上架 | 📋 |
 
 ---
@@ -229,6 +233,15 @@
 ---
 
 ## 📝 更新日志
+
+### 2026-03-12
+
+- 完成 i18n 国际化改造（vue-i18n + 中英双语）
+- 完成 Capacitor 项目结构集成
+- 创建 `useNative.ts` composable（震动、分享、本地存储）
+- 重构数据层支持多语言卡牌数据
+- 设置页新增语言切换功能
+- 78 张塔罗牌英文翻译完成
 
 ### 2026-03-11
 

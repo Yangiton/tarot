@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Motion } from 'motion-v'
 import { ChevronDown } from 'lucide-vue-next'
-import { REVERSED_PROBABILITY, spreads, type SpreadType } from '@/data'
+import { REVERSED_PROBABILITY, type SpreadType } from '@/data'
 import { useTarot } from '@/composables/useTarot'
 import type { HoloType } from '@/directives/vHoloFoil'
+import type { SupportedLocale } from '@/i18n'
 
-const { currentSpread, selectSpread, holoType, setHoloType, useFullDeck, setUseFullDeck } =
+const { t, locale } = useI18n()
+const { currentSpread, selectSpread, holoType, setHoloType, useFullDeck, setUseFullDeck, spreads } =
   useTarot()
 
 const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
 
 const spreadOptions = computed(() => {
-  return Object.entries(spreads).map(([key, config]) => ({
+  return Object.entries(spreads.value).map(([key, config]) => ({
     value: Number(key) as SpreadType,
     name: config.name,
     description: config.description,
@@ -21,21 +24,21 @@ const spreadOptions = computed(() => {
 })
 
 const currentSpreadConfig = computed(() => {
-  return spreads[String(currentSpread.value)]
+  return spreads.value[String(currentSpread.value)]
 })
 
-// 全息效果类型选项
-const holoOptions: { value: HoloType; name: string; description: string }[] = [
-  { value: 'normal', name: '普通全息', description: '经典彩虹条纹效果' },
-  { value: 'cosmos', name: '宇宙全息', description: '梦幻星空背景' },
-  { value: 'rainbow', name: '彩虹全息', description: '强烈彩虹渐变' },
-  { value: 'galaxy', name: '银河全息', description: '深空星云效果' },
-  { value: 'radiant', name: '光辉全息', description: '金属放射状' },
-  { value: 'pixel', name: '像素全息', description: '复古点阵效果' },
-]
+const holoTypeKeys: HoloType[] = ['normal', 'cosmos', 'rainbow', 'galaxy', 'radiant', 'pixel']
+
+const holoOptions = computed(() =>
+  holoTypeKeys.map(key => ({
+    value: key,
+    name: t(`settings.holoOptions.${key}`),
+    description: t(`settings.holoOptions.${key}Desc`),
+  }))
+)
 
 const currentHoloConfig = computed(() => {
-  return holoOptions.find(o => o.value === holoType.value)
+  return holoOptions.value.find(o => o.value === holoType.value)
 })
 
 const handleSpreadChange = (e: Event) => {
@@ -48,19 +51,29 @@ const handleHoloChange = (e: Event) => {
   setHoloType(value)
 }
 
-// 牌组范围选项
-const deckRangeOptions = [
-  { value: false, name: '大阿尔卡纳', description: '22张代表人生重大主题的牌' },
+const deckRangeOptions = computed(() => [
   {
-    value: true,
-    name: '完整牌组',
-    description: '78张牌（大阿尔卡纳 + 小阿尔卡纳）',
+    value: false,
+    name: t('settings.deckRangeMajor'),
+    description: t('settings.deckRangeMajorDesc'),
   },
-]
+  { value: true, name: t('settings.deckRangeFull'), description: t('settings.deckRangeFullDesc') },
+])
 
 const handleDeckRangeChange = (e: Event) => {
   const value = (e.target as HTMLSelectElement).value === 'true'
   setUseFullDeck(value)
+}
+
+const languageOptions: { value: SupportedLocale; name: string }[] = [
+  { value: 'zh', name: '简体中文' },
+  { value: 'en', name: 'English' },
+]
+
+const handleLanguageChange = (e: Event) => {
+  const value = (e.target as HTMLSelectElement).value as SupportedLocale
+  locale.value = value
+  localStorage.setItem('tarot-locale', value)
 }
 </script>
 
@@ -68,8 +81,10 @@ const handleDeckRangeChange = (e: Event) => {
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Header -->
     <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
-      <h1 class="text-base md:text-xl font-bold gold-title">✦ 设置 ✦</h1>
-      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">个性化你的占卜体验</p>
+      <h1 class="text-base md:text-xl font-bold gold-title">{{ $t('settings.title') }}</h1>
+      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
+        {{ $t('settings.subtitle') }}
+      </p>
     </header>
 
     <!-- Scroll Content -->
@@ -85,7 +100,7 @@ const handleDeckRangeChange = (e: Event) => {
             <h2
               class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15"
             >
-              占卜设置
+              {{ $t('settings.divinationSettings') }}
             </h2>
 
             <div class="space-y-3">
@@ -93,15 +108,19 @@ const handleDeckRangeChange = (e: Event) => {
               <div class="glass-card p-4">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-sm md:text-base text-foreground">牌阵选择</p>
-                    <p class="text-xs text-muted-foreground mt-1">选择占卜使用的牌阵</p>
+                    <p class="text-sm md:text-base text-foreground">
+                      {{ $t('settings.spreadSelection') }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ $t('settings.spreadSelectionDesc') }}
+                    </p>
                   </div>
                 </div>
 
                 <div class="relative">
                   <select :value="currentSpread" @change="handleSpreadChange" class="spread-select">
                     <option v-for="opt in spreadOptions" :key="opt.value" :value="opt.value">
-                      {{ opt.name }} ({{ opt.count }}张)
+                      {{ opt.name }} ({{ opt.count }}{{ $t('common.cards') }})
                     </option>
                   </select>
                   <ChevronDown
@@ -117,8 +136,13 @@ const handleDeckRangeChange = (e: Event) => {
               <!-- 逆位概率 -->
               <div class="glass-card p-4 flex items-center justify-between">
                 <div>
-                  <p class="text-sm md:text-base text-foreground">逆位概率</p>
-                  <p class="text-xs text-muted-foreground mt-1">抽牌时出现逆位的概率</p>
+                  <p class="text-sm md:text-base text-foreground">
+                    {{ $t('settings.reversedProbability') }}
+                  </p>
+
+                  <p class="text-xs text-muted-foreground mt-1">
+                    {{ $t('settings.reversedProbabilityDesc') }}
+                  </p>
                 </div>
                 <span class="px-3 py-1.5 bg-gold/15 text-gold rounded-full text-sm">
                   {{ reversedPercent }}%
@@ -129,8 +153,12 @@ const handleDeckRangeChange = (e: Event) => {
               <div class="glass-card p-4">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-sm md:text-base text-foreground">牌组范围</p>
-                    <p class="text-xs text-muted-foreground mt-1">选择抽牌使用的牌组范围</p>
+                    <p class="text-sm md:text-base text-foreground">
+                      {{ $t('settings.deckRange') }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ $t('settings.deckRangeDesc') }}
+                    </p>
                   </div>
                 </div>
 
@@ -162,6 +190,7 @@ const handleDeckRangeChange = (e: Event) => {
         </Motion>
 
         <!-- Visual Effects -->
+
         <Motion
           :initial="{ opacity: 0, y: 20 }"
           :animate="{ opacity: 1, y: 0 }"
@@ -171,7 +200,7 @@ const handleDeckRangeChange = (e: Event) => {
             <h2
               class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15"
             >
-              视觉效果
+              {{ $t('settings.visualEffects') }}
             </h2>
 
             <div class="space-y-3">
@@ -179,8 +208,12 @@ const handleDeckRangeChange = (e: Event) => {
               <div class="glass-card p-4">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-sm md:text-base text-foreground">全息效果</p>
-                    <p class="text-xs text-muted-foreground mt-1">选择卡片的全息光效类型</p>
+                    <p class="text-sm md:text-base text-foreground">
+                      {{ $t('settings.holoEffect') }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ $t('settings.holoEffectDesc') }}
+                    </p>
                   </div>
                 </div>
 
@@ -203,6 +236,47 @@ const handleDeckRangeChange = (e: Event) => {
           </section>
         </Motion>
 
+        <!-- Language -->
+        <Motion
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.4, delay: 0.075 }"
+        >
+          <section>
+            <h2
+              class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15"
+            >
+              {{ $t('settings.language') }}
+            </h2>
+
+            <div class="space-y-3">
+              <div class="glass-card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm md:text-base text-foreground">
+                      {{ $t('settings.language') }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ $t('settings.languageDesc') }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="relative">
+                  <select :value="locale" @change="handleLanguageChange" class="spread-select">
+                    <option v-for="opt in languageOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.name }}
+                    </option>
+                  </select>
+                  <ChevronDown
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold pointer-events-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        </Motion>
+
         <!-- About Section -->
         <Motion
           :initial="{ opacity: 0, y: 20 }"
@@ -213,21 +287,22 @@ const handleDeckRangeChange = (e: Event) => {
             <h2
               class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15"
             >
-              关于
+              {{ $t('settings.about') }}
             </h2>
 
             <div
               class="glass-card p-4 md:p-6 space-y-3 text-sm text-muted-foreground leading-relaxed"
             >
               <p>
-                本应用基于经典的<span class="text-gold">韦特塔罗</span>（Rider-Waite Tarot），
-                由亚瑟·韦特于 1909 年设计。
+                <i18n-t keypath="settings.aboutText1" tag="span">
+                  <template #tarot>
+                    <span class="text-gold">{{ $t('settings.aboutTarotName') }}</span>
+                  </template>
+                </i18n-t>
               </p>
-              <p>
-                塔罗牌是一面镜子，反映的是你内心深处的智慧。答案一直都在你心中，牌只是帮你看清它。
-              </p>
+              <p>{{ $t('settings.aboutText2') }}</p>
               <p class="text-xs text-muted-foreground/60 italic">
-                塔罗牌仅供娱乐和自我反思，不构成任何决策建议。
+                {{ $t('settings.aboutDisclaimer') }}
               </p>
             </div>
           </section>
@@ -243,7 +318,7 @@ const handleDeckRangeChange = (e: Event) => {
             <h2
               class="text-base md:text-lg font-semibold text-gold mb-4 pb-2 border-b border-gold/15"
             >
-              版本
+              {{ $t('settings.version') }}
             </h2>
             <p class="text-sm text-muted-foreground">v0.1.0</p>
           </section>

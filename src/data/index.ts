@@ -1,35 +1,43 @@
-import tarotData from './tarot.json'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import baseConfig from './tarot-base.json'
+import zhCards from '@/i18n/locales/cards/zh.json'
+import enCards from '@/i18n/locales/cards/en.json'
 
 // ============ 牌组配置 ============
 
 export interface DeckConfig {
   id: string
-  name: string
-  nameEn: string
-  description: string
   hasImages: boolean
 }
 
-/** 可用牌组列表 */
-export const DECKS: DeckConfig[] = [
-  {
-    id: '0',
-    name: 'Emoji 牌组',
-    nameEn: 'Emoji Deck',
-    description: '使用 Emoji 符号表示的简约牌组',
-    hasImages: false,
-  },
-  {
-    id: '178',
-    name: '莱德·韦特塔罗牌',
-    nameEn: 'Rider-Waite Tarot',
-    description: '1909 年经典版本，最广泛使用的塔罗牌',
-    hasImages: true,
-  },
+/** 可用牌组 ID 列表（静态配置） */
+export const DECK_IDS: DeckConfig[] = [
+  { id: '0', hasImages: false },
+  { id: '178', hasImages: true },
 ]
 
 /** 默认牌组 ID */
 export const DEFAULT_DECK_ID = '178'
+
+/** 获取牌组配置（需要在 setup 中调用以获取翻译） */
+export function useDeckConfig() {
+  const { t } = useI18n()
+
+  const decks = computed(() =>
+    DECK_IDS.map(deck => ({
+      ...deck,
+      name: t(`decks.${deck.id}.name`),
+      description: t(`decks.${deck.id}.description`),
+    })),
+  )
+
+  const getDeckConfig = (deckId: string) => {
+    return decks.value.find(d => d.id === deckId)
+  }
+
+  return { decks, getDeckConfig }
+}
 
 /**
  * 78 张塔罗牌英文名（0-77）
@@ -125,26 +133,32 @@ export const CARD_NAMES = [
   'king-pentacles',
 ] as const
 
-/**
- * 根据卡牌序号获取英文名
- */
+/** 根据语言环境获取关键词分隔符 */
+export function getKeywordSeparator(locale: string): string {
+  return locale === 'zh' ? '、' : ', '
+}
+
+/** 分割关键词字符串为数组 */
+export function splitKeywords(keywords: string, locale: string): string[] {
+  const sep = getKeywordSeparator(locale)
+  return keywords
+    .split(sep)
+    .map(k => k.trim())
+    .filter(Boolean)
+}
+
 export function getCardEnglishName(cardIndex: number): string {
   return CARD_NAMES[cardIndex] || 'unknown'
 }
 
-/**
- * 获取卡牌图片文件名
- */
 export function getCardFilename(cardIndex: number): string {
   const paddedIndex = String(cardIndex).padStart(2, '0')
   return `${paddedIndex}-${getCardEnglishName(cardIndex)}.jpg`
 }
 
-/**
- * 获取牌组配置
- */
-export function getDeckConfig(deckId: string): DeckConfig | undefined {
-  return DECKS.find(d => d.id === deckId)
+/** 获取牌组静态配置（仅 hasImages，不含翻译） */
+export function getDeckStaticConfig(deckId: string): DeckConfig | undefined {
+  return DECK_IDS.find(d => d.id === deckId)
 }
 
 // ============ 卡牌数据类型 ============
@@ -209,43 +223,85 @@ export interface SuitConfig {
   zodiac: string
 }
 
-export const config = tarotData.config
-export const spreads = tarotData.spreads as Record<string, SpreadConfig>
-export const tips = tarotData.tips
-export const majorArcana = tarotData.majorArcana as TarotCard[]
-export const suits = tarotData.suits as Record<Suit, SuitConfig>
-export const minorArcana = tarotData.minorArcana as Record<Suit, MinorArcanaCard[]>
+// ============ 多语言数据层 ============
 
-export const REVERSED_PROBABILITY = config.reversedProbability
+const cardDataMap: Record<string, typeof zhCards> = { zh: zhCards, en: enCards }
 
-export function getSpreadConfig(type: SpreadType): SpreadConfig {
-  return spreads[String(type)]
+function getCardData(locale: string) {
+  return cardDataMap[locale] || cardDataMap.en
 }
 
-export function getSpreadPositions(type: SpreadType): SpreadPosition[] {
-  return spreads[String(type)]?.positions || []
+/** 获取当前语言的配置（非响应式，用于初始化/静态场景） */
+export function getStaticCardData(locale: string) {
+  const data = getCardData(locale)
+  return {
+    spreads: data.spreads as Record<string, SpreadConfig>,
+    tips: data.tips as { text: string }[],
+    suits: data.suits as Record<Suit, SuitConfig>,
+    majorArcana: data.majorArcana as TarotCard[],
+    minorArcana: data.minorArcana as Record<Suit, MinorArcanaCard[]>,
+  }
 }
 
-export function getAllMinorArcana(): MinorArcanaCard[] {
-  return [
-    ...minorArcana.wands,
-    ...minorArcana.cups,
-    ...minorArcana.swords,
-    ...minorArcana.pentacles,
-  ]
+/**
+ * 响应式牌义数据 composable，根据 vue-i18n locale 自动切换
+ * 需在 setup 中调用
+ */
+export function useCardData() {
+  const { locale } = useI18n()
+
+  const cardData = computed(() => getCardData(locale.value))
+  const spreads = computed(() => cardData.value.spreads as Record<string, SpreadConfig>)
+  const tips = computed(() => cardData.value.tips as { text: string }[])
+  const suits = computed(() => cardData.value.suits as Record<Suit, SuitConfig>)
+  const majorArcana = computed(() => cardData.value.majorArcana as TarotCard[])
+  const minorArcana = computed(() => cardData.value.minorArcana as Record<Suit, MinorArcanaCard[]>)
+
+  const getSpreadConfig = (type: SpreadType): SpreadConfig => {
+    return spreads.value[String(type)]
+  }
+
+  const getSpreadPositions = (type: SpreadType): SpreadPosition[] => {
+    return spreads.value[String(type)]?.positions || []
+  }
+
+  const getAllMinorArcana = (): MinorArcanaCard[] => {
+    const m = minorArcana.value
+    return [...m.wands, ...m.cups, ...m.swords, ...m.pentacles]
+  }
+
+  const getMinorArcanaBySuit = (suit: Suit): MinorArcanaCard[] => {
+    return minorArcana.value[suit] || []
+  }
+
+  const getAllCards = (): TarotCard[] => {
+    const minorCards = getAllMinorArcana().map(card => ({
+      ...card,
+      number: typeof card.rank === 'number' ? String(card.rank) : card.rank,
+    }))
+    return [...majorArcana.value, ...minorCards]
+  }
+
+  return {
+    locale,
+    spreads,
+    tips,
+    suits,
+    majorArcana,
+    minorArcana,
+    getSpreadConfig,
+    getSpreadPositions,
+    getAllMinorArcana,
+    getMinorArcanaBySuit,
+    getAllCards,
+  }
 }
 
-export function getMinorArcanaBySuit(suit: Suit): MinorArcanaCard[] {
-  return minorArcana[suit] || []
-}
+// ============ 全局配置（非翻译项） ============
 
-export function getAllCards(): TarotCard[] {
-  const minorCards = getAllMinorArcana().map(card => ({
-    ...card,
-    number: typeof card.rank === 'number' ? String(card.rank) : card.rank,
-  }))
-  return [...majorArcana, ...minorCards]
-}
+export const REVERSED_PROBABILITY = baseConfig.config.reversedProbability
+
+// ============ 抽牌与摘要逻辑 ============
 
 function shuffle<T>(array: T[]): T[] {
   const arr = [...array]
@@ -256,23 +312,45 @@ function shuffle<T>(array: T[]): T[] {
   return arr
 }
 
-export function drawCards(count: SpreadType, useFullDeck = false): DrawnCard[] {
-  const deck = useFullDeck ? getAllCards() : majorArcana
+export function drawCards(count: SpreadType, useFullDeck: boolean, locale: string): DrawnCard[] {
+  const data = getStaticCardData(locale)
+  const deck = useFullDeck
+    ? [
+        ...data.majorArcana,
+        ...Object.values(data.minorArcana)
+          .flat()
+          .map(card => ({
+            ...card,
+            number: typeof card.rank === 'number' ? String(card.rank) : card.rank,
+          })),
+      ]
+    : data.majorArcana
   const shuffled = shuffle(deck)
-  const positions = getSpreadPositions(count)
+  const positions = data.spreads[String(count)]?.positions || []
 
   return shuffled.slice(0, count).map((card, i) => ({
     ...card,
     isReversed: Math.random() < REVERSED_PROBABILITY,
-    position: positions[i].name,
-    row: positions[i].row,
-    col: positions[i].col,
+    position: positions[i]?.name || '',
+    row: positions[i]?.row || 0,
+    col: positions[i]?.col || 0,
   }))
 }
 
-export function generateSummary(cards: DrawnCard[], spreadType: SpreadType): string {
+export function generateSummary(
+  cards: DrawnCard[],
+  spreadType: SpreadType,
+  locale: string
+): string {
   if (cards.length === 0) return ''
 
+  if (locale === 'zh') {
+    return generateSummaryZh(cards, spreadType)
+  }
+  return generateSummaryEn(cards, spreadType)
+}
+
+function generateSummaryZh(cards: DrawnCard[], spreadType: SpreadType): string {
   if (spreadType === 1) {
     const card = cards[0]
     let text = `今日的指引是「${card.name}」${card.isReversed ? '（逆位）' : ''}。`
@@ -292,6 +370,32 @@ export function generateSummary(cards: DrawnCard[], spreadType: SpreadType): str
     text += `过去的「${cards[2].name}」为现在奠定了基础，`
     text += `未来将朝「${cards[3].name}」的方向发展。`
     text += `综合来看，「${cards[4].name}」是给你的核心建议。`
+    return text
+  }
+  return ''
+}
+
+function generateSummaryEn(cards: DrawnCard[], spreadType: SpreadType): string {
+  if (spreadType === 1) {
+    const card = cards[0]
+    const kw = card.keywords.split(', ')[0] || card.keywords
+    let text = `Today's guidance is "${card.name}"${card.isReversed ? ' (Reversed)' : ''}.`
+    text += card.isReversed
+      ? ` This card reminds you to be mindful of: ${card.reversed.split(', ')[0]}. Today may require reflection on ${kw}-related matters.`
+      : ` This is a message about ${card.keywords}. Today is a good day for ${card.upright.split(', ')[0]}.`
+    return text
+  } else if (spreadType === 3) {
+    let text = `Looking at the energy flow from past to future: `
+    text += `"${cards[0].name}"${cards[0].isReversed ? ' (Reversed)' : ''} from the past has influenced your current situation. `
+    text += `"${cards[1].name}"${cards[1].isReversed ? ' (Reversed)' : ''} is the core challenge you face now. `
+    text += `"${cards[2].name}"${cards[2].isReversed ? ' (Reversed)' : ''} points to the direction of future development.`
+    return text
+  } else if (spreadType === 5) {
+    let text = `The five-card spread reveals the complete energy landscape: `
+    text += `Your current state is "${cards[0].name}", the challenge is "${cards[1].name}". `
+    text += `"${cards[2].name}" from the past laid the groundwork, `
+    text += `and the future moves toward "${cards[3].name}". `
+    text += `Overall, "${cards[4].name}" is the core advice for you.`
     return text
   }
   return ''

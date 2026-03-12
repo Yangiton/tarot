@@ -1,10 +1,10 @@
 # BlackRice Tarot - 项目上下文
 
-> 更新日期：2026-03-11
+> 更新日期：2026-03-12
 
 ## 项目概述
 
-**BlackRice Tarot**（黑米塔罗）是一款基于 Vite + Vue3 + TypeScript 的轻量级塔罗占卜 Web App，支持一键部署到 GitHub Pages。产品名字源自小黑猫"黑米"，融合塔罗的神秘感与黑猫的灵性。
+**BlackRice Tarot**（黑米塔罗）是一款基于 Vite + Vue3 + TypeScript 的轻量级塔罗占卜 Web App，支持 GitHub Pages 部署及 Capacitor 打包原生 App。产品名字源自小黑猫"黑米"，融合塔罗的神秘感与黑猫的灵性。
 
 ### 核心特点
 
@@ -13,8 +13,9 @@
 | 🚀 即开即用 | 无需注册，打开即可使用 |
 | 🌙 视觉沉浸 | 神秘感强的深色金色主题 |
 | 👆 轻交互 | 简洁的点击/翻牌交互体验 |
-| 📱 跨端适配 | 完美支持 PC 和移动端 |
+| 📱 跨端适配 | PC、移动端、原生 App |
 | 🔮 专业内容 | 基于韦特塔罗的专业解读 |
+| 🌍 国际化 | 中英双语支持 |
 
 ---
 
@@ -29,6 +30,8 @@
 | Vite | 5.x | 构建工具 |
 | Tailwind CSS | 3.x | 原子化 CSS |
 | Vue Router | 4.x | 路由管理 |
+| vue-i18n | 11.x | 国际化 |
+| Capacitor | 8.x | 原生 App 打包 |
 
 ### 辅助库
 
@@ -37,6 +40,10 @@
 | motion-v | 动画库（Vue 版 Framer Motion） |
 | lucide-vue-next | 图标库 |
 | clsx + tailwind-merge | 条件类名合并 |
+| @vueuse/core | Vue 组合式工具库 |
+| @capacitor/haptics | 震动反馈 |
+| @capacitor/share | 系统分享 |
+| @capacitor/preferences | 本地存储 |
 
 ---
 
@@ -56,6 +63,10 @@ tarot/
 ├── public/
 │   └── favicon.svg             # 网站图标
 ├── src/
+│   ├── assets/
+│   │   └── tarot/              # 塔罗牌图片资源
+│   │       ├── 178/            # 莱德韦特牌组图片
+│   │       └── README.md       # 牌组资源说明
 │   ├── components/             # 组件
 │   │   ├── tarot/              # 塔罗业务组件
 │   │   │   └── TarotCard.vue   # 塔罗牌卡片
@@ -66,10 +77,23 @@ tarot/
 │   │   ├── TipsBox.vue         # 提示框
 │   │   └── AppFooter.vue       # 页脚
 │   ├── composables/            # 组合式函数
-│   │   └── useTarot.ts         # 塔罗状态管理
+│   │   ├── useTarot.ts         # 塔罗状态管理
+│   │   ├── useDevice.ts        # 设备检测
+│   │   └── useNative.ts        # 原生能力封装
 │   ├── data/                   # 数据层
-│   │   ├── index.ts            # 数据导出和工具函数
-│   │   └── tarot.json          # 塔罗牌数据（JSON 分离）
+│   │   ├── index.ts            # 数据导出、多语言数据加载
+│   │   ├── tarot-base.json     # 基础配置（逆位概率等）
+│   │   └── card-images.ts      # 卡牌图片路径工具
+│   ├── directives/             # Vue 指令
+│   │   └── vHoloFoil.ts        # 全息闪卡效果
+│   ├── i18n/                   # 国际化
+│   │   ├── index.ts            # i18n 配置
+│   │   └── locales/
+│   │       ├── zh.json         # 中文 UI 文案
+│   │       ├── en.json         # 英文 UI 文案
+│   │       └── cards/
+│   │           ├── zh.json     # 中文牌义（78张）
+│   │           └── en.json     # 英文牌义（78张）
 │   ├── layouts/                # 布局组件
 │   │   └── MainLayout.vue      # 主布局
 │   ├── lib/                    # 工具库
@@ -86,6 +110,7 @@ tarot/
 │   ├── App.vue                 # 根组件
 │   ├── main.ts                 # 入口文件
 │   └── vite-env.d.ts           # Vite 类型声明
+├── capacitor.config.ts         # Capacitor 配置
 ├── index.html                  # HTML 入口
 ├── package.json                # 依赖配置（pnpm）
 ├── pnpm-lock.yaml              # 依赖锁定
@@ -94,6 +119,83 @@ tarot/
 ├── tsconfig.json               # TypeScript 配置
 ├── tsconfig.node.json          # Node TypeScript 配置
 └── vite.config.ts              # Vite 配置
+```
+
+---
+
+## 国际化架构
+
+### 语言文件结构
+
+```
+src/i18n/
+├── index.ts              # i18n 配置（自动检测浏览器语言）
+└── locales/
+    ├── zh.json           # 中文 UI 文案
+    ├── en.json           # 英文 UI 文案
+    └── cards/
+        ├── zh.json       # 中文牌义数据
+        └── en.json       # 英文牌义数据
+```
+
+### 多语言数据加载
+
+```typescript
+// 使用方式 1：在组件中使用 UI 文案
+const { t } = useI18n()
+const label = t('home.drawButton') // "开始抽牌" / "Draw Cards"
+
+// 使用方式 2：获取响应式牌义数据
+const { majorArcana, suits, tips, spreads } = useTarot()
+// 数据会随 locale 变化自动切换语言
+```
+
+### 支持的语言
+
+| 语言代码 | 语言名称 | 状态 |
+|---------|---------|------|
+| `zh` | 简体中文 | ✅ 完整 |
+| `en` | English | ✅ 完整 |
+
+---
+
+## Capacitor 集成
+
+### 配置文件
+
+```typescript
+// capacitor.config.ts
+{
+  appId: 'com.blackrice.tarot',
+  appName: 'BlackRice Tarot',
+  webDir: 'dist',
+}
+```
+
+### 可用插件
+
+| 插件 | 用途 | composable |
+|------|------|------------|
+| @capacitor/haptics | 震动反馈 | `useNative().hapticFeedback()` |
+| @capacitor/share | 系统分享 | `useNative().shareCard()` |
+| @capacitor/preferences | 本地存储 | `useNative().saveData()` / `loadData()` |
+| @capacitor/status-bar | 状态栏控制 | - |
+| @capacitor/splash-screen | 启动屏 | - |
+
+### 构建命令
+
+```bash
+# Web 构建（GitHub Pages）
+pnpm build
+
+# Capacitor 构建（原生 App）
+pnpm build:cap
+
+# 打开 iOS 项目（需先 npx cap add ios）
+pnpm app:ios
+
+# 打开 Android 项目（需先 npx cap add android）
+pnpm app:android
 ```
 
 ---
@@ -137,45 +239,49 @@ pnpm preview
 pnpm deploy
 ```
 
-### 4. 配置仓库名
+### 4. Capacitor App 构建
 
-如果仓库名不是 `tarot`，需要修改 `vite.config.ts`:
+```bash
+# 首次添加平台
+npx cap add ios      # 需要 Mac + Xcode
+npx cap add android  # 需要 Android Studio
 
-```typescript
-export default defineConfig({
-  plugins: [vue()],
-  base: '/你的仓库名/',
-})
+# 构建并打开原生项目
+pnpm app:ios
+pnpm app:android
 ```
 
 ---
 
 ## 核心功能
 
-### 当前实现 (MVP v1.0)
+### 当前实现 (MVP v1.0 + i18n)
 
-- [x] 22 张大阿卡纳牌完整数据（含描述、注解、星座对应）
+- [x] 78 张塔罗牌完整数据（22大 + 56小阿尔卡纳）
 - [x] 三种牌阵：单牌、三牌阵、五牌阵
-- [x] 正位/逆位随机（30% 逆位概率，可配置）
+- [x] 正位/逆位随机（30% 逆位概率）
 - [x] 点击翻牌交互 + 3D 翻转动画
+- [x] 全息闪卡效果（6种风格）
 - [x] 完整解读面板（牌义、关键词、象征、综合指引）
 - [x] 星空背景动画
 - [x] 占卜小贴士轮播
 - [x] 金色神秘主题
 - [x] 响应式布局（移动端底部导航/PC端顶部导航）
 - [x] 牌库浏览页面
+- [x] 多牌组支持（Emoji + 韦特塔罗）
+- [x] **i18n 国际化（中英双语）**
+- [x] **Capacitor 项目结构（原生 App 支持）**
 - [x] GitHub Pages 一键部署
 
 ### 扩展方向
 
-- [ ] 56 张小阿卡纳牌（权杖/圣杯/宝剑/金币）
 - [ ] 更多牌阵（凯尔特十字等）
-- [ ] 牌面图片资源
 - [ ] 抽牌历史记录（LocalStorage）
 - [ ] 每日一牌功能
 - [ ] 分享功能（生成卡片）
 - [ ] AI 解读集成
 - [ ] PWA 离线支持
+- [ ] iOS/Android App 上架
 
 ---
 
@@ -227,7 +333,7 @@ flowchart TD
 
 ### 逆位概率
 
-在 `src/data/tarot.json` 中：
+在 `src/data/tarot-base.json` 中：
 
 ```json
 {
@@ -239,15 +345,23 @@ flowchart TD
 
 ### 牌阵配置
 
+牌阵数据位于语言文件 `src/i18n/locales/cards/{lang}.json` 的 `spreads` 字段：
+
 ```json
 {
   "spreads": {
-    "1": ["今日指引"],
-    "3": ["过去", "现在", "未来"],
-    "5": ["现状", "挑战", "过去", "未来", "建议"]
+    "1": {
+      "name": "单牌占卜",
+      "description": "最简单的牌阵，适合每日指引或快速问答",
+      "positions": [{ "name": "今日指引", "row": 0, "col": 0 }]
+    }
   }
 }
 ```
+
+### 语言设置
+
+语言偏好存储在 `localStorage` 的 `tarot-locale` 键中，默认自动检测浏览器语言。
 
 ---
 
@@ -266,15 +380,25 @@ flowchart TD
 
 检查 `vite.config.ts` 中的 `base` 是否与仓库名匹配。
 
-### Q: 如何添加新牌？
+### Q: 如何添加新语言？
 
-编辑 `src/data/tarot.json`，在 `majorArcana` 数组中添加新牌数据。
+1. 在 `src/i18n/locales/` 下创建 `{lang}.json`（UI 文案）
+2. 在 `src/i18n/locales/cards/` 下创建 `{lang}.json`（牌义数据）
+3. 在 `src/data/index.ts` 的 `cardDataMap` 中注册新语言
+4. 在 `src/i18n/index.ts` 的 `messages` 中添加新语言
+5. 在 Settings 页面的 `languageOptions` 中添加选项
 
 ### Q: 如何修改牌阵？
 
-1. 在 `spreads` 中添加新牌阵
-2. 在 `src/pages/Home.vue` 的 `spreads` 数组中添加选项
-3. 在 `src/data/index.ts` 的 `generateSummary` 中添加对应解读逻辑
+1. 在所有语言的 `cards/{lang}.json` 的 `spreads` 中添加新牌阵
+2. 在 `src/data/index.ts` 的 `generateSummary` 中添加对应解读逻辑
+
+### Q: 如何构建原生 App？
+
+1. 运行 `pnpm build:cap` 构建 Web 资源
+2. 运行 `npx cap add ios` 或 `npx cap add android`
+3. 运行 `npx cap sync` 同步资源
+4. 运行 `npx cap open ios` 或 `npx cap open android` 打开原生项目
 
 ---
 
@@ -283,5 +407,7 @@ flowchart TD
 - [Vue 3 文档](https://vuejs.org/)
 - [Vite 文档](https://vitejs.dev/)
 - [Tailwind CSS 文档](https://tailwindcss.com/)
+- [vue-i18n 文档](https://vue-i18n.intlify.dev/)
+- [Capacitor 文档](https://capacitorjs.com/docs)
 - [GitHub Pages 文档](https://docs.github.com/en/pages)
 - 项目文档：`docs/` 目录

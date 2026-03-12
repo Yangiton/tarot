@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useIntervalFn, useCycleList } from '@vueuse/core'
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-vue-next'
-import { tips } from '@/data'
+import { useTarot } from '@/composables/useTarot'
+
+const { tips } = useTarot()
 
 const { state: currentTip, index: currentIndex, next, prev, go } = useCycleList(tips)
 
@@ -23,7 +25,7 @@ useIntervalFn(handleNext, 8000)
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2 text-gold text-sm font-medium">
         <Lightbulb class="w-4 h-4" />
-        <span>占卜小贴士</span>
+        <span>{{ $t('home.tipsTitle') }}</span>
       </div>
 
       <div class="flex items-center gap-2">

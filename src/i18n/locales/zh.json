@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "divination": "占卜",
+    "library": "牌库",
+    "settings": "设置"
+  },
+  "home": {
+    "title": "✦ 塔罗占卜 ✦",
+    "subtitle": "聆听宇宙的低语",
+    "tipsLabel": "💡 小贴士",
+    "tipsTitle": "占卜小贴士",
+    "tipsNext": "下一条 →",
+    "drawButton": "开始抽牌",
+    "hintFlip": "点击卡牌翻开",
+    "hintReading": "查看解读 →",
+    "resetButton": "重新抽牌",
+    "readingButton": "查看解读 →",
+    "tipsToggleTitle": "占卜小贴士"
+  },
+  "reading": {
+    "title": "✦ 牌阵解读 ✦",
+    "back": "返回",
+    "reset": "重新抽牌",
+    "upright": "正位",
+    "reversed": "逆位",
+    "interpretation": "牌义解读",
+    "symbolism": "象征意义",
+    "summary": "✦ 综合指引 ✦"
+  },
+  "library": {
+    "title": "✦ 牌库 ✦",
+    "subtitle": "探索塔罗的奥秘",
+    "majorArcana": "大阿尔卡纳",
+    "majorArcanaFull": "大阿尔卡纳 (Major Arcana)",
+    "majorArcanaDesc": "22张代表人生重大主题的牌",
+    "minorArcana": "小阿尔卡纳",
+    "minorArcanaFull": "小阿尔卡纳 (Minor Arcana)",
+    "minorArcanaDesc": "56张反映日常生活细节的牌",
+    "keywords": "关键词",
+    "uprightMeaning": "✦ 正位含义",
+    "reversedMeaning": "✦ 逆位含义",
+    "cardDescription": "卡面描述",
+    "symbolism": "象征意义",
+    "elements": {
+      "fire": "🔥 火",
+      "water": "💧 水",
+      "air": "💨 风",
+      "earth": "🌍 土"
+    }
+  },
+  "settings": {
+    "title": "✦ 设置 ✦",
+    "subtitle": "个性化你的占卜体验",
+    "divinationSettings": "占卜设置",
+    "spreadSelection": "牌阵选择",
+    "spreadSelectionDesc": "选择占卜使用的牌阵",
+    "reversedProbability": "逆位概率",
+    "reversedProbabilityDesc": "抽牌时出现逆位的概率",
+    "deckRange": "牌组范围",
+    "deckRangeDesc": "选择抽牌使用的牌组范围",
+    "deckRangeMajor": "大阿尔卡纳",
+    "deckRangeFull": "完整牌组",
+    "deckRangeMajorDesc": "22张代表人生重大主题的牌",
+    "deckRangeFullDesc": "78张牌（大阿尔卡纳 + 小阿尔卡纳）",
+    "visualEffects": "视觉效果",
+    "holoEffect": "全息效果",
+    "holoEffectDesc": "选择卡片的全息光效类型",
+    "language": "语言",
+    "languageDesc": "选择应用的显示语言",
+    "about": "关于",
+    "aboutText1": "本应用基于经典的{tarot}（Rider-Waite Tarot），由亚瑟·韦特于 1909 年设计。",
+    "aboutTarotName": "韦特塔罗",
+    "aboutText2": "塔罗牌是一面镜子，反映的是你内心深处的智慧。答案一直都在你心中，牌只是帮你看清它。",
+    "aboutDisclaimer": "塔罗牌仅供娱乐和自我反思，不构成任何决策建议。",
+    "version": "版本",
+    "holoOptions": {
+      "normal": "普通全息",
+      "normalDesc": "经典彩虹条纹效果",
+      "cosmos": "宇宙全息",
+      "cosmosDesc": "梦幻星空背景",
+      "rainbow": "彩虹全息",
+      "rainbowDesc": "强烈彩虹渐变",
+      "galaxy": "银河全息",
+      "galaxyDesc": "深空星云效果",
+      "radiant": "光辉全息",
+      "radiantDesc": "金属放射状",
+      "pixel": "像素全息",
+      "pixelDesc": "复古点阵效果"
+    }
+  },
+  "footer": {
+    "text": "基于韦特塔罗 · Made with ✦ by heimi"
+  },
+  "common": {
+    "cards": "张"
+  },
+  "decks": {
+    "0": {
+      "name": "Emoji 牌组",
+      "description": "使用 Emoji 符号表示的简约牌组"
+    },
+    "178": {
+      "name": "莱德·韦特塔罗牌",
+      "description": "1909 年经典版本，最广泛使用的塔罗牌"
+    }
+  }
+}

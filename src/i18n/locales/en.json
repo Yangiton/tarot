@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "divination": "Tarot",
+    "library": "Library",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "✦ Tarot Reading ✦",
+    "subtitle": "Listen to the whispers of the universe",
+    "tipsLabel": "💡 Tips",
+    "tipsTitle": "Reading Tips",
+    "tipsNext": "Next →",
+    "drawButton": "Draw Cards",
+    "hintFlip": "Tap a card to reveal",
+    "hintReading": "View Reading →",
+    "resetButton": "Redraw",
+    "readingButton": "View Reading →",
+    "tipsToggleTitle": "Reading Tips"
+  },
+  "reading": {
+    "title": "✦ Reading ✦",
+    "back": "Back",
+    "reset": "Redraw",
+    "upright": "Upright",
+    "reversed": "Reversed",
+    "interpretation": "Interpretation",
+    "symbolism": "Symbolism",
+    "summary": "✦ Overall Guidance ✦"
+  },
+  "library": {
+    "title": "✦ Library ✦",
+    "subtitle": "Explore the mysteries of Tarot",
+    "majorArcana": "Major Arcana",
+    "majorArcanaFull": "Major Arcana",
+    "majorArcanaDesc": "22 cards representing major life themes",
+    "minorArcana": "Minor Arcana",
+    "minorArcanaFull": "Minor Arcana",
+    "minorArcanaDesc": "56 cards reflecting everyday details",
+    "keywords": "Keywords",
+    "uprightMeaning": "✦ Upright Meaning",
+    "reversedMeaning": "✦ Reversed Meaning",
+    "cardDescription": "Card Description",
+    "symbolism": "Symbolism",
+    "elements": {
+      "fire": "🔥 Fire",
+      "water": "💧 Water",
+      "air": "💨 Air",
+      "earth": "🌍 Earth"
+    }
+  },
+  "settings": {
+    "title": "✦ Settings ✦",
+    "subtitle": "Personalize your reading experience",
+    "divinationSettings": "Reading Settings",
+    "spreadSelection": "Spread Selection",
+    "spreadSelectionDesc": "Choose the spread for your reading",
+    "reversedProbability": "Reversal Probability",
+    "reversedProbabilityDesc": "Chance of drawing reversed cards",
+    "deckRange": "Deck Range",
+    "deckRangeDesc": "Choose which cards to include in readings",
+    "deckRangeMajor": "Major Arcana",
+    "deckRangeFull": "Full Deck",
+    "deckRangeMajorDesc": "22 cards representing major life themes",
+    "deckRangeFullDesc": "78 cards (Major + Minor Arcana)",
+    "visualEffects": "Visual Effects",
+    "holoEffect": "Holographic Effect",
+    "holoEffectDesc": "Choose the holographic style for cards",
+    "language": "Language",
+    "languageDesc": "Choose the display language",
+    "about": "About",
+    "aboutText1": "This app is based on the classic {tarot} (Rider-Waite Tarot), designed by Arthur Edward Waite in 1909.",
+    "aboutTarotName": "Waite Tarot",
+    "aboutText2": "Tarot is a mirror reflecting the wisdom deep within you. The answers have always been in your heart; the cards simply help you see them.",
+    "aboutDisclaimer": "Tarot is for entertainment and self-reflection only, not a substitute for professional advice.",
+    "version": "Version",
+    "holoOptions": {
+      "normal": "Classic Holo",
+      "normalDesc": "Classic rainbow stripe effect",
+      "cosmos": "Cosmos Holo",
+      "cosmosDesc": "Dreamy starfield background",
+      "rainbow": "Rainbow Holo",
+      "rainbowDesc": "Intense rainbow gradient",
+      "galaxy": "Galaxy Holo",
+      "galaxyDesc": "Deep space nebula effect",
+      "radiant": "Radiant Holo",
+      "radiantDesc": "Metallic radial shine",
+      "pixel": "Pixel Holo",
+      "pixelDesc": "Retro dot matrix effect"
+    }
+  },
+  "footer": {
+    "text": "Based on Waite Tarot · Made with ✦ by heimi"
+  },
+  "common": {
+    "cards": " cards"
+  },
+  "decks": {
+    "0": {
+      "name": "Emoji Deck",
+      "description": "A minimalist deck using emoji symbols"
+    },
+    "178": {
+      "name": "Rider-Waite Tarot",
+      "description": "The 1909 classic, most widely used tarot deck"
+    }
+  }
+}

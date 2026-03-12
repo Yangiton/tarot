@@ -1,12 +1,13 @@
 import { computed } from 'vue'
 import { useStorage, useCounter } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 import {
   type DrawnCard,
   type SpreadType,
   drawCards as drawCardsUtil,
   generateSummary,
-  getSpreadConfig,
   DEFAULT_DECK_ID,
+  useCardData,
 } from '@/data'
 import type { HoloType } from '@/directives/vHoloFoil'
 
@@ -18,22 +19,35 @@ const useFullDeck = useStorage<boolean>('tarot-use-full-deck', false)
 const { count: flippedCount, inc: incFlipped, reset: resetFlipped } = useCounter(0)
 
 export function useTarot() {
+  const { locale } = useI18n()
+  const {
+    spreads,
+    tips,
+    suits,
+    majorArcana,
+    minorArcana,
+    getSpreadConfig,
+    getAllMinorArcana,
+    getAllCards,
+  } = useCardData()
+
   const isDrawn = computed(() => drawnCards.value.length > 0)
   const allFlipped = computed(() => isDrawn.value && flippedCount.value >= drawnCards.value.length)
-  const summary = computed(() => generateSummary(drawnCards.value, currentSpread.value))
+  const summary = computed(() =>
+    generateSummary(drawnCards.value, currentSpread.value, locale.value)
+  )
   const spreadConfig = computed(() => getSpreadConfig(currentSpread.value))
 
   const selectSpread = (count: SpreadType) => {
     if (currentSpread.value !== count) {
       currentSpread.value = count
-      // 切换牌阵时自动重置
       drawnCards.value = []
       resetFlipped()
     }
   }
 
   const drawCards = () => {
-    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value)
+    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value, locale.value)
     resetFlipped()
   }
 
@@ -56,7 +70,6 @@ export function useTarot() {
 
   const setUseFullDeck = (value: boolean) => {
     useFullDeck.value = value
-    // 切换牌组范围时重置当前抽牌
     drawnCards.value = []
     resetFlipped()
   }
@@ -72,6 +85,13 @@ export function useTarot() {
     allFlipped,
     summary,
     spreadConfig,
+    spreads,
+    tips,
+    suits,
+    majorArcana,
+    minorArcana,
+    getAllMinorArcana,
+    getAllCards,
     selectSpread,
     drawCards,
     flipCard,

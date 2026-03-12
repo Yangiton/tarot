@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Motion, AnimatePresence } from 'motion-v'
 import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
 import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
@@ -9,8 +10,8 @@ import AppFooter from '@/components/AppFooter.vue'
 import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
 import { useDevice } from '@/composables/useDevice'
-import { tips, spreads } from '@/data'
 
+const { t } = useI18n()
 const router = useRouter()
 const { isMobileLandscape, isMobile } = useDevice()
 const {
@@ -24,9 +25,13 @@ const {
   drawCards,
   flipCard,
   resetReading,
+  tips,
+  spreads,
 } = useTarot()
 
-const deckRangeLabel = computed(() => (useFullDeck.value ? '完整牌组' : '大阿尔卡纳'))
+const deckRangeLabel = computed(() =>
+  useFullDeck.value ? t('settings.deckRangeFull') : t('settings.deckRangeMajor')
+)
 
 const cardRefs = ref<Record<number, any>>({})
 const isAnimating = ref(false)
@@ -43,12 +48,12 @@ const setCardRef = (el: unknown, index: number) => {
 }
 
 const currentSpreadConfig = computed(() => {
-  return spreads[String(currentSpread.value)]
+  return spreads.value[String(currentSpread.value)]
 })
 
 const hint = computed(() => {
-  if (!allFlipped.value) return '点击卡牌翻开'
-  return '查看解读 →'
+  if (!allFlipped.value) return t('home.hintFlip')
+  return t('home.hintReading')
 })
 
 const goToSettings = () => {
@@ -104,8 +109,8 @@ const goToReading = () => {
     <!-- Header Row: Title + Tips Icon -->
     <header class="header-row">
       <div class="header-content">
-        <h1 class="title">✦ 塔罗占卜 ✦</h1>
-        <p v-if="!isMobileLandscape" class="subtitle">聆听宇宙的低语</p>
+        <h1 class="title">{{ $t('home.title') }}</h1>
+        <p v-if="!isMobileLandscape" class="subtitle">{{ $t('home.subtitle') }}</p>
       </div>
 
       <!-- Tips Toggle Button -->
@@ -113,7 +118,7 @@ const goToReading = () => {
         class="tips-toggle"
         :class="{ 'is-active': showTips }"
         @click="toggleTips()"
-        title="占卜小贴士"
+        :title="$t('home.tipsToggleTitle')"
       >
         <Lightbulb class="w-4 h-4 md:w-5 md:h-5" />
       </button>
@@ -130,7 +135,7 @@ const goToReading = () => {
         class="tips-popup"
       >
         <div class="tips-header">
-          <span class="tips-title">💡 小贴士</span>
+          <span class="tips-title">{{ $t('home.tipsLabel') }}</span>
           <button class="tips-close" @click="toggleTips(false)">
             <X class="w-4 h-4" />
           </button>
@@ -138,7 +143,7 @@ const goToReading = () => {
         <p class="tips-text" v-html="currentTip.text"></p>
         <div class="tips-footer">
           <span class="tips-count">{{ currentTipIndex + 1 }}/{{ tips.length }}</span>
-          <button class="tips-next" @click="nextTip">下一条 →</button>
+          <button class="tips-next" @click="nextTip">{{ $t('home.tipsNext') }}</button>
         </div>
       </Motion>
     </AnimatePresence>
@@ -172,7 +177,7 @@ const goToReading = () => {
           class="draw-area"
         >
           <Button size="lg" :disabled="isAnimating" @click="handleDraw" class="draw-btn">
-            开始抽牌
+            {{ $t('home.drawButton') }}
           </Button>
         </Motion>
 
@@ -225,9 +230,11 @@ const goToReading = () => {
           class="action-buttons"
         >
           <Button variant="outline" size="sm" :disabled="isAnimating" @click="handleReset">
-            重新抽牌
+            {{ $t('home.resetButton') }}
           </Button>
-          <Button v-if="allFlipped" size="sm" @click="goToReading"> 查看解读 → </Button>
+          <Button v-if="allFlipped" size="sm" @click="goToReading">{{
+            $t('home.readingButton')
+          }}</Button>
           <span v-else class="hint-text">{{ hint }}</span>
         </Motion>
       </AnimatePresence>

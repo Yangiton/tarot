@@ -1,16 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Home, BookOpen, Settings } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
-const navItems = [
-  { path: '/', icon: Home, label: '占卜' },
-  { path: '/library', icon: BookOpen, label: '牌库' },
-  { path: '/settings', icon: Settings, label: '设置' },
-]
+const navItems = computed(() => [
+  { path: '/', icon: Home, label: t('nav.divination') },
+  { path: '/library', icon: BookOpen, label: t('nav.library') },
+  { path: '/settings', icon: Settings, label: t('nav.settings') },
+])
 
 const navigate = (path: string) => {
   router.push(path)
