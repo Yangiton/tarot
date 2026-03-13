@@ -5,12 +5,19 @@ import { Motion } from 'motion-v'
 import { ChevronDown } from 'lucide-vue-next'
 import { REVERSED_PROBABILITY, type SpreadType } from '@/data'
 import { useTarot } from '@/composables/useTarot'
-import type { HoloType } from '@/directives/vHoloFoil'
+import { HOLO_PRESET_LIST } from '@/components/holo'
 import type { SupportedLocale } from '@/i18n'
 
 const { t, locale } = useI18n()
-const { currentSpread, selectSpread, holoType, setHoloType, useFullDeck, setUseFullDeck, spreads } =
-  useTarot()
+const {
+  currentSpread,
+  selectSpread,
+  holoPreset,
+  setHoloPreset,
+  useFullDeck,
+  setUseFullDeck,
+  spreads,
+} = useTarot()
 
 const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
 
@@ -27,18 +34,17 @@ const currentSpreadConfig = computed(() => {
   return spreads.value[String(currentSpread.value)]
 })
 
-const holoTypeKeys: HoloType[] = ['normal', 'cosmos', 'rainbow', 'galaxy', 'radiant', 'pixel']
-
+// 使用预设配置生成选项
 const holoOptions = computed(() =>
-  holoTypeKeys.map(key => ({
-    value: key,
-    name: t(`settings.holoOptions.${key}`),
-    description: t(`settings.holoOptions.${key}Desc`),
+  HOLO_PRESET_LIST.map(preset => ({
+    value: preset.id,
+    name: preset.name[locale.value === 'zh' ? 'zh' : 'en'],
+    description: preset.description[locale.value === 'zh' ? 'zh' : 'en'],
   }))
 )
 
 const currentHoloConfig = computed(() => {
-  return holoOptions.value.find(o => o.value === holoType.value)
+  return holoOptions.value.find(o => o.value === holoPreset.value)
 })
 
 const handleSpreadChange = (e: Event) => {
@@ -47,8 +53,8 @@ const handleSpreadChange = (e: Event) => {
 }
 
 const handleHoloChange = (e: Event) => {
-  const value = (e.target as HTMLSelectElement).value as HoloType
-  setHoloType(value)
+  const value = (e.target as HTMLSelectElement).value
+  setHoloPreset(value)
 }
 
 const deckRangeOptions = computed(() => [
@@ -218,7 +224,7 @@ const handleLanguageChange = (e: Event) => {
                 </div>
 
                 <div class="relative">
-                  <select :value="holoType" @change="handleHoloChange" class="spread-select">
+                  <select :value="holoPreset" @change="handleHoloChange" class="spread-select">
                     <option v-for="opt in holoOptions" :key="opt.value" :value="opt.value">
                       {{ opt.name }}
                     </option>

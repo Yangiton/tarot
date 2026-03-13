@@ -4,37 +4,38 @@ import { useRoute, useRouter } from 'vue-router'
 import { Motion, AnimatePresence } from 'motion-v'
 import { X, ChevronLeft } from 'lucide-vue-next'
 import {
-  type TarotCard,
+  type TarotCard as TarotCardType,
   type MinorArcanaCard,
+  type DisplayCard,
   type Suit,
   useDeckConfig,
   splitKeywords,
+  getCardNumber,
 } from '@/data'
-import { getCardImageUrl, isImageDeck } from '@/data/card-images'
 import { useI18n } from 'vue-i18n'
 import { useTarot } from '@/composables/useTarot'
-import { vHoloFoil } from '@/directives/vHoloFoil'
-import TarotCardComponent from '@/components/tarot/TarotCard.vue'
+import { HoloTarot, TarotCard } from '@/components/tarot'
 import DeckCover from '@/components/deck/DeckCover.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { locale } = useI18n()
 const {
-  holoType,
+  holoPreset,
   majorArcana,
   minorArcana,
   suits,
   currentDeckId: globalDeckId,
   setDeckId,
 } = useTarot()
-const { decks, getDeckConfig, getDeckAspectRatio } = useDeckConfig()
+const { decks, getDeckConfig } = useDeckConfig()
 
 // 从路由参数获取当前牌组 ID
 const selectedDeckId = computed(() => (route.params.deckId as string) || null)
 
 // 卡牌详情弹窗
-const selectedCard = ref<TarotCard | MinorArcanaCard | null>(null)
+const selectedCard = ref<DisplayCard | null>(null)
+const showDetail = ref(false)
 
 // 路由刚进入牌组详情时的时间戳，用于忽略随后几百毫秒内的“合成点击”穿透
 const deckDetailEnteredAt = ref<number>(0)
@@ -50,10 +51,6 @@ watch(
 const currentDeck = computed(() =>
   selectedDeckId.value ? getDeckConfig(selectedDeckId.value) : null
 )
-const currentAspectRatio = computed(() =>
-  selectedDeckId.value ? getDeckAspectRatio(selectedDeckId.value) : 0.585
-)
-const useImages = computed(() => (selectedDeckId.value ? isImageDeck(selectedDeckId.value) : false))
 
 // 花色顺序
 const suitOrder: Suit[] = ['wands', 'cups', 'swords', 'pentacles']
@@ -73,57 +70,37 @@ const handleSetDefault = (deckId: string) => {
   setDeckId(deckId)
 }
 
-// 打开卡牌详情（路由刚切换后 400ms 内忽略，防止移动端合成点击穿透）
+// 卡牌缩小后显示详情
 const OPEN_GUARD_MS = 400
-const openCard = (card: TarotCard | MinorArcanaCard) => {
+const onCardZoom = (card: DisplayCard, zoomed: boolean) => {
   if (deckDetailEnteredAt.value && Date.now() - deckDetailEnteredAt.value < OPEN_GUARD_MS) return
-  selectedCard.value = card
+
+  if (!zoomed && selectedCard.value?.id === card.id) {
+    // 卡牌缩小时显示详情弹窗
+    showDetail.value = true
+  } else if (zoomed) {
+    selectedCard.value = card
+  }
 }
 
-const closeCard = () => {
+// 关闭详情弹窗
+const closeDetail = () => {
+  showDetail.value = false
   selectedCard.value = null
 }
 
-// 将 MinorArcanaCard 转换为兼容 TarotCard 的格式
-const toDisplayCard = (card: MinorArcanaCard): TarotCard & MinorArcanaCard => {
+// 获取选中卡牌的编号（用于显示）
+const selectedCardNumber = computed(() => {
+  if (!selectedCard.value) return undefined
+  return getCardNumber(selectedCard.value)
+})
+
+// 将 MinorArcanaCard 转换为兼容 TarotCardType 的格式
+const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard => {
   return {
     ...card,
     number: String(card.rank),
-  } as TarotCard & MinorArcanaCard
-}
-
-/**
- * 根据卡片获取图片索引 (0-77)
- */
-const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
-  const id = card.id
-
-  if (id.startsWith('major-')) {
-    const num = parseInt(id.replace('major-', ''), 10)
-    return isNaN(num) ? 0 : num
-  }
-
-  const match = id.match(/^minor-(\w+)-(.+)$/)
-  if (match) {
-    const suit = match[1] as Suit
-    const rankStr = match[2]
-    const suitOffset: Record<Suit, number> = {
-      wands: 22,
-      cups: 36,
-      swords: 50,
-      pentacles: 64,
-    }
-    const courtRanks: Record<string, number> = {
-      page: 11,
-      knight: 12,
-      queen: 13,
-      king: 14,
-    }
-    const rank = courtRanks[rankStr] || parseInt(rankStr, 10)
-    return (suitOffset[suit] || 22) + rank - 1
-  }
-
-  return 0
+  } as TarotCardType & MinorArcanaCard
 }
 </script>
 
@@ -193,15 +170,16 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
             <div
               class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3 md:gap-4"
             >
-              <TarotCardComponent
+              <HoloTarot
                 v-for="card in majorArcana"
                 :key="card.id"
                 :card="card"
                 :deck-id="selectedDeckId!"
-                :holo-type="holoType"
-                :aspect-ratio="currentAspectRatio"
+                :holo-preset="holoPreset"
+                :clickable="false"
                 static
-                @click="openCard(card)"
+                class="library-card"
+                @zoom="(zoomed: boolean) => onCardZoom(card, zoomed)"
               />
             </div>
           </section>
@@ -236,15 +214,16 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
                 <div
                   class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-7 gap-3 md:gap-4"
                 >
-                  <TarotCardComponent
+                  <HoloTarot
                     v-for="card in minorArcana[suit]"
                     :key="card.id"
                     :card="toDisplayCard(card)"
                     :deck-id="selectedDeckId!"
-                    :holo-type="holoType"
-                    :aspect-ratio="currentAspectRatio"
+                    :holo-preset="holoPreset"
+                    :clickable="false"
                     static
-                    @click="openCard(card)"
+                    class="library-card"
+                    @zoom="(zoomed: boolean) => onCardZoom(card, zoomed)"
                   />
                 </div>
               </div>
@@ -257,9 +236,9 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
     <!-- Card Detail Modal -->
     <AnimatePresence>
       <div
-        v-if="selectedCard"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        @click.self="closeCard"
+        v-if="showDetail && selectedCard"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4"
+        @click.self="closeDetail"
       >
         <!-- Backdrop -->
         <Motion
@@ -267,110 +246,102 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
           :animate="{ opacity: 1 }"
           :exit="{ opacity: 0 }"
           class="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          @click="closeCard"
+          @click="closeDetail"
         />
 
-        <!-- Modal Content -->
+        <!-- Modal Content - 响应式布局：移动端上下，桌面端左右 -->
         <Motion
           :initial="{ opacity: 0, scale: 0.9, y: 20 }"
           :animate="{ opacity: 1, scale: 1, y: 0 }"
           :exit="{ opacity: 0, scale: 0.9, y: 20 }"
           :transition="{ duration: 0.25 }"
-          class="relative z-10 w-full max-w-md max-h-[85vh] overflow-hidden glass-card border border-gold/30"
+          class="card-detail-modal relative z-10 glass-card border border-gold/30"
         >
-          <!-- Modal Header -->
-          <div class="flex items-center justify-between p-3 md:p-4 border-b border-gold/20">
-            <div class="flex items-center gap-3">
-              <!-- 图片牌组显示缩略图 -->
-              <template v-if="useImages && selectedDeckId">
-                <div
-                  v-holo-foil="{ type: holoType }"
-                  class="w-12 h-16 md:w-14 md:h-20 rounded overflow-hidden flex-shrink-0"
-                  :style="{ aspectRatio: currentAspectRatio }"
-                >
-                  <img
-                    :src="getCardImageUrl(getCardIndex(selectedCard), selectedDeckId)"
-                    :alt="selectedCard.nameEn"
-                    class="w-full h-full object-cover"
-                    @error="($event.target as HTMLImageElement).style.display = 'none'"
-                  />
-                </div>
-              </template>
-              <template v-else>
-                <span class="text-3xl md:text-4xl">{{ selectedCard.symbol }}</span>
-              </template>
-              <div>
-                <h3 class="text-base md:text-lg font-bold text-gold">{{ selectedCard.name }}</h3>
+          <!-- 关闭按钮 -->
+          <button
+            class="absolute top-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+            @click="closeDetail"
+          >
+            <X class="w-4 h-4" />
+          </button>
+
+          <div class="card-detail-content">
+            <!-- 左侧/上方：卡牌预览 -->
+            <div class="card-preview-area">
+              <TarotCard
+                :card="selectedCard"
+                :deck-id="selectedDeckId!"
+                flipped
+                class="card-preview"
+              />
+              <!-- 卡牌标题（移动端显示在图片下方） -->
+              <div class="card-title-mobile">
+                <h3 class="text-sm font-bold text-gold">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">
-                  {{ selectedCard.nameEn
-                  }}{{
-                    (selectedCard as TarotCard).number
-                      ? ` · ${(selectedCard as TarotCard).number}`
-                      : ''
-                  }}
+                  {{ selectedCard.nameEn }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
                 </p>
               </div>
             </div>
-            <button
-              class="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-              @click="closeCard"
-            >
-              <X class="w-5 h-5" />
-            </button>
-          </div>
 
-          <!-- Modal Body -->
-          <div class="p-3 md:p-4 overflow-y-auto max-h-[60vh] custom-scrollbar space-y-4">
-            <!-- Keywords -->
-            <div>
-              <h4 class="text-xs text-gold font-medium mb-2">{{ $t('library.keywords') }}</h4>
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="kw in splitKeywords(selectedCard.keywords, locale)"
-                  :key="kw"
-                  class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
-                >
-                  {{ kw }}
-                </span>
+            <!-- 右侧/下方：卡牌信息 -->
+            <div class="card-info-area">
+              <!-- 卡牌标题（桌面端显示在信息区顶部） -->
+              <div class="card-title-desktop">
+                <h3 class="text-base font-bold text-gold">{{ selectedCard.name }}</h3>
+                <p class="text-xs text-muted-foreground">
+                  {{ selectedCard.nameEn }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
+                </p>
               </div>
-            </div>
 
-            <!-- Upright -->
-            <div>
-              <h4 class="text-xs text-green-400 font-medium mb-2">
-                {{ $t('library.uprightMeaning') }}
-              </h4>
-              <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                {{ selectedCard.upright }}
-              </p>
-            </div>
+              <!-- Keywords -->
+              <div>
+                <h4 class="text-xs text-gold font-medium mb-1">{{ $t('library.keywords') }}</h4>
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="kw in splitKeywords(selectedCard.keywords, locale)"
+                    :key="kw"
+                    class="px-1.5 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
+                  >
+                    {{ kw }}
+                  </span>
+                </div>
+              </div>
 
-            <!-- Reversed -->
-            <div>
-              <h4 class="text-xs text-red-400 font-medium mb-2">
-                {{ $t('library.reversedMeaning') }}
-              </h4>
-              <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                {{ selectedCard.reversed }}
-              </p>
-            </div>
+              <!-- Upright -->
+              <div>
+                <h4 class="text-xs text-green-400 font-medium mb-1">
+                  ✦ {{ $t('library.uprightMeaning') }}
+                </h4>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  {{ selectedCard.upright }}
+                </p>
+              </div>
 
-            <!-- Description -->
-            <div v-if="selectedCard.description">
-              <h4 class="text-xs text-gold font-medium mb-2">
-                {{ $t('library.cardDescription') }}
-              </h4>
-              <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                {{ selectedCard.description }}
-              </p>
-            </div>
+              <!-- Reversed -->
+              <div>
+                <h4 class="text-xs text-red-400 font-medium mb-1">
+                  ✦ {{ $t('library.reversedMeaning') }}
+                </h4>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  {{ selectedCard.reversed }}
+                </p>
+              </div>
 
-            <!-- Note -->
-            <div v-if="selectedCard.note">
-              <h4 class="text-xs text-gold font-medium mb-2">{{ $t('library.symbolism') }}</h4>
-              <p class="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                {{ selectedCard.note }}
-              </p>
+              <!-- Description -->
+              <div v-if="selectedCard.description">
+                <h4 class="text-xs text-gold font-medium mb-1">
+                  {{ $t('library.cardDescription') }}
+                </h4>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  {{ selectedCard.description }}
+                </p>
+              </div>
+
+              <!-- Note -->
+              <div v-if="selectedCard.note">
+                <h4 class="text-xs text-gold font-medium mb-1">{{ $t('library.symbolism') }}</h4>
+                <p class="text-xs text-muted-foreground leading-relaxed">{{ selectedCard.note }}</p>
+              </div>
             </div>
           </div>
         </Motion>
@@ -380,6 +351,14 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
 </template>
 
 <style scoped>
+/* ========== 牌库卡牌 ========== */
+.library-card {
+  /* 宽度 100%，高度由 TarotCard 内部的 aspect-ratio 自适应 */
+  --card-width: 100%;
+  width: 100%;
+  cursor: pointer;
+}
+
 /* ========== 牌组网格 ========== */
 .deck-grid {
   display: grid;
@@ -399,6 +378,111 @@ const getCardIndex = (card: TarotCard | MinorArcanaCard): number => {
   .deck-grid {
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 24px;
+  }
+}
+
+/* ========== 卡牌详情弹窗 ========== */
+.card-detail-modal {
+  width: 100%;
+  max-width: 320px;
+  max-height: 85vh;
+  overflow: hidden;
+}
+
+.card-detail-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+/* 卡牌预览区 */
+.card-preview-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 8px;
+}
+
+.card-preview {
+  /* 宽度固定，高度由 TarotCard 内部的 aspect-ratio 自适应 */
+  width: 100px;
+}
+
+/* 移动端标题（图片下方） */
+.card-title-mobile {
+  text-align: center;
+}
+
+/* 桌面端标题（隐藏） */
+.card-title-desktop {
+  display: none;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  margin-bottom: 8px;
+}
+
+/* 卡牌信息区 */
+.card-info-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ========== 桌面端：左右布局 ========== */
+@media (min-width: 640px) {
+  .card-detail-modal {
+    max-width: 560px;
+  }
+
+  .card-detail-content {
+    flex-direction: row;
+    max-height: 70vh;
+  }
+
+  .card-preview-area {
+    padding: 16px;
+    justify-content: center;
+    border-right: 1px solid rgba(255, 215, 0, 0.2);
+  }
+
+  .card-preview {
+    width: 140px;
+  }
+
+  /* 移动端标题隐藏 */
+  .card-title-mobile {
+    display: none;
+  }
+
+  /* 桌面端标题显示 */
+  .card-title-desktop {
+    display: block;
+  }
+
+  .card-info-area {
+    padding: 16px;
+    width: 320px;
+  }
+}
+
+/* ========== 大屏幕 ========== */
+@media (min-width: 1024px) {
+  .card-detail-modal {
+    max-width: 640px;
+  }
+
+  .card-preview {
+    width: 160px;
+  }
+
+  .card-info-area {
+    width: 380px;
+    gap: 12px;
   }
 }
 </style>

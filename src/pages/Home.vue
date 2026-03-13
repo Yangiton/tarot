@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Motion, AnimatePresence } from 'motion-v'
 import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
 import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
-import TarotCard from '@/components/tarot/TarotCard.vue'
+import { HoloTarot } from '@/components/tarot'
 import AppFooter from '@/components/AppFooter.vue'
 import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
@@ -17,13 +17,14 @@ const { isMobileLandscape, isMobile } = useDevice()
 const {
   currentSpread,
   drawnCards,
-  holoType,
+  holoPreset,
   currentDeckId,
   useFullDeck,
   isDrawn,
   allFlipped,
   drawCards,
   flipCard,
+  isCardFlipped,
   resetReading,
   tips,
   spreads,
@@ -70,8 +71,8 @@ const handleDraw = async () => {
   }, 600)
 }
 
-const handleFlip = () => {
-  flipCard()
+const handleFlip = (cardId: string) => {
+  flipCard(cardId)
 }
 
 const handleReset = async () => {
@@ -203,14 +204,15 @@ const goToReading = () => {
               ease: [0.34, 1.56, 0.64, 1],
             }"
           >
-            <TarotCard
+            <HoloTarot
               :ref="el => setCardRef(el, index)"
               :card="card"
               :position="card.position"
               :spread-type="currentSpread"
-              :holo-type="holoType"
+              :holo-preset="holoPreset"
               :deck-id="currentDeckId"
               :clickable="!isAnimating"
+              :flipped="isCardFlipped(card.id)"
               @flip="handleFlip"
             />
           </Motion>
@@ -414,6 +416,13 @@ const goToReading = () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* 确保 z-index 在 grid 布局中生效 */
+  position: relative;
+}
+
+/* 当内部卡片正在翻转时，提升整个 slot 的层级 */
+.cards-area .card-slot:has(.is-flipping) {
+  z-index: 100;
 }
 
 .cards-area.spread-5 .row-0.col-1 {

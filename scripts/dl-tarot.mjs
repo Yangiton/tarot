@@ -173,20 +173,10 @@ function getJpegSize(filePath) {
 }
 
 /**
- * 计算宽高比字符串
+ * 计算宽高比（数字，保留3位小数）
  */
 function calcAspectRatio(width, height) {
-  const ratio = width / height
-  const commonRatios = [
-    { r: 2 / 3, s: '2:3' },
-    { r: 3 / 5, s: '3:5' },
-    { r: 9 / 16, s: '9:16' },
-    { r: 1 / 1.618, s: '1:φ' },
-  ]
-  for (const { r, s } of commonRatios) {
-    if (Math.abs(ratio - r) < 0.02) return s
-  }
-  return ratio.toFixed(3)
+  return Math.round((width / height) * 1000) / 1000
 }
 
 function printHelp() {

@@ -13,9 +13,10 @@ import riderMeta from '@/assets/tarot/rider/meta.json'
 export interface DeckMeta {
   id: string
   source: string
-  width?: number
-  height?: number
-  aspectRatio?: string
+  width: number
+  height: number
+  /** 宽高比 (width / height)，数字类型 */
+  aspectRatio: number
 }
 
 export interface DeckConfig {
@@ -46,21 +47,8 @@ export const DECK_IDS: DeckConfig[] = [
 /** 默认牌组 ID */
 export const DEFAULT_DECK_ID = 'rider'
 
-/** 默认卡牌宽高比 (标准韦特) */
+/** 默认卡牌宽高比 (标准韦特: 199/340) */
 export const DEFAULT_ASPECT_RATIO = 0.585
-
-/**
- * 解析宽高比字符串为数字
- * 支持格式: "2:3", "0.667", "3:5"
- */
-export function parseAspectRatio(ratio: string | undefined): number {
-  if (!ratio) return DEFAULT_ASPECT_RATIO
-  if (ratio.includes(':')) {
-    const [w, h] = ratio.split(':').map(Number)
-    return w / h
-  }
-  return parseFloat(ratio) || DEFAULT_ASPECT_RATIO
-}
 
 /** 获取牌组配置（需要在 setup 中调用以获取翻译） */
 export function useDeckConfig() {
@@ -71,7 +59,7 @@ export function useDeckConfig() {
       ...deck,
       name: t(`decks.${deck.id}.name`),
       description: t(`decks.${deck.id}.description`),
-      aspectRatio: deck.meta ? parseAspectRatio(deck.meta.aspectRatio) : DEFAULT_ASPECT_RATIO,
+      aspectRatio: deck.meta?.aspectRatio ?? DEFAULT_ASPECT_RATIO,
     }))
   )
 
@@ -81,7 +69,7 @@ export function useDeckConfig() {
 
   const getDeckAspectRatio = (deckId: string): number => {
     const deck = DECK_IDS.find(d => d.id === deckId)
-    return deck?.meta ? parseAspectRatio(deck.meta.aspectRatio) : DEFAULT_ASPECT_RATIO
+    return deck?.meta?.aspectRatio ?? DEFAULT_ASPECT_RATIO
   }
 
   return { decks, getDeckConfig, getDeckAspectRatio }
@@ -211,9 +199,9 @@ export function getDeckStaticConfig(deckId: string): DeckConfig | undefined {
 
 // ============ 卡牌数据类型 ============
 
-export interface TarotCard {
+/** 卡牌基础字段 - TarotCard 和 MinorArcanaCard 共用 */
+export interface BaseCard {
   id: string
-  number?: string
   name: string
   nameEn: string
   keywords: string
@@ -222,21 +210,34 @@ export interface TarotCard {
   reversed: string
   description?: string
   note?: string
+}
+
+/** 大阿尔卡纳卡牌 */
+export interface TarotCard extends BaseCard {
+  number?: string
   zodiac?: string
 }
 
-export interface MinorArcanaCard {
-  id: string
+/** 小阿尔卡纳卡牌 */
+export interface MinorArcanaCard extends BaseCard {
   suit: Suit
   rank: number | CourtRank
-  name: string
-  nameEn: string
-  keywords: string
-  symbol: string
-  upright: string
-  reversed: string
-  description?: string
-  note?: string
+}
+
+/** 统一的卡牌展示类型 - 用于 Library 等需要同时处理大小阿尔卡纳的场景 */
+export type DisplayCard = TarotCard | MinorArcanaCard
+
+/** 类型守卫：判断是否为小阿尔卡纳 */
+export function isMinorArcana(card: DisplayCard): card is MinorArcanaCard {
+  return 'suit' in card && 'rank' in card
+}
+
+/** 获取卡牌编号（用于显示） */
+export function getCardNumber(card: DisplayCard): string | undefined {
+  if (isMinorArcana(card)) {
+    return String(card.rank)
+  }
+  return (card as TarotCard).number
 }
 
 export interface SpreadPosition {

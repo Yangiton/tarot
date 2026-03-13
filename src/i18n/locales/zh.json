@@ -78,18 +78,14 @@
     "aboutDisclaimer": "塔罗牌仅供娱乐和自我反思，不构成任何决策建议。",
     "version": "版本",
     "holoOptions": {
-      "normal": "普通全息",
+      "noneDesc": "不显示全息效果",
       "normalDesc": "经典彩虹条纹效果",
-      "cosmos": "宇宙全息",
       "cosmosDesc": "梦幻星空背景",
-      "rainbow": "彩虹全息",
       "rainbowDesc": "强烈彩虹渐变",
-      "galaxy": "银河全息",
       "galaxyDesc": "深空星云效果",
-      "radiant": "光辉全息",
       "radiantDesc": "金属放射状",
-      "pixel": "像素全息",
-      "pixelDesc": "复古点阵效果"
+      "pixelDesc": "复古点阵效果",
+      "vstarDesc": "高级 V-Star 闪卡效果"
     }
   },
   "footer": {

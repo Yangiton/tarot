@@ -78,18 +78,14 @@
     "aboutDisclaimer": "Tarot is for entertainment and self-reflection only, not a substitute for professional advice.",
     "version": "Version",
     "holoOptions": {
-      "normal": "Classic Holo",
+      "noneDesc": "No holographic effect",
       "normalDesc": "Classic rainbow stripe effect",
-      "cosmos": "Cosmos Holo",
       "cosmosDesc": "Dreamy starfield background",
-      "rainbow": "Rainbow Holo",
       "rainbowDesc": "Intense rainbow gradient",
-      "galaxy": "Galaxy Holo",
       "galaxyDesc": "Deep space nebula effect",
-      "radiant": "Radiant Holo",
       "radiantDesc": "Metallic radial shine",
-      "pixel": "Pixel Holo",
-      "pixelDesc": "Retro dot matrix effect"
+      "pixelDesc": "Retro dot matrix effect",
+      "vstarDesc": "Premium V-Star holo effect"
     }
   },
   "footer": {

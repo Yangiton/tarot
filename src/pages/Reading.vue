@@ -5,13 +5,13 @@ import { useI18n } from 'vue-i18n'
 import { Motion } from 'motion-v'
 import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
-import TarotCard from '@/components/tarot/TarotCard.vue'
+import { HoloTarot } from '@/components/tarot'
 import { useTarot } from '@/composables/useTarot'
 import { splitKeywords } from '@/data'
 
 const router = useRouter()
 const { locale } = useI18n()
-const { drawnCards, summary, isDrawn, resetReading, currentDeckId, holoType } = useTarot()
+const { drawnCards, summary, isDrawn, resetReading, currentDeckId, holoPreset } = useTarot()
 
 onMounted(() => {
   if (!isDrawn.value) {
@@ -64,10 +64,10 @@ const handleReset = () => {
               <!-- 左侧：静态卡片展示 -->
               <div class="reading-card-left">
                 <div class="reading-card-wrapper">
-                  <TarotCard
+                  <HoloTarot
                     :card="card"
                     :deck-id="currentDeckId"
-                    :holo-type="holoType"
+                    :holo-preset="holoPreset"
                     :clickable="false"
                     static
                   />
