@@ -1,0 +1,11 @@
+/**
+ * hover-tilt 自定义渐变效果
+ *
+ * 重要：
+ * 1. --hover-tilt-custom-gradient 必须设置在 ::part(container) 上
+ * 2. 目前使用 glareMask prop 实现效果，暂不使用自定义渐变
+ *
+ * @see https://hover-tilt.simey.me/advanced/custom-gradient/
+ */
+
+/* 待实现：自定义渐变效果 */

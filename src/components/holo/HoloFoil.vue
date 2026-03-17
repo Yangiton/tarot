@@ -1,39 +1,35 @@
 <script setup lang="ts">
 /**
- * HoloFoil - 全息效果容器组件
+ * HoloFoil - hover-tilt 包装组件
  *
- * 功能：
- * 1. 基于 hover-tilt 实现 3D 倾斜效果
- * 2. 炫光 Glare 效果
- * 3. 自定义 Shine 彩虹渐变层
- * 4. 陀螺仪支持（移动端）
+ * 职责：提供 tilt 倾斜效果 + 可选的 glare 全息效果
  *
- * 注意：此组件仅负责视觉效果，不处理翻转逻辑
+ * hover-tilt 的结构：
+ * <hover-tilt>
+ *   #shadow-root
+ *     <div part="container"> ← perspective
+ *       <div part="tilt">   ← rotateX/Y + glare (::before)
+ *         <slot />          ← 卡面内容
  *
  * @see https://hover-tilt.simey.me/
- * @see https://poke-holo.simey.me/
  */
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { getHoloPreset, DEFAULT_PRESET, type HoloPreset } from './presets'
 import { useDevice } from '@/composables/useDevice'
 
+import './effects/index.css'
+
 // ========== Props ==========
 interface Props {
-  /** 预设 ID */
   preset?: string
-  /** 禁用所有效果 */
-  disabled?: boolean
-  /** 启用陀螺仪（移动端） */
+  glareIntensity?: number // 0 = 禁用 glare，>0 = 启用
   gyroscope?: boolean
-  /** 圆角 */
-  borderRadius?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   preset: 'normal',
-  disabled: false,
+  glareIntensity: undefined, // undefined = 使用预设默认值
   gyroscope: true,
-  borderRadius: '8px',
 })
 
 // ========== State ==========
@@ -44,31 +40,31 @@ const gyroEnabled = ref(false)
 // ========== 预设配置 ==========
 const presetConfig = computed<HoloPreset>(() => getHoloPreset(props.preset || 'normal'))
 
-/** hover-tilt 属性 */
+/**
+ * 构建 hover-tilt 的 props (kebab-case)
+ * Web Component 属性值都应为字符串
+ */
 const tiltProps = computed(() => {
   const cfg = presetConfig.value
 
-  if (props.disabled || cfg.tiltFactor === 0) {
-    return {
-      'tilt-factor': '0',
-      'scale-factor': '1',
-      'glare-intensity': '0',
-    }
-  }
+  // glareIntensity: props 优先，否则使用预设值
+  const glareIntensity = props.glareIntensity ?? cfg.glareIntensity ?? 1
 
-  const result: Record<string, string | boolean> = {
+  const result: Record<string, string> = {
     'tilt-factor': String(cfg.tiltFactor ?? 1),
-    'scale-factor': String(cfg.scaleFactor ?? 1.02),
-    'glare-intensity': String(cfg.glareIntensity ?? 1),
+    'scale-factor': String(cfg.scaleFactor ?? 1),
+    'glare-intensity': String(glareIntensity),
     'glare-hue': String(cfg.glareHue ?? 270),
     'blend-mode': cfg.blendMode || 'overlay',
-    'shadow-blur': String(cfg.shadowBlur ?? 20),
+    'shadow-blur': String(cfg.shadowBlur ?? 12),
     'enter-delay': String(cfg.enterDelay ?? 0),
-    'exit-delay': String(cfg.exitDelay ?? 150),
+    'exit-delay': String(cfg.exitDelay ?? 200),
   }
 
-  if (cfg.shadow !== false) result.shadow = true
+  if (cfg.shadow) result.shadow = 'true'
   if (cfg.tiltFactorY !== undefined) result['tilt-factor-y'] = String(cfg.tiltFactorY)
+
+  // glareMask 相关
   if (cfg.glareMask) result['glare-mask'] = cfg.glareMask
   if (cfg.glareMaskMode) result['glare-mask-mode'] = cfg.glareMaskMode
 
@@ -80,26 +76,16 @@ const tiltProps = computed(() => {
   return result
 })
 
-/** Shine 层显示 */
-const showShine = computed(() => !props.disabled && !!presetConfig.value.shineGradient)
-
-/** Shine 层样式 */
-const shineStyle = computed(() => {
+const holoClasses = computed(() => {
   const cfg = presetConfig.value
-  if (!cfg.shineGradient) return ''
-  return `background-image: ${cfg.shineGradient}; mix-blend-mode: ${cfg.shineBlendMode || 'color-dodge'}; filter: ${cfg.shineFilter || 'none'};`
+  const classes: string[] = ['holo-foil']
+
+  if (gyroEnabled.value) classes.push('gyro-active')
+  if (cfg.gradientClass) classes.push(cfg.gradientClass)
+  if (cfg.shadowClass) classes.push(cfg.shadowClass)
+
+  return classes
 })
-
-// ========== CSS 变量设置 ==========
-const updateCssVars = () => {
-  if (!hoverTiltRef.value) return
-
-  // hover-tilt 是 Web Component，需要获取其 DOM 元素
-  const el = (hoverTiltRef.value as any).$el || hoverTiltRef.value
-  if (el && typeof el.style?.setProperty === 'function') {
-    el.style.setProperty('--holo-radius', props.borderRadius || '8px')
-  }
-}
 
 // ========== 陀螺仪支持 ==========
 const hasGyroscope = () => typeof DeviceOrientationEvent !== 'undefined'
@@ -139,7 +125,7 @@ const simulatePointerEvent = (x: number, y: number, type: 'enter' | 'move' | 'le
 }
 
 const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
-  if (!gyroEnabled.value || !props.gyroscope || props.disabled) return
+  if (!gyroEnabled.value || !props.gyroscope) return
   const { beta, gamma } = event
   if (beta === null || gamma === null) return
   simulatePointerEvent(
@@ -163,26 +149,17 @@ const disableGyroscope = () => {
   gyroEnabled.value = false
 }
 
-// ========== 生命周期 ==========
 onMounted(async () => {
   await nextTick()
-  updateCssVars()
 
+  // 移动端首次触摸时启用陀螺仪（需要用户手势触发权限请求）
   if (props.gyroscope && isMobile.value && hasGyroscope()) {
-    document.addEventListener(
-      'touchstart',
-      async function onTouch() {
-        await enableGyroscope()
-        document.removeEventListener('touchstart', onTouch)
-      },
-      { once: true, passive: true }
-    )
+    document.addEventListener('touchstart', () => enableGyroscope(), { once: true, passive: true })
   }
 })
 
 onUnmounted(() => disableGyroscope())
 
-watch(() => props.borderRadius, updateCssVars)
 watch(
   () => props.gyroscope,
   enabled => {
@@ -191,7 +168,6 @@ watch(
   }
 )
 
-// ========== 暴露 ==========
 defineExpose({
   enableGyroscope,
   disableGyroscope,
@@ -200,67 +176,53 @@ defineExpose({
 </script>
 
 <template>
-  <hover-tilt
-    ref="hoverTiltRef"
-    v-bind="tiltProps"
-    class="holo-foil"
-    :class="{ 'gyro-active': gyroEnabled }"
-  >
-    <!-- Shine 彩虹渐变层 -->
-    <div v-if="showShine" class="holo-shine" :style="shineStyle" />
-    <!-- 插槽内容 -->
+  <hover-tilt ref="hoverTiltRef" v-bind="tiltProps" :class="holoClasses">
     <slot />
   </hover-tilt>
 </template>
 
 <style>
 /**
- * HoloFoil 样式
- * 使用 ::part() 选择器控制 hover-tilt Shadow DOM 内部元素
+ * HoloFoil 全局样式
+ *
+ * hover-tilt Web Component 内部结构：
+ * <hover-tilt>
+ *   #shadow-root
+ *     <div part="container">   ← 提供 perspective
+ *       <div part="tilt">      ← 应用 transform + glare (::before)
+ *         <slot />
+ *
+ * 使用 ::part() 选择器样式化 shadow DOM 内部元素
+ * @see https://hover-tilt.simey.me/options/css/
  */
 
+/* ========== 基础样式 ========== */
 hover-tilt.holo-foil {
-  --holo-radius: 8px;
-
   display: block;
   width: 100%;
   height: 100%;
 }
 
-/* Shadow DOM 内部容器 */
+/* ========== Shadow DOM 内部样式 (::part) ========== */
+
+/* container: 提供 perspective，处理指针事件 */
 hover-tilt.holo-foil::part(container) {
   width: 100%;
   height: 100%;
-  border-radius: var(--holo-radius);
+  border-radius: var(--card-radius, 8px);
 }
 
+/* tilt: 应用 transform，包含 glare (::before) */
 hover-tilt.holo-foil::part(tilt) {
   width: 100%;
   height: 100%;
-  border-radius: var(--holo-radius);
-  /* 不设置 overflow: hidden，让 3D 变换可以溢出 */
+  border-radius: var(--card-radius, 8px);
+  /* 确保 glare (::before) 在内容上层 */
+  overflow: hidden;
 }
 
-/* Shine 彩虹渐变层 */
-hover-tilt.holo-foil .holo-shine {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--holo-radius);
-  pointer-events: none;
+/* ========== 交互层级 ========== */
+hover-tilt.holo-foil:hover {
   z-index: 10;
-  opacity: 0;
-  background-size: 400% 400%;
-  background-position: 50% 50%;
-  transition:
-    opacity 0.35s ease-out,
-    background-position 0.15s ease-out;
-}
-
-hover-tilt.holo-foil:hover .holo-shine,
-hover-tilt.holo-foil.gyro-active .holo-shine {
-  opacity: 0.75;
-  /* 使用 hover-tilt 暴露的 CSS 变量实现动态位置 */
-  background-position: calc(20% + var(--hover-tilt-pointer-x, 0.5) * 60%)
-    calc(20% + var(--hover-tilt-pointer-y, 0.5) * 60%);
 }
 </style>

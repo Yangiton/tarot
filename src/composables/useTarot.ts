@@ -94,7 +94,7 @@ watch(
 )
 
 export function useTarot() {
-  const { locale } = useI18n()
+  const { locale } = useI18n({ useScope: 'global' })
   const {
     spreads,
     tips,

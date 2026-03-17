@@ -1,0 +1,9 @@
+/**
+ * hover-tilt 全息效果样式汇总
+ *
+ * 统一导入所有效果 CSS 文件
+ * 在 HoloFoil.vue 中通过 import 引入即可
+ */
+
+@import './shadows.css';
+@import './gradients.css';

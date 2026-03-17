@@ -52,7 +52,7 @@ export const DEFAULT_ASPECT_RATIO = 0.585
 
 /** 获取牌组配置（需要在 setup 中调用以获取翻译） */
 export function useDeckConfig() {
-  const { t } = useI18n()
+  const { t } = useI18n({ useScope: 'global' })
 
   const decks = computed(() =>
     DECK_IDS.map(deck => ({
@@ -297,7 +297,7 @@ export function getStaticCardData(locale: string) {
  * 需在 setup 中调用
  */
 export function useCardData() {
-  const { locale } = useI18n()
+  const { locale } = useI18n({ useScope: 'global' })
 
   const cardData = computed(() => getCardData(locale.value))
   const spreads = computed(() => cardData.value.spreads as Record<string, SpreadConfig>)

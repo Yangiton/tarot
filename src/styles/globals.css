@@ -135,6 +135,20 @@
   font-weight: 500;
 }
 
+/* ========== HoloTarot 层级控制 ========== */
+/* 当卡片处于放大/缩小状态时，提升其容器的层级 */
+.holo-tarot.zoom-in,
+.holo-tarot.zoom-out {
+  z-index: 99999 !important;
+  isolation: isolate;
+}
+
+/* 如果 HoloTarot 在有 position 的容器内，需要提升整个容器 */
+*:has(> .holo-tarot.zoom-in),
+*:has(> .holo-tarot.zoom-out) {
+  z-index: 99999 !important;
+}
+
 /* ========== 移动端横屏适配 ========== */
 /* 基于 User Agent 检测的移动设备类 */
 body.is-mobile-landscape {

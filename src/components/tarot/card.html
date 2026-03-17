@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Flip Card + Zoom to Center</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/hover-tilt/dist/hover-tilt.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 50px;
+        background: #1a1a2e;
+      }
+
+      /**
+       * 双层结构：
+       * - 外层 .card-wrapper: 控制移动到中心 (translate3d)
+       * - 内层 .card-container: 控制翻转和旋转 (rotateY + scale)
+       * 
+       * 状态类：
+       * - .flipped: 翻转到 Front 面
+       * - .zoom-in: 放大 + 移动到中心
+       * - .zoom-out: 缩小中（过渡状态）
+       */
+
+      .card-wrapper {
+        --card-width: 200px;
+        --card-radius: 12px;
+        --flip-duration: 700ms;
+        --zoom-duration: 800ms;
+        --zoom-scale: 1.75;
+        --translate-x: 0px;
+        --translate-y: 0px;
+
+        position: relative;
+        width: var(--card-width);
+        aspect-ratio: 0.7;
+        cursor: pointer;
+        transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      /* 放大时外层移动到中心，并提升层级 */
+      .card-wrapper.zoom-in {
+        transform: translate3d(var(--translate-x), var(--translate-y), 0);
+        z-index: 99999;
+        isolation: isolate;
+      }
+
+      /* 缩小中外层回到原位 */
+      .card-wrapper.zoom-out {
+        transform: translate3d(0, 0, 0);
+        z-index: 99999;
+        isolation: isolate;
+      }
+
+      /* 内层：3D 翻转容器 */
+      .card-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform: perspective(800px);
+        transition: transform var(--flip-duration) cubic-bezier(0.4, 0.2, 0.2, 1);
+      }
+
+      /* 翻转 */
+      .card-wrapper.flipped .card-container {
+        transform: perspective(800px) rotateY(180deg);
+      }
+
+      /* 放大：旋转 540° + 缩放 */
+      .card-wrapper.zoom-in .card-container {
+        transform: perspective(800px) rotateY(540deg) scale(var(--zoom-scale));
+        transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      /* 缩小中：回到 180° */
+      .card-wrapper.zoom-out .card-container {
+        transform: perspective(800px) rotateY(180deg);
+        transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      /* hover-tilt 包装器 */
+      .back-wrapper,
+      .front-wrapper {
+        position: absolute;
+        inset: 0;
+        display: block;
+        backface-visibility: hidden;
+      }
+
+      .back-wrapper::part(container),
+      .back-wrapper::part(tilt),
+      .front-wrapper::part(container),
+      .front-wrapper::part(tilt) {
+        border-radius: var(--card-radius);
+        width: 100%;
+        height: 100%;
+      }
+
+      .front-wrapper {
+        transform: rotateY(180deg);
+      }
+
+      /* 卡面内容 */
+      .card-face {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        border-radius: var(--card-radius);
+      }
+
+      .card-back {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .card-front {
+        background: linear-gradient(135deg, #fd746c, #ff9068);
+        color: #000;
+      }
+
+      /* Luminance Beam */
+      .luminance-beam::part(container) {
+        --hover-tilt-custom-gradient: linear-gradient(
+          120deg,
+          rgb(0 0 0 / 0) calc((var(--gradient-x, 50%) / 2 + var(--gradient-y, 50%) / 2) - 60%),
+          rgb(249 218 173 / var(--hover-tilt-glare-intensity, 1))
+            calc((var(--gradient-x, 50%) / 2 + var(--gradient-y, 50%) / 2)),
+          rgb(0 0 0 / 0) calc((var(--gradient-x, 50%) / 2 + var(--gradient-y, 50%) / 2) + 60%)
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card-wrapper" id="card">
+      <div class="card-container">
+        <hover-tilt
+          class="back-wrapper luminance-beam"
+          tilt-factor="1.5"
+          scale-factor="1.05"
+          shadow
+          shadow-blur="30"
+        >
+          <div class="card-face card-back">Back</div>
+        </hover-tilt>
+
+        <!-- Front: 使用 glare-mask 测试 aztec 效果 -->
+        <hover-tilt
+          class="front-wrapper"
+          tilt-factor="1.6"
+          scale-factor="1.06"
+          shadow
+          shadow-blur="30"
+          glare-intensity="1.3"
+          glare-hue="45"
+          blend-mode="hard-light"
+          glare-mask="url(../holo/effects/masks/aztec-pattern.webp)"
+          glare-mask-mode="luminance"
+        >
+          <div class="card-face card-front">Front</div>
+        </hover-tilt>
+      </div>
+    </div>
+
+    <script>
+      const card = document.getElementById('card')
+
+      // 状态
+      let state = 'back' // 'back' | 'front' | 'zoom-in' | 'zoom-out'
+      let isAnimating = false
+
+      // 鼠标位置追踪
+      let lastMouseX = 0
+      let lastMouseY = 0
+      document.addEventListener('mousemove', e => {
+        lastMouseX = e.clientX
+        lastMouseY = e.clientY
+      })
+
+      const triggerTilt = () => {
+        card.dispatchEvent(
+          new MouseEvent('mousemove', {
+            clientX: lastMouseX,
+            clientY: lastMouseY,
+            bubbles: true,
+          })
+        )
+      }
+
+      const calcCenterOffset = () => {
+        const rect = card.getBoundingClientRect()
+        card.style.setProperty(
+          '--translate-x',
+          `${window.innerWidth / 2 - rect.left - rect.width / 2}px`
+        )
+        card.style.setProperty(
+          '--translate-y',
+          `${window.innerHeight / 2 - rect.top - rect.height / 2}px`
+        )
+      }
+
+      // 使用 transitionend 替代 setTimeout
+      const onTransitionEnd = callback => {
+        const handler = e => {
+          // 只响应 transform 属性的过渡结束
+          if (e.propertyName === 'transform') {
+            card.removeEventListener('transitionend', handler)
+            callback()
+          }
+        }
+        card.addEventListener('transitionend', handler)
+      }
+
+      const handleGlobalClick = e => {
+        e.stopPropagation()
+        e.preventDefault()
+        zoomOut()
+      }
+
+      const flip = () => {
+        if (isAnimating || state !== 'back') return
+
+        isAnimating = true
+        card.classList.add('flipped')
+
+        onTransitionEnd(() => {
+          state = 'front'
+          isAnimating = false
+          triggerTilt()
+        })
+      }
+
+      const zoomIn = () => {
+        if (isAnimating || state !== 'front') return
+
+        isAnimating = true
+        calcCenterOffset()
+        card.classList.remove('flipped')
+        card.classList.add('zoom-in')
+
+        onTransitionEnd(() => {
+          state = 'zoom-in'
+          isAnimating = false
+          triggerTilt()
+          document.addEventListener('click', handleGlobalClick, { capture: true })
+        })
+      }
+
+      const zoomOut = () => {
+        if (isAnimating || state !== 'zoom-in') return
+
+        document.removeEventListener('click', handleGlobalClick, { capture: true })
+        isAnimating = true
+
+        card.classList.remove('zoom-in')
+        card.classList.add('zoom-out')
+
+        onTransitionEnd(() => {
+          card.classList.remove('zoom-out')
+          card.classList.add('flipped')
+          card.style.setProperty('--translate-x', '0px')
+          card.style.setProperty('--translate-y', '0px')
+          state = 'front'
+          isAnimating = false
+          triggerTilt()
+        })
+      }
+
+      card.addEventListener('click', e => {
+        e.stopPropagation()
+        if (isAnimating) return
+
+        if (state === 'back') flip()
+        else if (state === 'front') zoomIn()
+        // zoom-in 状态由全局点击处理
+      })
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && state === 'zoom-in') zoomOut()
+      })
+    </script>
+  </body>
+</html>

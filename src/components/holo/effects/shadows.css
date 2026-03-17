@@ -1,0 +1,11 @@
+/**
+ * hover-tilt 自定义阴影效果
+ *
+ * 重要：
+ * 1. --hover-tilt-custom-shadow 必须设置在 ::part(container) 上
+ * 2. 目前使用 hover-tilt 默认阴影，暂不使用自定义阴影
+ *
+ * @see https://hover-tilt.simey.me/advanced/custom-shadow/
+ */
+
+/* 待实现：自定义阴影效果 */

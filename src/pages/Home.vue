@@ -166,43 +166,21 @@ const goToReading = () => {
 
     <!-- Main Card Area -->
     <div class="main-area">
-      <AnimatePresence mode="wait">
-        <!-- 抽牌前：居中显示按钮 -->
-        <Motion
-          v-if="!isDrawn"
-          key="draw-button"
-          :initial="{ opacity: 0, scale: 0.9 }"
-          :animate="{ opacity: 1, scale: 1 }"
-          :exit="{ opacity: 0, scale: 0.8 }"
-          :transition="{ duration: 0.3 }"
-          class="draw-area"
-        >
+      <!-- 抽牌前：居中显示按钮 -->
+      <Transition name="fade-scale" mode="out-in">
+        <div v-if="!isDrawn" key="draw-button" class="draw-area">
           <Button size="lg" :disabled="isAnimating" @click="handleDraw" class="draw-btn">
             {{ $t('home.drawButton') }}
           </Button>
-        </Motion>
+        </div>
 
         <!-- 抽牌后：显示卡牌 -->
-        <Motion
-          v-else
-          :key="'cards-' + drawKey"
-          :initial="{ opacity: 0 }"
-          :animate="{ opacity: 1 }"
-          :exit="{ opacity: 0 }"
-          :transition="{ duration: 0.3 }"
-          :class="['cards-area', `spread-${currentSpread}`]"
-        >
-          <Motion
+        <div v-else :key="'cards-' + drawKey" :class="['cards-area', `spread-${currentSpread}`]">
+          <div
             v-for="(card, index) in drawnCards"
-            :key="card.id + '-' + index"
-            :class="['card-slot', `row-${card.row}`, `col-${card.col}`]"
-            :initial="{ opacity: 0, scale: 0.6, y: 40 }"
-            :animate="{ opacity: 1, scale: 1, y: 0 }"
-            :transition="{
-              duration: 0.5,
-              delay: index * 0.1,
-              ease: [0.34, 1.56, 0.64, 1],
-            }"
+            :key="card.id"
+            :class="['card-slot', `row-${card.row ?? 0}`, `col-${card.col ?? 0}`]"
+            :style="{ '--card-delay': `${index * 0.1}s` }"
           >
             <HoloTarot
               :ref="el => setCardRef(el, index)"
@@ -215,22 +193,15 @@ const goToReading = () => {
               :flipped="isCardFlipped(card.id)"
               @flip="handleFlip"
             />
-          </Motion>
-        </Motion>
-      </AnimatePresence>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!-- Bottom Action Area -->
     <div class="action-area">
-      <AnimatePresence>
-        <Motion
-          v-if="isDrawn"
-          :initial="{ opacity: 0, y: 10 }"
-          :animate="{ opacity: 1, y: 0 }"
-          :exit="{ opacity: 0 }"
-          :transition="{ duration: 0.3 }"
-          class="action-buttons"
-        >
+      <Transition name="fade-slide">
+        <div v-if="isDrawn" class="action-buttons">
           <Button variant="outline" size="sm" :disabled="isAnimating" @click="handleReset">
             {{ $t('home.resetButton') }}
           </Button>
@@ -238,8 +209,8 @@ const goToReading = () => {
             $t('home.readingButton')
           }}</Button>
           <span v-else class="hint-text">{{ hint }}</span>
-        </Motion>
-      </AnimatePresence>
+        </div>
+      </Transition>
     </div>
 
     <!-- Footer -->
@@ -251,7 +222,8 @@ const goToReading = () => {
 
 <style scoped>
 .home-container {
-  @apply h-full flex flex-col overflow-hidden px-3 md:px-6 relative;
+  @apply h-full flex flex-col px-3 md:px-6 relative;
+  /* 不使用 overflow-hidden，避免裁切 3D tilt 效果 */
 }
 
 /* ========== Header ========== */
@@ -378,6 +350,24 @@ const goToReading = () => {
   @apply flex items-center justify-center;
 }
 
+/* 卡牌入场动画 */
+.card-slot {
+  position: relative; /* 确保 z-index 生效 */
+  animation: card-enter 0.5s ease-out both;
+  animation-delay: var(--card-delay, 0s);
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 /* 单牌阵 - 居中一张 */
 .cards-area.spread-1 {
   @apply flex items-center justify-center;
@@ -498,5 +488,40 @@ const goToReading = () => {
 
 .home-container.is-landscape .hint-text {
   @apply text-[10px];
+}
+
+/* ========== Vue Transition 动画 ========== */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.fade-scale-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>

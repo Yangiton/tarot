@@ -278,7 +278,8 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
               <div class="card-title-mobile">
                 <h3 class="text-sm font-bold text-gold">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">
-                  {{ selectedCard.nameEn }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
+                  {{ selectedCard.nameEn
+                  }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
                 </p>
               </div>
             </div>
@@ -289,7 +290,8 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
               <div class="card-title-desktop">
                 <h3 class="text-base font-bold text-gold">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">
-                  {{ selectedCard.nameEn }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
+                  {{ selectedCard.nameEn
+                  }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
                 </p>
               </div>
 

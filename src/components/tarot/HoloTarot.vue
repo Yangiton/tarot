@@ -2,56 +2,44 @@
 /**
  * HoloTarot - 全息塔罗牌组件
  *
- * 组合 HoloFoil + TarotCard 实现：
- * 1. 卡牌渲染（正反面）
- * 2. 点击 3D 翻转
- * 3. Tilt 倾斜效果
- * 4. Holo 全息效果
- * 5. 点击放大（翻牌后）
+ * 双层架构：
+ * .holo-tarot (外层) - 控制位移到中心 (translate3d) + 层级控制 (z-index, isolation)
+ *   └── .card-container (内层) - 控制翻转 (rotateY) + 放大旋转 (rotateY + scale)
+ *         ├── HoloFoil.back-wrapper (Back 面, glare=0)
+ *         │     └── TarotCard (side="back")
+ *         └── HoloFoil.front-wrapper (Front 面, glare>0)
+ *               └── TarotCard (side="front")
  *
- * 结构：
- * .holo-tarot (根容器，定义尺寸)
- *   HoloFoil (hover-tilt 全息效果)
- *     TarotCard (卡牌渲染 + 翻转)
- *   .position-label (牌位标签)
+ * 状态机：'back' → 'front' → 'zoom-in' → 'zoom-out' → 'front'
  */
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { DrawnCard, SpreadType, TarotCard as TarotCardType } from '@/data'
-import { DEFAULT_DECK_ID } from '@/data'
+import { DEFAULT_DECK_ID, useDeckConfig } from '@/data'
 import TarotCard from './TarotCard.vue'
 import HoloFoil from '../holo/HoloFoil.vue'
+import { getHoloPreset } from '../holo/presets'
 
 // ========== Props ==========
 interface Props {
-  /** 卡牌数据 */
   card?: DrawnCard | TarotCardType
-  /** 牌位名称 */
   position?: string
-  /** 是否可点击翻转 */
   clickable?: boolean
-  /** 翻转动画时长(ms) */
   flipDuration?: number
-  /** 牌阵类型（影响标签位置） */
+  zoomDuration?: number
   spreadType?: SpreadType
-  /** 全息预设 */
   holoPreset?: string
-  /** 牌组 ID */
   deckId?: string
-  /** 启用陀螺仪 */
   gyroscope?: boolean
-  /** 静态模式（直接显示正面，不可翻转） */
   static?: boolean
-  /** 是否已翻开（外部控制） */
   flipped?: boolean
-  /** 启用放大功能 */
   zoomable?: boolean
-  /** 放大比例 */
   zoomScale?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clickable: true,
-  flipDuration: 600,
+  flipDuration: 700,
+  zoomDuration: 800,
   spreadType: 3,
   holoPreset: 'normal',
   deckId: DEFAULT_DECK_ID,
@@ -59,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   static: false,
   flipped: false,
   zoomable: true,
-  zoomScale: 2.5,
+  zoomScale: 1.75,
 })
 
 // ========== Emits ==========
@@ -71,180 +59,219 @@ const emit = defineEmits<{
 }>()
 
 // ========== State ==========
+type CardState = 'back' | 'front' | 'zoom-in' | 'zoom-out'
+
 const rootRef = ref<HTMLElement | null>(null)
-const isFlipped = ref(props.static || props.flipped)
-const isFlipping = ref(false)
-const isZoomed = ref(false)
+const containerRef = ref<HTMLElement | null>(null)
+const state = ref<CardState>(props.static || props.flipped ? 'front' : 'back')
+const isAnimating = ref(false)
 const translateX = ref(0)
 const translateY = ref(0)
 
-// 挂载后短暂冷却期，防止点击穿透
 const mountedAt = ref(0)
 const CLICK_GUARD_MS = 300
 
+// 鼠标位置追踪
+let lastMouseX = 0
+let lastMouseY = 0
+
+// ========== 牌组配置 ==========
+const { getDeckAspectRatio } = useDeckConfig()
+
 // ========== 计算属性 ==========
-
-/** 是否逆位 */
 const isReversed = computed(() => (props.card as DrawnCard)?.isReversed ?? false)
-
-/** 位置标签位置 */
 const labelPosition = computed(() => (props.spreadType <= 3 ? 'bottom' : 'inside'))
+const deckRatio = computed(() => getDeckAspectRatio(props.deckId))
+const presetConfig = computed(() => getHoloPreset(props.holoPreset || 'normal'))
 
-/** CSS 变量 */
+// 派生状态（保留兼容性）
+const isFlipped = computed(() => state.value === 'front' || state.value === 'zoom-out')
+const isFlipping = computed(() => isAnimating.value && state.value === 'front')
+const isZoomed = computed(() => state.value === 'zoom-in')
+
 const cssVars = computed(() => ({
   '--flip-duration': `${props.flipDuration}ms`,
-  '--zoom-scale': props.zoomScale,
+  '--zoom-duration': `${props.zoomDuration}ms`,
+  '--zoom-scale': String(props.zoomScale),
   '--translate-x': `${translateX.value}px`,
   '--translate-y': `${translateY.value}px`,
+  '--card-aspect-ratio': String(deckRatio.value),
 }))
 
-// ========== 方法 ==========
+// ========== 工具函数 ==========
 
-/** 计算放大后的居中偏移 */
+/** 使用 transitionend 事件替代 setTimeout */
+const onTransitionEnd = (callback: () => void) => {
+  const target = containerRef.value
+  if (!target) {
+    callback()
+    return
+  }
+
+  const handler = (e: TransitionEvent) => {
+    if (e.propertyName === 'transform' && e.target === target) {
+      target.removeEventListener('transitionend', handler)
+      callback()
+    }
+  }
+  target.addEventListener('transitionend', handler)
+}
+
+/** 计算移动到视口中心所需的偏移量 */
 const calcZoomOffset = () => {
   if (!rootRef.value) return
 
   const rect = rootRef.value.getBoundingClientRect()
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-
-  // 计算卡牌中心到视口中心的距离
-  const cardCenterX = rect.left + rect.width / 2
-  const cardCenterY = rect.top + rect.height / 2
-  const viewportCenterX = viewportWidth / 2
-  const viewportCenterY = viewportHeight / 2
-
-  translateX.value = viewportCenterX - cardCenterX
-  translateY.value = viewportCenterY - cardCenterY
+  translateX.value = window.innerWidth / 2 - (rect.left + rect.width / 2)
+  translateY.value = window.innerHeight / 2 - (rect.top + rect.height / 2)
 }
 
+/** 触发 tilt 效果（翻转/缩放后立即激活） */
+const triggerTilt = () => {
+  if (!rootRef.value) return
+  rootRef.value.dispatchEvent(
+    new MouseEvent('mousemove', {
+      clientX: lastMouseX,
+      clientY: lastMouseY,
+      bubbles: true,
+    })
+  )
+}
+
+const trackMouse = (e: MouseEvent) => {
+  lastMouseX = e.clientX
+  lastMouseY = e.clientY
+}
+
+// ========== 核心动作 ==========
+
+const flip = () => {
+  if (isAnimating.value || state.value !== 'back') return
+
+  isAnimating.value = true
+  state.value = 'front'
+  emit('flip', props.card?.id || '')
+
+  onTransitionEnd(() => {
+    isAnimating.value = false
+    emit('flipComplete')
+    triggerTilt()
+  })
+}
+
+const zoomIn = () => {
+  if (isAnimating.value || state.value !== 'front' || !props.zoomable) return
+
+  isAnimating.value = true
+  calcZoomOffset()
+  state.value = 'zoom-in'
+  emit('zoom', true)
+
+  onTransitionEnd(() => {
+    isAnimating.value = false
+    triggerTilt()
+    document.addEventListener('click', handleGlobalClick, { capture: true })
+    document.addEventListener('keydown', handleKeydown)
+  })
+}
+
+const zoomOut = () => {
+  if (isAnimating.value || state.value !== 'zoom-in') return
+
+  document.removeEventListener('click', handleGlobalClick, { capture: true })
+  document.removeEventListener('keydown', handleKeydown)
+
+  isAnimating.value = true
+  state.value = 'zoom-out'
+  emit('zoom', false)
+
+  onTransitionEnd(() => {
+    state.value = 'front'
+    translateX.value = 0
+    translateY.value = 0
+    isAnimating.value = false
+    triggerTilt()
+  })
+}
+
+// ========== 事件处理 ==========
+
 const handleClick = (e: MouseEvent) => {
+  e.stopPropagation()
   emit('click')
 
-  // 防止组件刚挂载时的点击穿透
-  if (Date.now() - mountedAt.value < CLICK_GUARD_MS) {
-    return
-  }
-
-  // 如果已放大，点击则缩小
-  if (isZoomed.value) {
-    zoomOut()
-    e.stopPropagation()
-    return
-  }
-
-  // 没有卡牌数据时不处理
+  if (Date.now() - mountedAt.value < CLICK_GUARD_MS) return
+  if (isAnimating.value) return
   if (!props.card) return
 
-  // static 模式：已显示正面，只能放大不能翻牌
+  // zoom-in 状态由全局事件处理
+  if (state.value === 'zoom-in') return
+
+  // 静态模式（已翻转）→ 放大
   if (props.static) {
-    if (props.zoomable) {
-      zoomIn()
-    }
+    if (props.zoomable) zoomIn()
     return
   }
 
-  // 非 static 模式需要 clickable
   if (!props.clickable) return
 
-  // 未翻牌时点击翻牌
-  if (!isFlipped.value && !isFlipping.value) {
+  // Back → 翻转到 Front
+  if (state.value === 'back') {
     flip()
     return
   }
 
-  // 已翻牌且可放大，则放大
-  if (isFlipped.value && props.zoomable && !isFlipping.value) {
+  // Front → 放大
+  if (state.value === 'front' && props.zoomable) {
     zoomIn()
   }
 }
 
-const flip = () => {
-  if (isFlipping.value || isFlipped.value) return
-
-  isFlipping.value = true
-  isFlipped.value = true
-  emit('flip', props.card?.id || '')
-
-  setTimeout(() => {
-    isFlipping.value = false
-    emit('flipComplete')
-  }, props.flipDuration)
-}
-
-const zoomIn = () => {
-  if (isZoomed.value || !props.zoomable) return
-
-  calcZoomOffset()
-  isZoomed.value = true
-  emit('zoom', true)
-
-  // 添加全局点击监听
-  setTimeout(() => {
-    document.addEventListener('click', handleGlobalClick)
-    document.addEventListener('keydown', handleKeydown)
-  }, 100)
-}
-
-const zoomOut = () => {
-  if (!isZoomed.value) return
-
-  isZoomed.value = false
-  translateX.value = 0
-  translateY.value = 0
-  emit('zoom', false)
-
-  // 移除全局监听
-  document.removeEventListener('click', handleGlobalClick)
-  document.removeEventListener('keydown', handleKeydown)
-}
-
-const handleGlobalClick = (e: MouseEvent) => {
-  // 点击卡牌外部时缩小
-  if (rootRef.value && !rootRef.value.contains(e.target as Node)) {
-    zoomOut()
-  }
-}
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    zoomOut()
-  }
-}
-
-const reset = () => {
-  isFlipped.value = props.static || props.flipped
-  isFlipping.value = false
+const handleGlobalClick = () => {
   zoomOut()
 }
 
-// 监听 static/flipped prop 变化
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') zoomOut()
+}
+
+const handleResize = () => {
+  if (state.value === 'zoom-in') calcZoomOffset()
+}
+
+const reset = () => {
+  state.value = props.static || props.flipped ? 'front' : 'back'
+  isAnimating.value = false
+  translateX.value = 0
+  translateY.value = 0
+  document.removeEventListener('click', handleGlobalClick, { capture: true })
+  document.removeEventListener('keydown', handleKeydown)
+}
+
+// ========== 生命周期 ==========
+
 watch(
   () => [props.static, props.flipped],
   ([staticVal, flippedVal]) => {
-    isFlipped.value = staticVal || flippedVal
+    if ((staticVal || flippedVal) && state.value === 'back') {
+      state.value = 'front'
+    }
   }
 )
-
-// 窗口大小变化时重新计算偏移
-const handleResize = () => {
-  if (isZoomed.value) {
-    calcZoomOffset()
-  }
-}
 
 onMounted(() => {
   mountedAt.value = Date.now()
   window.addEventListener('resize', handleResize)
+  document.addEventListener('mousemove', trackMouse)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  document.removeEventListener('click', handleGlobalClick)
+  document.removeEventListener('mousemove', trackMouse)
+  document.removeEventListener('click', handleGlobalClick, { capture: true })
   document.removeEventListener('keydown', handleKeydown)
 })
 
-// ========== 暴露 ==========
 defineExpose({
   flip,
   reset,
@@ -253,42 +280,56 @@ defineExpose({
   isFlipped,
   isFlipping,
   isZoomed,
+  state,
 })
 </script>
 
 <template>
+  <!-- 外层：控制位移到中心 + 层级控制 -->
   <div
     ref="rootRef"
     class="holo-tarot"
     :class="{
-      'is-zoomed': isZoomed,
-      'is-flipped': isFlipped,
-      'is-flipping': isFlipping,
+      'zoom-in': state === 'zoom-in',
+      'zoom-out': state === 'zoom-out',
     }"
     :style="cssVars"
     @click="handleClick"
   >
-    <!-- 全息效果容器 -->
-    <HoloFoil
-      :preset="holoPreset"
-      :disabled="isFlipping || holoPreset === 'none'"
-      :gyroscope="gyroscope"
-      border-radius="var(--card-radius, 8px)"
+    <!-- 内层：控制翻转 + 放大旋转 -->
+    <div
+      ref="containerRef"
+      class="card-container"
+      :class="{
+        flipped: state === 'front' || state === 'zoom-out',
+        'zoom-in': state === 'zoom-in',
+        'zoom-out': state === 'zoom-out',
+      }"
     >
-      <!-- 塔罗牌（含翻转） -->
-      <TarotCard
-        ref="tarotCardRef"
-        :card="card"
-        :flipped="isFlipped"
-        :reversed="isReversed"
-        :deck-id="deckId"
-        :flip-duration="flipDuration"
-      />
-    </HoloFoil>
+      <!-- Back 面：hover-tilt 仅 tilt，无 glare -->
+      <HoloFoil
+        class="back-wrapper"
+        :preset="holoPreset"
+        :glare-intensity="0"
+        :gyroscope="gyroscope"
+      >
+        <TarotCard :card="card" :deck-id="deckId" side="back" />
+      </HoloFoil>
+
+      <!-- Front 面：hover-tilt 有 tilt + glare -->
+      <HoloFoil
+        class="front-wrapper"
+        :preset="holoPreset"
+        :glare-intensity="presetConfig.glareIntensity ?? 1.2"
+        :gyroscope="gyroscope"
+      >
+        <TarotCard :card="card" :reversed="isReversed" :deck-id="deckId" side="front" />
+      </HoloFoil>
+    </div>
 
     <!-- 位置标签 -->
     <span
-      v-if="position && !static && !isZoomed"
+      v-if="position && !static && state !== 'zoom-in' && state !== 'zoom-out'"
       class="position-label"
       :class="labelPosition === 'inside' ? 'label-inside' : 'label-bottom'"
     >
@@ -298,34 +339,81 @@ defineExpose({
 </template>
 
 <style scoped>
-/* ========== 根容器 ========== */
+/**
+ * 双层架构 CSS
+ *
+ * 外层 .holo-tarot: 控制位移 (translate3d) + 层级 (z-index, isolation)
+ * 内层 .card-container: 控制翻转 (rotateY) + 缩放 (scale)
+ */
+
 .holo-tarot {
   --card-width: 80px;
   --card-radius: 8px;
-  --flip-duration: 600ms;
-  --zoom-scale: 2.5;
+  --card-aspect-ratio: 0.585;
+  --flip-duration: 700ms;
+  --zoom-duration: 800ms;
+  --zoom-scale: 1.75;
   --translate-x: 0px;
   --translate-y: 0px;
-  --zoom-duration: 400ms;
 
   position: relative;
   width: var(--card-width);
+  aspect-ratio: var(--card-aspect-ratio);
   cursor: pointer;
-  transition:
-    transform var(--zoom-duration) cubic-bezier(0.34, 1.56, 0.64, 1),
-    z-index 0s;
+  transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 翻牌动画时提升层级，避免被其他卡片遮盖 */
-.holo-tarot.is-flipping {
-  z-index: 100 !important;
+/* 放大状态：外层移动到中心 + 提升层级 */
+.holo-tarot.zoom-in {
+  transform: translate3d(var(--translate-x), var(--translate-y), 0);
+  z-index: 99999;
+  isolation: isolate;
 }
 
-/* 放大状态 - 确保层级最高 */
-.holo-tarot.is-zoomed {
+/* 缩小中：外层回到原位 + 保持层级 */
+.holo-tarot.zoom-out {
+  transform: translate3d(0, 0, 0);
+  z-index: 99999;
+  isolation: isolate;
+}
+
+/* ========== 内层：3D 翻转容器 ========== */
+.card-container {
   position: relative;
-  z-index: 9999 !important;
-  transform: translate3d(var(--translate-x), var(--translate-y), 0.1px) scale(var(--zoom-scale));
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: perspective(800px);
+  transition: transform var(--flip-duration) cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+/* 翻转状态 */
+.card-container.flipped {
+  transform: perspective(800px) rotateY(180deg);
+}
+
+/* 放大状态：旋转 540° + 缩放 */
+.card-container.zoom-in {
+  transform: perspective(800px) rotateY(540deg) scale(var(--zoom-scale));
+  transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 缩小中：回到翻转位置 (180°) */
+.card-container.zoom-out {
+  transform: perspective(800px) rotateY(180deg);
+  transition: transform var(--zoom-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ========== HoloFoil 包装器 ========== */
+.back-wrapper,
+.front-wrapper {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.front-wrapper {
+  transform: rotateY(180deg);
 }
 
 /* ========== 位置标签 ========== */
@@ -353,7 +441,7 @@ defineExpose({
   background: rgba(0, 0, 0, 0.85);
 }
 
-/* ========== 响应式尺寸 ========== */
+/* ========== 响应式 ========== */
 @media (min-width: 640px) {
   .holo-tarot {
     --card-width: 100px;

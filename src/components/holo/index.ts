@@ -2,11 +2,15 @@
  * Holo 全息效果组件库
  *
  * 组件：
- * - HoloFoil: 全息效果容器（tilt + glare + shine）
+ * - HoloFoil: 全息效果容器（hover-tilt + custom gradient + glare mask）
+ *
+ * 效果 CSS：
+ * - effects/shadows.css: 自定义阴影效果类
+ * - effects/gradients.css: 自定义渐变效果类
+ * - effects/masks/: Glare Mask 资源和 CSS
  *
  * @example
  * ```vue
- * <!-- 全息容器 -->
  * <HoloFoil preset="cosmos">
  *   <YourContent />
  * </HoloFoil>
@@ -26,6 +30,7 @@ export {
   springOptionsToJson,
   type HoloPreset,
   type GlareMaskMode,
+  type GlareMaskComposite,
   type SpringOptions,
 } from './presets'
 
