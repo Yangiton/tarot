@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Motion } from 'motion-v'
 import { ChevronDown } from 'lucide-vue-next'
-import { REVERSED_PROBABILITY, type SpreadType } from '@/data'
+import { REVERSED_MODES, type SpreadType, type ReversedMode } from '@/data'
 import { useTarot } from '@/composables/useTarot'
 import { HOLO_PRESET_LIST } from '@/components/holo'
 import type { SupportedLocale } from '@/i18n'
@@ -16,10 +16,28 @@ const {
   setHoloPreset,
   useFullDeck,
   setUseFullDeck,
+  reversedMode,
+  setReversedMode,
   spreads,
 } = useTarot()
 
-const reversedPercent = Math.round(REVERSED_PROBABILITY * 100)
+const reversedOptions = computed(() =>
+  REVERSED_MODES.map(mode => ({
+    value: mode.id,
+    name: t(mode.nameKey),
+    description: t(mode.descKey),
+    percent: Math.round(mode.probability * 100),
+  }))
+)
+
+const currentReversedConfig = computed(() =>
+  reversedOptions.value.find(o => o.value === reversedMode.value)
+)
+
+const handleReversedModeChange = (e: Event) => {
+  const value = (e.target as HTMLSelectElement).value as ReversedMode
+  setReversedMode(value)
+}
 
 const spreadOptions = computed(() => {
   return Object.entries(spreads.value).map(([key, config]) => ({
@@ -139,20 +157,37 @@ const handleLanguageChange = (e: Event) => {
                 </p>
               </div>
 
-              <!-- 逆位概率 -->
-              <div class="glass-card p-4 flex items-center justify-between">
-                <div>
-                  <p class="text-sm md:text-base text-foreground">
-                    {{ $t('settings.reversedProbability') }}
-                  </p>
-
-                  <p class="text-xs text-muted-foreground mt-1">
-                    {{ $t('settings.reversedProbabilityDesc') }}
-                  </p>
+              <!-- 逆位模式 -->
+              <div class="glass-card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm md:text-base text-foreground">
+                      {{ $t('settings.reversedMode') }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ $t('settings.reversedModeDesc') }}
+                    </p>
+                  </div>
                 </div>
-                <span class="px-3 py-1.5 bg-gold/15 text-gold rounded-full text-sm">
-                  {{ reversedPercent }}%
-                </span>
+
+                <div class="relative">
+                  <select
+                    :value="reversedMode"
+                    @change="handleReversedModeChange"
+                    class="spread-select"
+                  >
+                    <option v-for="opt in reversedOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.name }} ({{ opt.percent }}%)
+                    </option>
+                  </select>
+                  <ChevronDown
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold pointer-events-none"
+                  />
+                </div>
+
+                <p class="text-xs text-muted-foreground mt-2 pl-1">
+                  {{ currentReversedConfig?.description }}
+                </p>
               </div>
 
               <!-- 牌组范围 -->

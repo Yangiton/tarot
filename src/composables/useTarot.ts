@@ -19,9 +19,12 @@ import { useI18n } from 'vue-i18n'
 import {
   type DrawnCard,
   type SpreadType,
+  type ReversedMode,
   drawCards as drawCardsUtil,
   generateSummary,
+  getReversedProbability,
   DEFAULT_DECK_ID,
+  DEFAULT_REVERSED_MODE,
   useCardData,
 } from '@/data'
 
@@ -38,6 +41,7 @@ const flippedCardIds = useStorage<Set<string>>('tarot-flipped-ids', new Set(), l
 const holoPreset = useStorage<string>('tarot-holo-preset', 'normal')
 const currentDeckId = useStorage<string>('tarot-deck-id', DEFAULT_DECK_ID)
 const useFullDeck = useStorage<boolean>('tarot-use-full-deck', false)
+const reversedMode = useStorage<ReversedMode>('tarot-reversed-mode', DEFAULT_REVERSED_MODE)
 
 // 翻牌计数器（基于持久化的 flippedCardIds）
 const flippedCount = computed(() => flippedCardIds.value.size)
@@ -135,7 +139,8 @@ export function useTarot() {
 
   /** 执行抽牌 */
   const drawCards = () => {
-    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value, locale.value)
+    const probability = getReversedProbability(reversedMode.value)
+    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value, locale.value, probability)
     flippedCardIds.value = new Set()
   }
 
@@ -176,6 +181,11 @@ export function useTarot() {
     flippedCardIds.value = new Set()
   }
 
+  /** 设置逆位模式 */
+  const setReversedMode = (mode: ReversedMode) => {
+    reversedMode.value = mode
+  }
+
   return {
     // 状态
     currentSpread,
@@ -185,6 +195,7 @@ export function useTarot() {
     holoPreset,
     currentDeckId,
     useFullDeck,
+    reversedMode,
 
     // 计算属性
     isDrawn,
@@ -210,5 +221,6 @@ export function useTarot() {
     setHoloPreset,
     setDeckId,
     setUseFullDeck,
+    setReversedMode,
   }
 }

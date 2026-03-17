@@ -346,8 +346,36 @@ export function useCardData() {
   }
 }
 
-// ============ 全局配置（非翻译项） ============
+// ============ 逆位模式配置 ============
 
+/** 逆位模式 ID */
+export type ReversedMode = 'classic' | 'light' | 'heavy' | 'minimal'
+
+/** 逆位模式配置 */
+export interface ReversedModeConfig {
+  id: ReversedMode
+  probability: number
+  nameKey: string
+  descKey: string
+}
+
+/** 逆位模式列表 */
+export const REVERSED_MODES: ReversedModeConfig[] = [
+  { id: 'classic', probability: 0.5, nameKey: 'settings.reversedModes.classic', descKey: 'settings.reversedModes.classicDesc' },
+  { id: 'light', probability: 0.3, nameKey: 'settings.reversedModes.light', descKey: 'settings.reversedModes.lightDesc' },
+  { id: 'heavy', probability: 0.7, nameKey: 'settings.reversedModes.heavy', descKey: 'settings.reversedModes.heavyDesc' },
+  { id: 'minimal', probability: 0.1, nameKey: 'settings.reversedModes.minimal', descKey: 'settings.reversedModes.minimalDesc' },
+]
+
+/** 默认逆位模式 */
+export const DEFAULT_REVERSED_MODE: ReversedMode = 'classic'
+
+/** 获取逆位概率 */
+export function getReversedProbability(mode: ReversedMode): number {
+  return REVERSED_MODES.find(m => m.id === mode)?.probability ?? 0.5
+}
+
+/** 旧版兼容：默认逆位概率（经典模式 50%） */
 export const REVERSED_PROBABILITY = baseConfig.config.reversedProbability
 
 // ============ 抽牌与摘要逻辑 ============
@@ -361,7 +389,12 @@ function shuffle<T>(array: T[]): T[] {
   return arr
 }
 
-export function drawCards(count: SpreadType, useFullDeck: boolean, locale: string): DrawnCard[] {
+export function drawCards(
+  count: SpreadType,
+  useFullDeck: boolean,
+  locale: string,
+  reversedProbability: number = 0.5
+): DrawnCard[] {
   const data = getStaticCardData(locale)
   const deck = useFullDeck
     ? [
@@ -379,7 +412,7 @@ export function drawCards(count: SpreadType, useFullDeck: boolean, locale: strin
 
   return shuffled.slice(0, count).map((card, i) => ({
     ...card,
-    isReversed: Math.random() < REVERSED_PROBABILITY,
+    isReversed: Math.random() < reversedProbability,
     position: positions[i]?.name || '',
     row: positions[i]?.row || 0,
     col: positions[i]?.col || 0,
