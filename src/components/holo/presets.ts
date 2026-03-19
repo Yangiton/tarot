@@ -230,8 +230,3 @@ export const HOLO_PRESET_IDS = Object.keys(HOLO_PRESETS)
 export function getHoloPreset(id: string): HoloPreset {
   return HOLO_PRESETS[id] || HOLO_PRESETS.none
 }
-
-/** 将 SpringOptions 转换为 JSON 字符串 */
-export function springOptionsToJson(options: SpringOptions): string {
-  return JSON.stringify(options)
-}

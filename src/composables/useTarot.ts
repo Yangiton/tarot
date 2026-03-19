@@ -18,9 +18,10 @@ import { useStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import {
   type DrawnCard,
+  type DrawnCardRef,
   type SpreadType,
   type ReversedMode,
-  drawCards as drawCardsUtil,
+  drawCardsRef,
   generateSummary,
   getReversedProbability,
   DEFAULT_DECK_ID,
@@ -31,7 +32,8 @@ import {
 // ========== 持久化状态（模块级别，确保单例） ==========
 
 const currentSpread = useStorage<SpreadType>('tarot-spread', 3)
-const drawnCards = useStorage<DrawnCard[]>('tarot-cards', [])
+/** 抽牌结果（语言无关，只存 id + 状态） */
+const drawnCardRefs = useStorage<DrawnCardRef[]>('tarot-card-refs', [])
 const flippedCardIds = useStorage<Set<string>>('tarot-flipped-ids', new Set(), localStorage, {
   serializer: {
     read: (v: string) => new Set(JSON.parse(v || '[]')),
@@ -47,50 +49,29 @@ const reversedMode = useStorage<ReversedMode>('tarot-reversed-mode', DEFAULT_REV
 const flippedCount = computed(() => flippedCardIds.value.size)
 
 /**
- * 验证 DrawnCard 数据结构是否完整
- * 用于过滤掉 localStorage 中可能存在的旧格式/损坏数据
+ * 验证 DrawnCardRef 数据结构
  */
-function isValidDrawnCard(card: unknown): card is DrawnCard {
+function isValidDrawnCardRef(card: unknown): card is DrawnCardRef {
   if (!card || typeof card !== 'object') return false
-
   const c = card as Record<string, unknown>
-
-  // 必需字段检查
   return (
     typeof c.id === 'string' &&
-    typeof c.name === 'string' &&
-    typeof c.nameEn === 'string' &&
-    typeof c.symbol === 'string' &&
-    typeof c.keywords === 'string' &&
-    typeof c.upright === 'string' &&
-    typeof c.reversed === 'string' &&
     typeof c.isReversed === 'boolean' &&
-    typeof c.position === 'string' &&
+    typeof c.positionIndex === 'number' &&
     typeof c.row === 'number' &&
     typeof c.col === 'number'
   )
 }
 
-/**
- * 清理无效的卡牌数据
- * 在应用启动时执行，确保存储的数据结构正确
- */
-function sanitizeDrawnCards(cards: DrawnCard[]): DrawnCard[] {
-  if (!Array.isArray(cards)) return []
-  return cards.filter((card): card is DrawnCard => isValidDrawnCard(card))
-}
-
-// 初始化时验证并清理存储的卡牌数据
+// 初始化时验证存储的数据
 watch(
-  () => drawnCards.value,
-  (cards: DrawnCard[]) => {
+  () => drawnCardRefs.value,
+  cards => {
     if (cards && cards.length > 0) {
-      const invalidCount = cards.filter(c => !isValidDrawnCard(c)).length
-      if (invalidCount > 0) {
-        // 存在无效数据，清理
-        const validCards = sanitizeDrawnCards(cards)
-        console.warn(`[useTarot] 检测到 ${invalidCount} 条无效卡牌数据，已清理`)
-        drawnCards.value = validCards
+      const validCards = cards.filter(isValidDrawnCardRef)
+      if (validCards.length !== cards.length) {
+        console.warn(`[useTarot] 检测到无效卡牌数据，已清理`)
+        drawnCardRefs.value = validCards
       }
     }
   },
@@ -106,17 +87,54 @@ export function useTarot() {
     majorArcana,
     minorArcana,
     getSpreadConfig,
+    getPositionName,
     getAllMinorArcana,
     getAllCards,
+    getCardById,
   } = useCardData()
 
   // ========== 计算属性 ==========
 
   /** 是否已抽牌 */
-  const isDrawn = computed(() => drawnCards.value.length > 0)
+  const isDrawn = computed(() => drawnCardRefs.value.length > 0)
 
   /** 是否所有牌都已翻开 */
-  const allFlipped = computed(() => isDrawn.value && flippedCount.value >= drawnCards.value.length)
+  const allFlipped = computed(
+    () => isDrawn.value && flippedCount.value >= drawnCardRefs.value.length
+  )
+
+  /**
+   * 展示用的卡牌数据（响应式多语言）
+   * 根据 drawnCardRefs 中的 id 查询当前语言的完整卡牌信息
+   */
+  const drawnCards = computed<DrawnCard[]>(() => {
+    return drawnCardRefs.value.map(ref => {
+      const card = getCardById(ref.id)
+      if (!card) {
+        return {
+          id: ref.id,
+          name: ref.id,
+          nameEn: ref.id,
+          keywords: '',
+          symbol: '❓',
+          upright: '',
+          reversed: '',
+          isReversed: ref.isReversed,
+          position: getPositionName(currentSpread.value, ref.positionIndex),
+          row: ref.row,
+          col: ref.col,
+        }
+      }
+      return {
+        ...card,
+        number: 'number' in card ? card.number : 'rank' in card ? String(card.rank) : undefined,
+        isReversed: ref.isReversed,
+        position: getPositionName(currentSpread.value, ref.positionIndex),
+        row: ref.row,
+        col: ref.col,
+      }
+    })
+  })
 
   /** 解读摘要 */
   const summary = computed(() =>
@@ -132,7 +150,7 @@ export function useTarot() {
   const selectSpread = (count: SpreadType) => {
     if (currentSpread.value !== count) {
       currentSpread.value = count
-      drawnCards.value = []
+      drawnCardRefs.value = []
       flippedCardIds.value = new Set()
     }
   }
@@ -140,7 +158,7 @@ export function useTarot() {
   /** 执行抽牌 */
   const drawCards = () => {
     const probability = getReversedProbability(reversedMode.value)
-    drawnCards.value = drawCardsUtil(currentSpread.value, useFullDeck.value, locale.value, probability)
+    drawnCardRefs.value = drawCardsRef(currentSpread.value, useFullDeck.value, probability)
     flippedCardIds.value = new Set()
   }
 
@@ -160,7 +178,7 @@ export function useTarot() {
 
   /** 重置阅读（清空抽牌结果） */
   const resetReading = () => {
-    drawnCards.value = []
+    drawnCardRefs.value = []
     flippedCardIds.value = new Set()
   }
 
@@ -177,7 +195,7 @@ export function useTarot() {
   /** 设置是否使用完整牌组 */
   const setUseFullDeck = (value: boolean) => {
     useFullDeck.value = value
-    drawnCards.value = []
+    drawnCardRefs.value = []
     flippedCardIds.value = new Set()
   }
 

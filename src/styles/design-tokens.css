@@ -1,0 +1,546 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * BlackRice Tarot - 设计系统
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * 设计理念：暗夜优雅 (Dark Elegant)
+ * - 情感：神秘但不压抑，像深夜星空下的占卜小屋
+ * - 主色：陶土橙 #E07B5A（温暖对比）
+ * - 背景：深黑 + 微光星空粒子
+ * - 卡片：微妙全息效果
+ * - 交互：弹性活泼 (Spring)
+ * - 字体：现代无衬线
+ * 
+ * 目标用户：16-30岁，对神秘学感兴趣的探索者
+ */
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════
+   * 核心色彩 - 陶土橙主色
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* Primary - 陶土橙 Terracotta（温暖的强调色） */
+  --primary-50:  #FEF6F3;
+  --primary-100: #FDE9E1;
+  --primary-200: #FBD3C3;
+  --primary-300: #F5B59A;
+  --primary-400: #ED9370;
+  --primary-500: #E07B5A;   /* ⭐ 主色 */
+  --primary-600: #CB5E3D;
+  --primary-700: #AA4A30;
+  --primary-800: #8C3E2B;
+  --primary-900: #743627;
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 暗夜色阶 - 深黑背景系统
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* Void - 虚空黑（最深的背景） */
+  --void-950: #08080C;      /* 纯黑 - 页面背景 */
+  --void-900: #0D0D12;      /* 深黑 - 卡片背景 */
+  --void-850: #121218;      /* 略浅 - 悬浮卡片 */
+  --void-800: #18181F;      /* 边框/分割 */
+  --void-700: #252530;      /* 次级边框 */
+  --void-600: #3A3A48;      /* 禁用状态 */
+  --void-500: #52525E;      /* 辅助文字 */
+  --void-400: #71717A;      /* 次要文字 */
+  --void-300: #A1A1AA;      /* 正文 */
+  --void-200: #D4D4D8;      /* 强调文字 */
+  --void-100: #F4F4F5;      /* 高亮文字 */
+  --void-50:  #FAFAFA;      /* 最亮 */
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 语义色彩 - 状态指示
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* 正位 - 翡翠绿 */
+  --upright: #34D399;
+  --upright-soft: rgba(52, 211, 153, 0.15);
+  --upright-glow: rgba(52, 211, 153, 0.4);
+
+  /* 逆位 - 玫瑰红 */
+  --reversed: #F87171;
+  --reversed-soft: rgba(248, 113, 113, 0.15);
+  --reversed-glow: rgba(248, 113, 113, 0.4);
+
+  /* 信息 - 星空紫 */
+  --info: #A78BFA;
+  --info-soft: rgba(167, 139, 250, 0.15);
+
+  /* 警告 - 琥珀 */
+  --warning: #FBBF24;
+  --warning-soft: rgba(251, 191, 36, 0.15);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 语义化别名 - 暗色模式默认
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* 背景 */
+  --bg-void: var(--void-950);           /* 页面背景 */
+  --bg-card: var(--void-900);           /* 卡片背景 */
+  --bg-elevated: var(--void-850);       /* 弹窗/浮层 */
+  --bg-overlay: rgba(8, 8, 12, 0.85);   /* 遮罩层 */
+
+  /* 前景/文字 */
+  --fg-default: var(--void-200);        /* 主文字 */
+  --fg-muted: var(--void-400);          /* 次要文字 */
+  --fg-subtle: var(--void-500);         /* 辅助文字 */
+  --fg-bright: var(--void-100);         /* 高亮文字 */
+  --fg-on-accent: var(--void-950);      /* 强调色上的文字 */
+
+  /* 边框 */
+  --border-default: var(--void-800);
+  --border-subtle: var(--void-700);
+  --border-glow: rgba(224, 123, 90, 0.3);
+
+  /* 强调色 */
+  --accent: var(--primary-500);
+  --accent-hover: var(--primary-400);
+  --accent-active: var(--primary-600);
+  --accent-soft: rgba(224, 123, 90, 0.12);
+  --accent-soft-hover: rgba(224, 123, 90, 0.2);
+  --accent-glow: rgba(224, 123, 90, 0.4);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 全息效果 - HoloFoil
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* 微妙全息渐变 */
+  --holo-gradient: linear-gradient(
+    135deg,
+    rgba(224, 123, 90, 0.6) 0%,
+    rgba(167, 139, 250, 0.5) 25%,
+    rgba(52, 211, 153, 0.4) 50%,
+    rgba(251, 191, 36, 0.5) 75%,
+    rgba(224, 123, 90, 0.6) 100%
+  );
+
+  /* 稀有度发光 */
+  --glow-common: 0 0 8px rgba(224, 123, 90, 0.2);
+  --glow-rare: 0 0 12px rgba(224, 123, 90, 0.4), 0 0 24px rgba(224, 123, 90, 0.2);
+  --glow-epic: 0 0 16px rgba(167, 139, 250, 0.5), 0 0 32px rgba(167, 139, 250, 0.25);
+  --glow-legendary: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.3);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 字体系统 - 现代无衬线
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --font-sans: "Inter", "SF Pro Display", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --font-display: var(--font-sans);  /* 标题也用无衬线 */
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+
+  /* 字号 - 1.125 比例 */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+
+  /* 字重 */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* 行高 */
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  --leading-loose: 2;
+
+  /* 字间距 */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 间距系统 - 4px 基数
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --space-0: 0;
+  --space-px: 1px;
+  --space-half: 0.125rem;   /* 2px */
+  --space-1: 0.25rem;       /* 4px */
+  --space-1half: 0.375rem;  /* 6px */
+  --space-2: 0.5rem;        /* 8px */
+  --space-2half: 0.625rem;  /* 10px */
+  --space-3: 0.75rem;       /* 12px */
+  --space-4: 1rem;          /* 16px */
+  --space-5: 1.25rem;       /* 20px */
+  --space-6: 1.5rem;        /* 24px */
+  --space-8: 2rem;          /* 32px */
+  --space-10: 2.5rem;       /* 40px */
+  --space-12: 3rem;         /* 48px */
+  --space-16: 4rem;         /* 64px */
+  --space-20: 5rem;         /* 80px */
+  --space-24: 6rem;         /* 96px */
+
+  /* 安全区 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 圆角系统
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --radius-none: 0;
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.25rem;   /* 20px */
+  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
+  /* 塔罗牌专用 */
+  --radius-card: 0.75rem;
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 阴影系统 - 暗色模式优化
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.45), 0 10px 10px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+
+  /* 卡片阴影 */
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.5), 0 6px 12px rgba(0, 0, 0, 0.3);
+
+  /* 内发光 - 玻璃效果 */
+  --shadow-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 动画系统 - 弹性活泼
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* 时长 */
+  --duration-instant: 50ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --duration-ritual: 800ms;   /* 仪式感动画 */
+
+  /* 缓动曲线 */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 弹性曲线 - Spring */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-soft: cubic-bezier(0.22, 1.2, 0.36, 1);
+  --ease-spring-bouncy: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 层级系统
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-toast: 600;
+  --z-max: 9999;
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 渐变效果
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* 星空背景渐变 */
+  --gradient-starfield: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(167, 139, 250, 0.08) 0%,
+    transparent 50%
+  ), radial-gradient(
+    ellipse at 80% 80%,
+    rgba(224, 123, 90, 0.05) 0%,
+    transparent 40%
+  ), var(--bg-void);
+
+  /* 卡片微光 */
+  --gradient-card-glow: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+
+  /* 强调色渐变 */
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--primary-400) 0%,
+    var(--primary-500) 50%,
+    var(--primary-600) 100%
+  );
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 模糊效果
+   * ═══════════════════════════════════════════════════════════════ */
+
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * 工具类
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* 文字渐变 */
+.text-gradient {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 玻璃卡片 */
+.glass {
+  background: var(--gradient-card-glow), var(--bg-card);
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-inner-glow), var(--shadow-card);
+}
+
+/* 发光效果 */
+.glow {
+  box-shadow: var(--glow-rare);
+}
+
+.glow-epic {
+  box-shadow: var(--glow-epic);
+}
+
+.glow-legendary {
+  box-shadow: var(--glow-legendary);
+}
+
+/* 强调色柔和背景 */
+.bg-accent-soft {
+  background: var(--accent-soft);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * 按钮样式
+ * ═══════════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  transition: all var(--duration-fast) var(--ease-spring);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* 主按钮 - 柔和填充 */
+.btn-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-soft-hover);
+}
+
+/* 强调按钮 - 实心 */
+.btn-accent {
+  background: var(--gradient-accent);
+  color: var(--fg-on-accent);
+  box-shadow: var(--glow-common);
+}
+
+.btn-accent:hover:not(:disabled) {
+  box-shadow: var(--glow-rare);
+  transform: translateY(-1px);
+}
+
+/* 幽灵按钮 */
+.btn-ghost {
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid var(--border-default);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  color: var(--fg-default);
+  border-color: var(--border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * 动画关键帧
+ * ═══════════════════════════════════════════════════════════════ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slide-down {
+  from { 
+    opacity: 0; 
+    transform: translateY(-16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scale-in {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes scale-out {
+  from { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+  to { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+}
+
+/* 弹性入场 */
+@keyframes spring-in {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.8); 
+  }
+  50% { 
+    transform: scale(1.05); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* 呼吸光效 - 卡牌待翻状态 */
+@keyframes breathe {
+  0%, 100% { 
+    opacity: 0.6; 
+    box-shadow: var(--glow-common); 
+  }
+  50% { 
+    opacity: 0.9; 
+    box-shadow: var(--glow-rare); 
+  }
+}
+
+/* 星星闪烁 */
+@keyframes twinkle {
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.2); 
+  }
+}
+
+/* 柔和脉冲 */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 洗牌摇晃 */
+@keyframes shuffle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-6px) rotate(-1.5deg); }
+  75% { transform: translateX(6px) rotate(1.5deg); }
+}
+
+/* 动画工具类 */
+.animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+.animate-slide-up {
+  animation: slide-up var(--duration-slow) var(--ease-spring);
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-normal) var(--ease-spring);
+}
+
+.animate-spring-in {
+  animation: spring-in var(--duration-slow) var(--ease-spring);
+}
+
+.animate-breathe {
+  animation: breathe 3s var(--ease-in-out) infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle var(--duration-ritual) var(--ease-in-out) infinite;
+}
+
+.animate-shuffle {
+  animation: shuffle 1.2s var(--ease-in-out) infinite;
+}

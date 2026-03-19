@@ -225,4 +225,28 @@ hover-tilt.holo-foil::part(tilt) {
 hover-tilt.holo-foil:hover {
   z-index: 10;
 }
+
+/* ========== Holo 激活动画 ========== */
+hover-tilt.holo-foil.holo-activate::part(tilt)::before {
+  animation: holo-reveal 0.8s ease-out;
+}
+
+@keyframes holo-reveal {
+  0% {
+    opacity: 0;
+    filter: brightness(0.5) saturate(0);
+  }
+  30% {
+    opacity: 0.5;
+    filter: brightness(1.5) saturate(1.2);
+  }
+  60% {
+    opacity: 1;
+    filter: brightness(1.8) saturate(1.5);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+  }
+}
 </style>

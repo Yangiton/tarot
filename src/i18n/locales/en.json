@@ -1,8 +1,11 @@
 {
   "nav": {
+    "daily": "Daily",
     "divination": "Tarot",
     "library": "Library",
-    "settings": "Settings"
+    "me": "Me",
+    "settings": "Settings",
+    "mainNav": "Main navigation"
   },
   "home": {
     "title": "✦ Tarot Reading ✦",
@@ -15,7 +18,27 @@
     "hintReading": "View Reading →",
     "resetButton": "Redraw",
     "readingButton": "View Reading →",
-    "tipsToggleTitle": "Reading Tips"
+    "tipsToggleTitle": "Reading Tips",
+    "guideText": "Tap the card to reveal today's guidance",
+    "exploreMoreSpreads": "Explore more spreads"
+  },
+  "divination": {
+    "title": "Tarot Reading",
+    "selectSpread": "Choose Spread",
+    "selectSpreadDesc": "Select a spread that fits your question",
+    "changeSpread": "Change Spread",
+    "questionLabel": "Think of your question (optional)",
+    "questionPlaceholder": "Enter your question...",
+    "startButton": "Start Reading",
+    "redrawButton": "Redraw",
+    "viewReadingButton": "View Reading",
+    "flipHint": "Tap card to flip",
+    "backLabel": "Back",
+    "singleCard": "Single Card",
+    "spreadDesc1": "Quick Guidance",
+    "spreadDesc3": "Past · Present · Future",
+    "spreadDesc5": "Cross Spread",
+    "cards": "cards"
   },
   "reading": {
     "title": "✦ Reading ✦",
@@ -25,7 +48,8 @@
     "reversed": "Reversed",
     "interpretation": "Interpretation",
     "symbolism": "Symbolism",
-    "summary": "✦ Overall Guidance ✦"
+    "summary": "✦ Overall Guidance ✦",
+    "keywords": "✦ Keywords"
   },
   "library": {
     "title": "✦ Library ✦",

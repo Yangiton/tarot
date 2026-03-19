@@ -14,7 +14,6 @@ import { ref, computed, watch } from 'vue'
 import type { TarotCard as TarotCardType, DrawnCard, DisplayCard } from '@/data'
 import { DEFAULT_DECK_ID, getCardEnglishName, getCardNumber } from '@/data'
 import { getCardImageUrl, isImageDeck } from '@/data/card-images'
-import cardBackImage from '@/assets/back/0.png'
 
 // ========== Props ==========
 interface Props {
@@ -129,9 +128,11 @@ watch(
       </div>
     </template>
 
-    <!-- 背面内容 -->
+    <!-- 背面内容 - 简约神秘风格 -->
     <template v-else>
-      <img :src="cardBackImage" alt="Card Back" class="card-image back-image" />
+      <div class="card-back">
+        <div class="back-symbol">✦</div>
+      </div>
     </template>
   </div>
 </template>
@@ -176,8 +177,7 @@ watch(
   transition: opacity 0.3s ease;
 }
 
-.card-image.loaded,
-.back-image {
+.card-image.loaded {
   opacity: 1;
 }
 
@@ -198,7 +198,7 @@ watch(
 
 .card-number {
   font-size: clamp(0.5rem, 2vw, 0.75rem);
-  color: var(--gold, #d4af37);
+  color: var(--accent);
   opacity: 0.8;
   margin-bottom: 0.5rem;
 }
@@ -210,7 +210,7 @@ watch(
 
 .card-name {
   font-size: clamp(0.625rem, 3vw, 1rem);
-  color: var(--gold, #d4af37);
+  color: var(--accent);
   font-weight: 600;
   margin-top: 0.5rem;
 }
@@ -219,5 +219,47 @@ watch(
   font-size: clamp(0.5rem, 2vw, 0.7rem);
   color: var(--text-muted, #888);
   margin-top: 0.25rem;
+}
+
+/* ========== 卡背样式 - 简约神秘风格 ========== */
+.card-back {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+  overflow: hidden;
+}
+
+/* 装饰边框 - 外层 */
+.card-back::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: calc(var(--card-radius) - 4px);
+  border: 2px solid rgba(224, 123, 90, 0.35);
+  pointer-events: none;
+}
+
+/* 装饰边框 - 内层 */
+.card-back::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: calc(var(--card-radius) - 8px);
+  border: 1px solid rgba(224, 123, 90, 0.2);
+  pointer-events: none;
+}
+
+/* 中央符号 */
+.back-symbol {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2rem, 12vw, 3rem);
+  color: var(--primary-500, #e07b5a);
+  opacity: 0.7;
+  text-shadow: 0 0 20px rgba(224, 123, 90, 0.3);
 }
 </style>

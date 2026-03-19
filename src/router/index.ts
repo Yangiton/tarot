@@ -12,6 +12,17 @@ const router = createRouter({
           path: '',
           name: 'home',
           component: () => import('@/pages/Home.vue'),
+          meta: { hideNav: true },
+        },
+        {
+          path: 'divination',
+          name: 'divination',
+          component: () => import('@/pages/Divination.vue'),
+        },
+        {
+          path: 'spreads',
+          name: 'spreads',
+          component: () => import('@/pages/Spreads.vue'),
         },
         {
           path: 'reading',

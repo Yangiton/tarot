@@ -1,17 +1,64 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+/**
+ * Reading.vue - 解读页
+ *
+ * 设计理念：沉浸式阅读体验，每张牌有自己的舞台
+ * - 水平滑动卡片轮播
+ * - 点击卡牌可放大查看
+ * - 底部展示解读内容
+ */
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Motion } from 'motion-v'
-import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
+import { Motion, AnimatePresence } from 'motion-v'
+import { ArrowLeft, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { useSwipe } from '@vueuse/core'
 import Button from '@/components/ui/button.vue'
 import { HoloTarot } from '@/components/tarot'
 import { useTarot } from '@/composables/useTarot'
 import { splitKeywords } from '@/data'
 
 const router = useRouter()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const { drawnCards, summary, isDrawn, resetReading, currentDeckId, holoPreset } = useTarot()
+
+// 当前选中的卡牌索引
+const currentIndex = ref(0)
+const carouselRef = ref<HTMLElement | null>(null)
+
+// 当前卡牌
+const currentCard = computed(() => drawnCards.value[currentIndex.value])
+const totalCards = computed(() => drawnCards.value.length)
+
+// 是否显示导航箭头（多张牌时）
+const showNavigation = computed(() => totalCards.value > 1)
+
+// 滑动手势
+const { direction } = useSwipe(carouselRef, {
+  onSwipeEnd() {
+    if (direction.value === 'left' && currentIndex.value < totalCards.value - 1) {
+      nextCard()
+    } else if (direction.value === 'right' && currentIndex.value > 0) {
+      prevCard()
+    }
+  },
+})
+
+const prevCard = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+  }
+}
+
+const nextCard = () => {
+  if (currentIndex.value < totalCards.value - 1) {
+    currentIndex.value++
+  }
+}
+
+const goToCard = (index: number) => {
+  currentIndex.value = index
+}
 
 onMounted(() => {
   if (!isDrawn.value) {
@@ -30,159 +77,412 @@ const handleReset = () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col overflow-hidden">
+  <div class="reading-page">
     <!-- Header Bar -->
-    <header
-      class="flex-shrink-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-gold/15 bg-background/50 backdrop-blur-sm"
-    >
-      <Button variant="ghost" size="sm" @click="goBack">
-        <ArrowLeft class="w-4 h-4 mr-1" />
-        <span class="hidden sm:inline">{{ $t('reading.back') }}</span>
+    <header class="reading-header">
+      <Button variant="ghost" size="sm" class="back-btn" @click="goBack">
+        <ArrowLeft class="w-4 h-4" />
       </Button>
 
-      <h2 class="text-sm md:text-lg font-bold gold-title">{{ $t('reading.title') }}</h2>
+      <div class="header-center">
+        <span class="page-indicator">{{ currentIndex + 1 }} / {{ totalCards }}</span>
+      </div>
 
-      <Button variant="outline" size="sm" @click="handleReset">
-        <RefreshCw class="w-4 h-4 sm:mr-1" />
-        <span class="hidden sm:inline">{{ $t('reading.reset') }}</span>
+      <Button variant="ghost" size="sm" class="reset-btn" @click="handleReset">
+        <RefreshCw class="w-4 h-4" />
       </Button>
     </header>
 
-    <!-- Scroll Content (允许文本选择) -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-6 selectable">
-      <div class="max-w-2xl mx-auto space-y-4">
-        <!-- Card Interpretations -->
+    <!-- 卡牌轮播区域 -->
+    <div ref="carouselRef" class="card-carousel">
+      <!-- 左箭头 -->
+      <button
+        v-if="showNavigation && currentIndex > 0"
+        class="nav-arrow nav-prev"
+        @click="prevCard"
+      >
+        <ChevronLeft class="w-6 h-6" />
+      </button>
+
+      <!-- 卡牌展示 -->
+      <div class="card-stage">
+        <AnimatePresence mode="wait">
+          <Motion
+            v-if="currentCard"
+            :key="currentCard.id"
+            :initial="{ opacity: 0, scale: 0.9, x: direction === 'left' ? 50 : -50 }"
+            :animate="{ opacity: 1, scale: 1, x: 0 }"
+            :exit="{ opacity: 0, scale: 0.9, x: direction === 'left' ? -50 : 50 }"
+            :transition="{ type: 'spring', stiffness: 300, damping: 25 }"
+            class="card-container"
+          >
+            <HoloTarot
+              :card="currentCard"
+              :deck-id="currentDeckId"
+              :holo-preset="holoPreset"
+              :clickable="true"
+              :zoomable="true"
+              static
+            />
+          </Motion>
+        </AnimatePresence>
+      </div>
+
+      <!-- 右箭头 -->
+      <button
+        v-if="showNavigation && currentIndex < totalCards - 1"
+        class="nav-arrow nav-next"
+        @click="nextCard"
+      >
+        <ChevronRight class="w-6 h-6" />
+      </button>
+    </div>
+
+    <!-- 卡牌信息和状态 -->
+    <div v-if="currentCard" class="card-info">
+      <div class="card-title-row">
+        <span class="card-number">{{ currentCard.number }}</span>
+        <h2 class="card-name">{{ currentCard.name }}</h2>
+        <span :class="['status-tag', currentCard.isReversed ? 'tag-reversed' : 'tag-upright']">
+          {{ currentCard.isReversed ? t('reading.reversed') : t('reading.upright') }}
+        </span>
+      </div>
+      <p class="card-position">{{ currentCard.position }}</p>
+    </div>
+
+    <!-- 分页指示器 -->
+    <div v-if="showNavigation" class="pagination-dots">
+      <button
+        v-for="(_, index) in drawnCards"
+        :key="index"
+        :class="['dot', { active: index === currentIndex }]"
+        @click="goToCard(index)"
+      />
+    </div>
+
+    <!-- 解读内容 -->
+    <div class="reading-content custom-scrollbar">
+      <AnimatePresence mode="wait">
         <Motion
-          v-for="(card, index) in drawnCards"
-          :key="card.id"
-          :initial="{ opacity: 0, x: -20 }"
-          :animate="{ opacity: 1, x: 0 }"
-          :transition="{ duration: 0.4, delay: index * 0.15 }"
-        >
-          <div class="glass-card p-4 md:p-6">
-            <div class="reading-card-layout">
-              <!-- 左侧：静态卡片展示 -->
-              <div class="reading-card-left">
-                <div class="reading-card-wrapper">
-                  <HoloTarot
-                    :card="card"
-                    :deck-id="currentDeckId"
-                    :holo-preset="holoPreset"
-                    :clickable="false"
-                    static
-                  />
-                </div>
-              </div>
-
-              <!-- 右侧：卡片信息和解读 -->
-              <div class="reading-card-right">
-                <!-- 卡片标题 -->
-                <div class="flex items-start justify-between gap-2 mb-3">
-                  <div>
-                    <h3 class="text-lg md:text-xl font-semibold text-gold">{{ card.name }}</h3>
-                    <p class="text-sm text-muted-foreground">{{ card.position }}</p>
-                  </div>
-                  <span
-                    :class="[
-                      'px-3 py-1 rounded-full text-xs font-medium flex-shrink-0',
-                      card.isReversed
-                        ? 'bg-red-900/50 text-red-300'
-                        : 'bg-green-900/50 text-green-300',
-                    ]"
-                  >
-                    {{ card.isReversed ? $t('reading.reversed') : $t('reading.upright') }}
-                  </span>
-                </div>
-
-                <!-- 关键词 -->
-                <div class="flex flex-wrap gap-1.5 mb-4">
-                  <span
-                    v-for="kw in splitKeywords(card.keywords, locale)"
-                    :key="kw"
-                    class="px-2 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
-                  >
-                    {{ kw }}
-                  </span>
-                </div>
-
-                <!-- 牌义解读 -->
-                <div class="space-y-3 text-sm md:text-base">
-                  <div>
-                    <h4 class="text-foreground font-medium mb-1.5">
-                      {{ $t('reading.interpretation') }}
-                    </h4>
-                    <p class="text-muted-foreground leading-relaxed">
-                      {{ card.isReversed ? card.reversed : card.upright }}
-                    </p>
-                  </div>
-
-                  <div v-if="card.note">
-                    <h4 class="text-foreground font-medium mb-1.5">
-                      {{ $t('reading.symbolism') }}
-                    </h4>
-                    <p class="text-muted-foreground leading-relaxed">{{ card.note }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Motion>
-
-        <!-- Summary Section -->
-        <Motion
+          v-if="currentCard"
+          :key="currentCard.id + '-content'"
           :initial="{ opacity: 0, y: 20 }"
           :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, delay: drawnCards.length * 0.15 }"
+          :exit="{ opacity: 0, y: -10 }"
+          :transition="{ duration: 0.3 }"
+          class="content-inner"
         >
-          <div class="glass-card p-4 md:p-6 border border-gold/20 bg-gold/5">
-            <h3 class="text-lg md:text-xl font-semibold text-gold mb-4">
-              {{ $t('reading.summary') }}
-            </h3>
-            <p class="text-muted-foreground leading-loose text-sm md:text-base">{{ summary }}</p>
+          <!-- 关键词 -->
+          <div class="keywords-section">
+            <h4 class="section-title">{{ t('reading.keywords') }}</h4>
+            <div class="keywords-list">
+              <span
+                v-for="kw in splitKeywords(currentCard.keywords, locale)"
+                :key="kw"
+                class="keyword-tag"
+              >
+                {{ kw }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 牌义解读 -->
+          <div class="interpretation-section">
+            <h4 class="section-title">✦ {{ t('reading.interpretation') }}</h4>
+            <p class="interpretation-text">
+              {{ currentCard.isReversed ? currentCard.reversed : currentCard.upright }}
+            </p>
+          </div>
+
+          <!-- 象征意义 -->
+          <div v-if="currentCard.note" class="symbolism-section">
+            <h4 class="section-title">✦ {{ t('reading.symbolism') }}</h4>
+            <p class="symbolism-text">{{ currentCard.note }}</p>
           </div>
         </Motion>
-      </div>
+      </AnimatePresence>
+
+      <!-- 综合指引（最后一张牌后显示） -->
+      <Motion
+        v-if="currentIndex === totalCards - 1 && summary"
+        :initial="{ opacity: 0 }"
+        :animate="{ opacity: 1 }"
+        :transition="{ duration: 0.5, delay: 0.3 }"
+        class="summary-section"
+      >
+        <div class="summary-card glass-card">
+          <h3 class="summary-title">{{ t('reading.summary') }}</h3>
+          <p class="summary-text">{{ summary }}</p>
+        </div>
+      </Motion>
     </div>
   </div>
 </template>
 
 <style scoped>
-.reading-card-layout {
+/**
+ * 解读页样式
+ * 设计系统：暗夜优雅 (Dark Elegant)
+ */
+
+.reading-page {
+  height: 100%;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.reading-card-left {
+/* ========== Header ========== */
+.reading-header {
+  position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.reading-card-right {
-  flex: 1;
-  min-width: 0;
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.reading-card-wrapper {
-  --card-width: 90px;
+.page-indicator {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  font-weight: var(--font-medium);
+}
+
+.back-btn,
+.reset-btn {
+  color: var(--fg-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.back-btn:hover,
+.reset-btn:hover {
+  color: var(--accent);
+}
+
+/* ========== 卡牌轮播 ========== */
+.card-carousel {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-12);
+  min-height: 280px;
+}
+
+.card-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-container {
+  --card-width: 160px;
 }
 
 @media (min-width: 640px) {
-  .reading-card-layout {
-    gap: 1.5rem;
-  }
-
-  .reading-card-wrapper {
-    --card-width: 110px;
+  .card-container {
+    --card-width: 180px;
   }
 }
 
-@media (min-width: 768px) {
-  .reading-card-wrapper {
-    --card-width: 130px;
-  }
+/* 导航箭头 */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--fg-muted);
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: var(--z-elevated);
 }
 
-.reading-card-wrapper :deep(.card-wrapper) {
-  width: var(--card-width);
-  height: calc(var(--card-width) * 1.709);
+.nav-arrow:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.nav-prev {
+  left: var(--space-2);
+}
+
+.nav-next {
+  right: var(--space-2);
+}
+
+/* ========== 卡牌信息 ========== */
+.card-info {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.card-number {
+  font-size: var(--text-sm);
+  color: var(--fg-subtle);
+  font-weight: var(--font-medium);
+}
+
+.card-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--fg-bright);
+  margin: 0;
+}
+
+.status-tag {
+  padding: var(--space-half) var(--space-2half);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.tag-upright {
+  background: var(--upright-soft);
+  color: var(--upright);
+  border: 1px solid var(--upright);
+}
+
+.tag-reversed {
+  background: var(--reversed-soft);
+  color: var(--reversed);
+  border: 1px solid var(--reversed);
+}
+
+.card-position {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  margin-top: var(--space-1);
+}
+
+/* ========== 分页指示器 ========== */
+.pagination-dots {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--void-700);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.dot:hover:not(.active) {
+  background: var(--accent-soft);
+}
+
+/* ========== 解读内容 ========== */
+.reading-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+.content-inner {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+  margin-bottom: var(--space-2);
+}
+
+.keywords-section {
+  margin-bottom: var(--space-5);
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.keyword-tag {
+  padding: var(--space-1) var(--space-3);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.interpretation-section,
+.symbolism-section {
+  margin-bottom: var(--space-5);
+}
+
+.interpretation-text,
+.symbolism-text {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-muted);
+}
+
+/* ========== 综合指引 ========== */
+.summary-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-default);
+}
+
+.summary-card {
+  padding: var(--space-5);
+  border: 1px solid var(--border-glow);
+  background: var(--accent-soft);
+  border-radius: var(--radius-xl);
+}
+
+.summary-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.summary-text {
+  font-size: var(--text-sm);
+  line-height: var(--leading-loose);
+  color: var(--fg-muted);
 }
 </style>

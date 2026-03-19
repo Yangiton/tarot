@@ -1,39 +1,40 @@
+/**
+ * BlackRice Tarot - 全局样式
+ * 暗夜优雅风格
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 36 33% 85%;
-    
-    --muted: 222 47% 20%;
-    --muted-foreground: 220 9% 65%;
-    
-    --accent: 222 47% 25%;
-    --accent-foreground: 36 33% 85%;
-    
-    --primary: 51 100% 50%;
-    --primary-foreground: 222 47% 11%;
-    
-    --secondary: 222 47% 20%;
-    --secondary-foreground: 36 33% 85%;
-    
-    --border: 51 100% 50% / 0.15;
-    --input: 51 100% 50% / 0.15;
-    --ring: 51 100% 50%;
-    
-    --radius: 0.75rem;
-    
-    --gold: #ffd700;
-    --gold-dark: #c9a227;
-    --gold-light: #ffb347;
-    
-    --nav-height: 60px;
+    /* Tailwind/shadcn 兼容映射 */
+    --background: var(--bg-void);
+    --foreground: var(--fg-default);
+    --muted: var(--void-700);
+    --muted-foreground: var(--fg-muted);
+    --accent: var(--primary-500);
+    --accent-foreground: var(--fg-on-accent);
+    --primary: var(--primary-500);
+    --primary-foreground: var(--fg-on-accent);
+    --secondary: var(--void-800);
+    --secondary-foreground: var(--fg-default);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--primary-500);
+    --radius: var(--radius-lg);
+
+    /* 布局 */
+    --nav-height: 56px;
   }
 
   * {
-    @apply border-border;
+    border-color: var(--border-default);
+  }
+
+  html {
+    color-scheme: dark;
   }
 
   html, body {
@@ -41,27 +42,25 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* 全局禁用图片拖拽 */
-  img {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-    draggable: false;
-  }
-
-  /* 全局禁用文本选择（移动端友好） */
   body {
+    background: var(--gradient-starfield);
+    color: var(--fg-default);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    
+    /* 禁止选择（移动端友好） */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
   }
 
-  /* 允许特定区域的文本选择（解读结果） */
+  /* 允许特定区域选择 */
   .selectable,
   .selectable * {
     -webkit-user-select: text;
@@ -70,50 +69,190 @@
     user-select: text;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Noto Serif SC', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 15%) 50%, hsl(215 60% 20%) 100%);
+  /* 禁止图片拖拽 */
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    user-drag: none;
+    draggable: false;
   }
 
   #app {
     @apply h-full w-full overflow-hidden;
   }
+
+  /* 链接默认样式 */
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  a:hover {
+    color: var(--accent-hover);
+  }
 }
 
 @layer components {
-  .gold-title {
-    @apply bg-gradient-to-r from-gold via-gold-light to-gold bg-clip-text text-transparent;
+  /* ═══════════════════════════════════════════════════════════════
+   * 卡片组件
+   * ═══════════════════════════════════════════════════════════════ */
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-card);
   }
-  
-  .glass-card {
-    @apply bg-white/5 backdrop-blur-md rounded-xl border border-white/10;
+
+  .card-glass {
+    background: var(--gradient-card-glow), var(--bg-card);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-inner-glow), var(--shadow-card);
+  }
+
+  .card-interactive {
+    transition: all var(--duration-normal) var(--ease-spring);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-subtle);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 正/逆位标签
+   * ═══════════════════════════════════════════════════════════════ */
+
+  .tag-upright {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--upright-soft);
+    color: var(--upright);
+    border: 1px solid var(--upright);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+  }
+
+  .tag-reversed {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--reversed-soft);
+    color: var(--reversed);
+    border: 1px solid var(--reversed);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 输入框
+   * ═══════════════════════════════════════════════════════════════ */
+
+  .input {
+    width: 100%;
+    background: var(--bg-void);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    color: var(--fg-default);
+    transition: all var(--duration-fast) var(--ease-out);
+    outline: none;
+  }
+
+  .input::placeholder {
+    color: var(--fg-subtle);
+  }
+
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+   * 稀有度徽章
+   * ═══════════════════════════════════════════════════════════════ */
+
+  .badge-rarity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-0.5) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .badge-common {
+    background: var(--void-700);
+    color: var(--void-300);
+  }
+
+  .badge-rare {
+    background: var(--accent-soft);
+    color: var(--accent);
+    box-shadow: var(--glow-common);
+  }
+
+  .badge-epic {
+    background: var(--info-soft);
+    color: var(--info);
+    box-shadow: var(--glow-epic);
+  }
+
+  .badge-legendary {
+    background: var(--warning-soft);
+    color: var(--warning);
+    box-shadow: var(--glow-legendary);
   }
 }
 
-/* 星空背景 */
+/* ═══════════════════════════════════════════════════════════════
+ * 星空粒子背景
+ * ═══════════════════════════════════════════════════════════════ */
+
 .stars {
-  @apply fixed inset-0 pointer-events-none overflow-hidden z-0;
+  @apply fixed inset-0 pointer-events-none overflow-hidden;
+  z-index: var(--z-base);
 }
 
 .star {
-  @apply absolute w-0.5 h-0.5 bg-white rounded-full;
-  animation: twinkle 3s ease-in-out infinite;
+  @apply absolute rounded-full;
+  background: var(--void-300);
+  animation: twinkle var(--duration-ritual) ease-in-out infinite;
+  animation-delay: var(--star-delay, 0s);
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+.star--accent {
+  background: var(--primary-400);
+  box-shadow: 0 0 4px var(--accent-glow);
 }
 
-/* 滚动条样式 */
+/* ═══════════════════════════════════════════════════════════════
+ * 滚动条样式
+ * ═══════════════════════════════════════════════════════════════ */
+
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+  scrollbar-color: var(--void-600) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -121,36 +260,33 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 215, 0, 0.3);
+  background: var(--void-600);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 215, 0, 0.5);
+  background: var(--void-500);
 }
 
-/* 高亮文本 */
-.highlight {
-  color: var(--gold);
-  font-weight: 500;
-}
+/* ═══════════════════════════════════════════════════════════════
+ * HoloTarot 层级控制
+ * ═══════════════════════════════════════════════════════════════ */
 
-/* ========== HoloTarot 层级控制 ========== */
-/* 当卡片处于放大/缩小状态时，提升其容器的层级 */
 .holo-tarot.zoom-in,
 .holo-tarot.zoom-out {
-  z-index: 99999 !important;
+  z-index: var(--z-max) !important;
   isolation: isolate;
 }
 
-/* 如果 HoloTarot 在有 position 的容器内，需要提升整个容器 */
 *:has(> .holo-tarot.zoom-in),
 *:has(> .holo-tarot.zoom-out) {
-  z-index: 99999 !important;
+  z-index: var(--z-max) !important;
 }
 
-/* ========== 移动端横屏适配 ========== */
-/* 基于 User Agent 检测的移动设备类 */
+/* ═══════════════════════════════════════════════════════════════
+ * 移动端横屏适配
+ * ═══════════════════════════════════════════════════════════════ */
+
 body.is-mobile-landscape {
   --mobile-landscape-card-width: min(18vh, 90px);
 }
@@ -185,4 +321,19 @@ body.is-mobile-landscape .card-keywords {
 body.is-mobile-landscape .position-label {
   font-size: 0.5rem !important;
   bottom: -12px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * 响应式媒体查询
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

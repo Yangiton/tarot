@@ -1,8 +1,11 @@
 {
   "nav": {
+    "daily": "每日",
     "divination": "占卜",
     "library": "牌库",
-    "settings": "设置"
+    "me": "我的",
+    "settings": "设置",
+    "mainNav": "主导航"
   },
   "home": {
     "title": "✦ 塔罗占卜 ✦",
@@ -15,7 +18,27 @@
     "hintReading": "查看解读 →",
     "resetButton": "重新抽牌",
     "readingButton": "查看解读 →",
-    "tipsToggleTitle": "占卜小贴士"
+    "tipsToggleTitle": "占卜小贴士",
+    "guideText": "轻触卡牌，开启今日指引",
+    "exploreMoreSpreads": "探索更多牌阵"
+  },
+  "divination": {
+    "title": "塔罗占卜",
+    "selectSpread": "选择牌阵",
+    "selectSpreadDesc": "选择适合你问题的牌阵",
+    "changeSpread": "更换牌阵",
+    "questionLabel": "在心中想着你的问题（可选）",
+    "questionPlaceholder": "输入你想问的问题...",
+    "startButton": "开始占卜",
+    "redrawButton": "重新抽取",
+    "viewReadingButton": "查看解读",
+    "flipHint": "点击卡牌翻牌",
+    "backLabel": "返回",
+    "singleCard": "单牌",
+    "spreadDesc1": "快速指引",
+    "spreadDesc3": "过去·现在·未来",
+    "spreadDesc5": "十字牌阵",
+    "cards": "张牌"
   },
   "reading": {
     "title": "✦ 牌阵解读 ✦",
@@ -25,7 +48,8 @@
     "reversed": "逆位",
     "interpretation": "牌义解读",
     "symbolism": "象征意义",
-    "summary": "✦ 综合指引 ✦"
+    "summary": "✦ 综合指引 ✦",
+    "keywords": "✦ 关键词"
   },
   "library": {
     "title": "✦ 牌库 ✦",

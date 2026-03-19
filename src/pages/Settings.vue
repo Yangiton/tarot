@@ -102,11 +102,11 @@ const handleLanguageChange = (e: Event) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col overflow-hidden">
+  <div class="settings-page">
     <!-- Header -->
-    <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
-      <h1 class="text-base md:text-xl font-bold gold-title">{{ $t('settings.title') }}</h1>
-      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
+    <header class="settings-header">
+      <h1 class="page-title">{{ $t('settings.title') }}</h1>
+      <p class="page-subtitle">
         {{ $t('settings.subtitle') }}
       </p>
     </header>
@@ -370,16 +370,89 @@ const handleLanguageChange = (e: Event) => {
 </template>
 
 <style scoped>
+/**
+ * 设置页样式
+ * 设计系统：暗夜优雅 (Dark Elegant)
+ */
+
+.settings-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== Header ========== */
+.settings-header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.page-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .page-title {
+    font-size: var(--text-xl);
+  }
+}
+
+.page-subtitle {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  margin-top: var(--space-half);
+}
+
+/* ========== 下拉选择框 ========== */
 .spread-select {
-  @apply w-full py-2.5 px-4 pr-10;
-  @apply bg-background/50 border border-gold/30 rounded-lg;
-  @apply text-sm text-foreground;
-  @apply appearance-none cursor-pointer;
-  @apply focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30;
-  @apply transition-colors;
+  width: 100%;
+  padding: var(--space-2half) var(--space-4);
+  padding-right: var(--space-10);
+  background: var(--bg-void);
+  border: 1px solid var(--void-600);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--fg-default);
+  appearance: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  outline: none;
+}
+
+.spread-select:hover {
+  border-color: var(--void-500);
+}
+
+.spread-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .spread-select option {
-  @apply bg-background text-foreground py-2;
+  background: var(--bg-card);
+  color: var(--fg-default);
+  padding: var(--space-2);
+}
+
+/* ========== 玻璃卡片覆盖 ========== */
+:deep(.glass-card) {
+  background: var(--bg-card);
+  border: 1px solid var(--void-600);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+:deep(.glass-card:hover) {
+  border-color: var(--void-500);
 }
 </style>

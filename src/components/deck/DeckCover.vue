@@ -178,16 +178,14 @@ onUnmounted(() => {
 
 /* 选中状态 */
 .deck-cover-card.is-selected .cover-container {
-  border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+  border-color: var(--accent);
+  box-shadow: var(--glow-common);
 }
 
 /* 遮罩显示状态 */
 .deck-cover-card.overlay-visible .cover-container {
-  border-color: var(--gold);
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.25),
-    0 0 15px rgba(255, 215, 0, 0.12);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
 }
 
 .deck-cover-card.overlay-visible .desc-overlay {
@@ -202,7 +200,7 @@ onUnmounted(() => {
 /* PC hover 效果 (仅在遮罩未显示时) */
 @media (hover: hover) and (pointer: fine) {
   .deck-cover-card:not(.overlay-visible):hover .cover-container {
-    border-color: rgba(255, 215, 0, 0.5);
+    border-color: var(--primary-400);
     transform: translateY(-2px);
   }
 }
@@ -247,7 +245,7 @@ onUnmounted(() => {
 .name-text {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--accent);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   overflow: hidden;
@@ -259,8 +257,8 @@ onUnmounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--gold);
-  color: #000;
+  background: var(--accent);
+  color: var(--fg-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,43 +318,42 @@ onUnmounted(() => {
   padding: 8px 10px;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #000;
-  background: var(--gold);
+  color: var(--fg-on-accent);
+  background: var(--gradient-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-spring);
   touch-action: manipulation;
 }
 
 .view-btn:active {
   transform: scale(0.95);
-  background: #e6c200;
 }
 
 .set-default-btn {
   padding: 6px 12px;
   font-size: 0.6rem;
   font-weight: 500;
-  color: var(--gold);
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid var(--gold);
-  border-radius: 4px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-spring);
   white-space: nowrap;
   touch-action: manipulation;
 }
 
 .set-default-btn:active {
-  background: var(--gold);
-  color: #000;
+  background: var(--accent);
+  color: var(--fg-on-accent);
   transform: scale(0.95);
 }
 
 .current-deck-label {
   font-size: 0.6rem;
-  color: var(--gold);
+  color: var(--accent);
   font-weight: 500;
   padding: 6px 0;
 }
@@ -364,12 +361,12 @@ onUnmounted(() => {
 /* PC hover 按钮效果 */
 @media (hover: hover) and (pointer: fine) {
   .view-btn:hover {
-    background: #ffdf80;
+    box-shadow: var(--glow-common);
   }
 
   .set-default-btn:hover {
-    background: var(--gold);
-    color: #000;
+    background: var(--accent);
+    color: var(--fg-on-accent);
   }
 }
 

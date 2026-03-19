@@ -1,6 +1,6 @@
 # BlackRice Tarot - 开发进度清单
 
-> 更新日期：2026-03-11  
+> 更新日期：2026-03-18  
 > 版本：v1.0 → v2.0 路线图
 
 ---
@@ -28,15 +28,17 @@
 
 - [x] 星空背景动画 `StarBackground.vue`
 - [x] CSS 3D 翻牌动画 `TarotCard.vue`
-- [x] Holofoil 闪卡效果 `vHoloFoil` 指令
+- [x] hover-tilt 全息效果 `HoloTarot.vue` + `HoloFoil.vue`
 - [x] motion-v 入场/退场动画
+- [x] 暗夜优雅 (Dark Elegant) 设计系统
 
 ### 功能页面
 
-- [x] 首页 `Home.vue` - 占卜主流程
-- [x] 解读页 `Reading.vue` - 牌义详情
-- [x] 牌库页 `Library.vue` - 78 张牌浏览
-- [x] 设置页 `Settings.vue` - 牌组选择、完整牌组开关
+- [x] Daily Fortune `Home.vue` - 每日运势（单卡沉浸式）
+- [x] 占卜页 `Divination.vue` - 3/5 牌阵选择
+- [x] 解读页 `Reading.vue` - 轮播式牌义详情
+- [x] 牌库页 `Library.vue` - 网格收集展示（含锁定/解锁状态）
+- [x] 设置页 `Settings.vue` - 牌组选择、逆位模式、完整牌组开关
 
 ### 系统功能
 
@@ -77,16 +79,45 @@
 
 ---
 
-## 🚧 进行中 (V1.5 沉浸式交互升级)
+## ✅ 已完成 (V1.5 暗夜优雅升级)
 
-> 核心目标：从「点击抽牌」升级为「仪式体验」
+> 核心成果：全新设计系统 + 沉浸式卡牌体验
+
+### 设计系统 [P0] ✅
+
+- [x] 暗夜优雅 (Dark Elegant) 设计风格
+- [x] CSS 设计令牌系统 `design-tokens.css`
+- [x] 陶土橙主色 + 虚空黑背景
+- [x] 弹性动画曲线 (Spring Easing)
+- [x] 移动优先响应式设计
+
+### HoloTarot 卡牌系统 [P0] ✅
+
+- [x] hover-tilt 集成 - 3D 倾斜效果
+- [x] 双面 tilt 架构 - 正反面独立倾斜
+- [x] Glare 全息效果 - 仅正面显示
+- [x] 3D 翻转 - CSS preserve-3d + backface-visibility
+- [x] 点击放大 - 动态居中缩放 + 最高层级
+- [x] 翻牌状态持久化 - useStorage
+
+### 逆位模式 [P1] ✅
+
+- [x] 经典模式 (50%)
+- [x] 轻逆位模式 (30%)
+- [x] 重逆位模式 (70%)
+- [x] 极轻模式 (10%)
+
+---
+
+## 🚧 进行中 (V2.0 沉浸式交互升级)
+
+> 核心目标：增强仪式感体验
 
 ### 仪式交互 [P0]
 
 - [ ] 问题输入环节 - 静心提问仪式入口
 - [ ] 3D 洗牌动画 - Three.js 物理模拟
 - [ ] 切牌交互 - 手势滑动切分牌堆
-- [ ] 3D 翻牌升级 - 增强现有 CSS 3D 效果
 
 ### 角色系统 [P1]
 
@@ -104,7 +135,8 @@
 
 ### 每日塔罗 [P0] ⭐ 核心留存
 
-- [ ] 每日一卡功能 - 每日单牌 + 今日运势
+- [x] 每日一卡功能 - Daily Fortune 首页实现
+- [x] 翻牌状态持久化 - 跨会话保存
 - [ ] 图鉴收集系统 - 稀有度（普通/闪/全息/限定）
 - [ ] 收集进度展示 - 成长可视化
 - [ ] 闪卡分享卡片 - 病毒式传播
@@ -199,9 +231,9 @@
 | 阶段 | 目标 | 状态 |
 |------|------|:----:|
 | MVP v1.0 | 核心占卜功能上线 | ✅ |
-| V1.5 | 沉浸式交互体验 | 🚧 |
-| V2.0 | 每日一卡 + 图鉴系统 | 📋 |
-| V2.5 | i18n + iOS App 上架 | 🚧 |
+| V1.5 | 暗夜优雅设计升级 | ✅ |
+| V2.0 | 沉浸式交互 + 图鉴系统 | 🚧 |
+| V2.5 | iOS App 上架 | 📋 |
 | V3.0 | AI 解读 + Android 上架 | 📋 |
 
 ---
@@ -233,6 +265,30 @@
 ---
 
 ## 📝 更新日志
+
+### 2026-03-18
+
+- **V1.5 暗夜优雅升级完成**
+- 实现全新设计系统 (Dark Elegant)
+  - 设计令牌系统 `design-tokens.css`
+  - 陶土橙主色 + 虚空黑背景
+  - 弹性动画曲线
+- 重构 HoloTarot 卡牌组件
+  - hover-tilt 3D 倾斜 + Glare 全息
+  - 双面 tilt 架构（正反面独立倾斜）
+  - 3D 翻转 + 点击放大（动态居中）
+  - 翻牌状态 useStorage 持久化
+- 页面重构
+  - Home.vue → Daily Fortune 沉浸式首页
+  - 新增 Divination.vue 占卜页
+  - Reading.vue 轮播式解读
+  - Library.vue 网格收集展示
+  - Settings.vue 逆位模式选择
+- 代码清理
+  - 移除废弃组件（TipsBox, AppFooter, DailyCard 等）
+  - 移除废弃 composables（useSpringAnimation, useTheme, useNative）
+  - 统一设计系统，移除 v2 后缀
+- 导航栏优化（移除点状指示器，优化三态）
 
 ### 2026-03-12
 

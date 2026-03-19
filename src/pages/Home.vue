@@ -1,76 +1,88 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
+/**
+ * Home.vue - Daily Fortune 首页
+ *
+ * 设计理念：暗夜优雅 (Dark Elegant)
+ * - 极简仪式感：大尺寸卡牌居中展示
+ * - 沉浸式体验：无导航干扰，点击翻牌直接揭示
+ * - 无跳变：始终显示 HoloTarot，背面→正面翻转
+ */
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Motion, AnimatePresence } from 'motion-v'
-import { Lightbulb, X, ChevronRight } from 'lucide-vue-next'
-import { useToggle, useCycleList, useTimeoutFn } from '@vueuse/core'
+import { Settings, Sparkles, ChevronRight, RotateCcw } from 'lucide-vue-next'
+import { useTimeoutFn } from '@vueuse/core'
 import { HoloTarot } from '@/components/tarot'
-import AppFooter from '@/components/AppFooter.vue'
-import Button from '@/components/ui/button.vue'
 import { useTarot } from '@/composables/useTarot'
 import { useDevice } from '@/composables/useDevice'
 
 const { t } = useI18n()
 const router = useRouter()
-const { isMobileLandscape, isMobile } = useDevice()
+const { isMobile } = useDevice()
+
 const {
   currentSpread,
   drawnCards,
   holoPreset,
   currentDeckId,
-  useFullDeck,
   isDrawn,
-  allFlipped,
   drawCards,
   flipCard,
   isCardFlipped,
   resetReading,
-  tips,
-  spreads,
+  selectSpread,
 } = useTarot()
 
-const deckRangeLabel = computed(() =>
-  useFullDeck.value ? t('settings.deckRangeFull') : t('settings.deckRangeMajor')
+// ========== State ==========
+const holoTarotRef = ref<InstanceType<typeof HoloTarot> | null>(null)
+const isAnimating = ref(false)
+const showActions = ref(false)
+const hasInitialized = ref(false)
+
+// Daily Fortune 模式：单卡
+const isDailyMode = computed(() => currentSpread.value === 1)
+const dailyCard = computed(() =>
+  isDailyMode.value && drawnCards.value.length > 0 ? drawnCards.value[0] : null
+)
+const isCardRevealed = computed(() => dailyCard.value && isCardFlipped(dailyCard.value.id))
+
+// 确保首页是单卡模式，并自动抽卡
+watch(
+  () => router.currentRoute.value.path,
+  path => {
+    if (path === '/' && currentSpread.value !== 1) {
+      selectSpread(1)
+    }
+  },
+  { immediate: true }
 )
 
-const cardRefs = ref<Record<number, any>>({})
-const isAnimating = ref(false)
-const drawKey = ref(0)
+// 初始化时自动抽卡（如果还没抽过）
+onMounted(() => {
+  if (!isDrawn.value) {
+    drawCards()
+  }
+  hasInitialized.value = true
 
-const [showTips, toggleTips] = useToggle(false)
-const { state: currentTip, index: currentTipIndex, next } = useCycleList(tips)
-const nextTip = () => {
-  next()
-}
-
-const setCardRef = (el: unknown, index: number) => {
-  cardRefs.value[index] = el
-}
-
-const currentSpreadConfig = computed(() => {
-  return spreads.value[String(currentSpread.value)]
+  // 如果已翻牌，直接显示操作按钮
+  if (isCardRevealed.value) {
+    showActions.value = true
+  }
 })
 
-const hint = computed(() => {
-  if (!allFlipped.value) return t('home.hintFlip')
-  return t('home.hintReading')
+// 翻牌后显示操作按钮
+watch(isCardRevealed, revealed => {
+  if (revealed) {
+    useTimeoutFn(() => {
+      showActions.value = true
+    }, 500)
+  } else {
+    showActions.value = false
+  }
 })
 
-const goToSettings = () => {
-  router.push('/settings')
-}
-
-const handleDraw = async () => {
-  isAnimating.value = true
-  drawCards()
-  drawKey.value++
-  await nextTick()
-  useTimeoutFn(() => {
-    isAnimating.value = false
-  }, 600)
-}
-
+// ========== Handlers ==========
 const handleFlip = (cardId: string) => {
   flipCard(cardId)
 }
@@ -78,450 +90,430 @@ const handleFlip = (cardId: string) => {
 const handleReset = async () => {
   if (isAnimating.value) return
   isAnimating.value = true
+  showActions.value = false
 
-  Object.values(cardRefs.value).forEach((ref: any) => ref?.reset?.())
+  // 先重置翻牌状态
+  holoTarotRef.value?.reset?.()
 
-  await new Promise(resolve => setTimeout(resolve, 350))
+  await new Promise(resolve => setTimeout(resolve, 400))
 
+  // 重新抽卡
   resetReading()
-  drawKey.value++
+  drawCards()
 
-  await nextTick()
   useTimeoutFn(() => {
     isAnimating.value = false
   }, 100)
 }
 
 const goToReading = () => {
-  if (allFlipped.value) {
-    router.push('/reading')
-  }
+  router.push('/reading')
+}
+
+const goToSettings = () => {
+  router.push('/settings')
+}
+
+const goToMoreSpreads = () => {
+  router.push('/spreads')
 }
 </script>
 
 <template>
-  <div
-    class="home-container"
-    :class="{
-      'is-mobile': isMobile,
-      'is-landscape': isMobileLandscape,
-    }"
-  >
-    <!-- Header Row: Title + Tips Icon -->
-    <header class="header-row">
-      <div class="header-content">
-        <h1 class="title">{{ $t('home.title') }}</h1>
-        <p v-if="!isMobileLandscape" class="subtitle">{{ $t('home.subtitle') }}</p>
-      </div>
+  <div class="daily-fortune" :class="{ 'is-mobile': isMobile }">
+    <!-- 极简设置入口 -->
+    <button class="settings-btn" @click="goToSettings" :aria-label="t('nav.settings')">
+      <Settings class="w-5 h-5" />
+    </button>
 
-      <!-- Tips Toggle Button -->
-      <button
-        class="tips-toggle"
-        :class="{ 'is-active': showTips }"
-        @click="toggleTips()"
-        :title="$t('home.tipsToggleTitle')"
-      >
-        <Lightbulb class="w-4 h-4 md:w-5 md:h-5" />
-      </button>
-    </header>
-
-    <!-- Tips Popup -->
+    <!-- 引导文字（未翻牌时） -->
     <AnimatePresence>
       <Motion
-        v-if="showTips"
-        :initial="{ opacity: 0, y: -10, scale: 0.95 }"
-        :animate="{ opacity: 1, y: 0, scale: 1 }"
-        :exit="{ opacity: 0, y: -10, scale: 0.95 }"
-        :transition="{ duration: 0.2 }"
-        class="tips-popup"
+        v-if="!isCardRevealed && hasInitialized"
+        :initial="{ opacity: 0, y: -10 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :exit="{ opacity: 0, y: -10 }"
+        :transition="{ duration: 0.3 }"
+        class="guide-header"
       >
-        <div class="tips-header">
-          <span class="tips-title">{{ $t('home.tipsLabel') }}</span>
-          <button class="tips-close" @click="toggleTips(false)">
-            <X class="w-4 h-4" />
-          </button>
-        </div>
-        <p class="tips-text" v-html="currentTip.text"></p>
-        <div class="tips-footer">
-          <span class="tips-count">{{ currentTipIndex + 1 }}/{{ tips.length }}</span>
-          <button class="tips-next" @click="nextTip">{{ $t('home.tipsNext') }}</button>
-        </div>
+        <p class="guide-text">{{ t('home.guideText') }}</p>
       </Motion>
     </AnimatePresence>
 
-    <!-- Spread Info -->
-    <div v-if="!isMobileLandscape" class="spread-info">
-      <div class="spread-badges">
-        <div class="spread-badge" @click="goToSettings">
-          <span class="spread-name">{{ currentSpreadConfig?.name }}</span>
-          <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
-        </div>
-        <div class="spread-badge" @click="goToSettings">
-          <span class="spread-name">{{ deckRangeLabel }}</span>
-          <ChevronRight class="w-3 h-3 ml-0.5 opacity-60" />
-        </div>
-      </div>
-      <p class="spread-desc">{{ currentSpreadConfig?.description }}</p>
+    <!-- 大尺寸卡牌区域 -->
+    <div class="card-stage">
+      <HoloTarot
+        v-if="dailyCard"
+        ref="holoTarotRef"
+        :card="dailyCard"
+        :holo-preset="holoPreset"
+        :deck-id="currentDeckId"
+        :clickable="!isAnimating"
+        :flipped="isCardRevealed ?? false"
+        :zoomable="isCardRevealed ?? false"
+        :gyroscope="true"
+        :zoom-scale="2.5"
+        class="daily-card"
+        @flip="handleFlip"
+      />
     </div>
 
-    <!-- Main Card Area -->
-    <div class="main-area">
-      <!-- 抽牌前：居中显示按钮 -->
-      <Transition name="fade-scale" mode="out-in">
-        <div v-if="!isDrawn" key="draw-button" class="draw-area">
-          <Button size="lg" :disabled="isAnimating" @click="handleDraw" class="draw-btn">
-            {{ $t('home.drawButton') }}
-          </Button>
+    <!-- 卡牌信息区 -->
+    <AnimatePresence>
+      <Motion
+        v-if="isCardRevealed && dailyCard"
+        :initial="{ opacity: 0, y: 24 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :exit="{ opacity: 0, y: 12 }"
+        :transition="{ duration: 0.5, delay: 0.2, ease: [0.22, 1.2, 0.36, 1] }"
+        class="card-info"
+      >
+        <div class="card-header">
+          <span class="card-number">{{ dailyCard.number }}</span>
+          <h2 class="card-name">{{ dailyCard.name }}</h2>
         </div>
+        <span :class="['orientation-tag', dailyCard.isReversed ? 'is-reversed' : 'is-upright']">
+          {{ dailyCard.isReversed ? t('reading.reversed') : t('reading.upright') }}
+        </span>
+        <p class="card-keywords">{{ dailyCard.keywords }}</p>
+      </Motion>
+    </AnimatePresence>
 
-        <!-- 抽牌后：显示卡牌 -->
-        <div v-else :key="'cards-' + drawKey" :class="['cards-area', `spread-${currentSpread}`]">
-          <div
-            v-for="(card, index) in drawnCards"
-            :key="card.id"
-            :class="['card-slot', `row-${card.row ?? 0}`, `col-${card.col ?? 0}`]"
-            :style="{ '--card-delay': `${index * 0.1}s` }"
-          >
-            <HoloTarot
-              :ref="el => setCardRef(el, index)"
-              :card="card"
-              :position="card.position"
-              :spread-type="currentSpread"
-              :holo-preset="holoPreset"
-              :deck-id="currentDeckId"
-              :clickable="!isAnimating"
-              :flipped="isCardFlipped(card.id)"
-              @flip="handleFlip"
-            />
-          </div>
-        </div>
-      </Transition>
-    </div>
+    <!-- 底部操作区 -->
+    <div class="action-bar">
+      <AnimatePresence>
+        <Motion
+          v-if="showActions"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
+          :exit="{ opacity: 0, y: 10 }"
+          :transition="{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }"
+          class="action-buttons"
+        >
+          <button class="btn-ghost" :disabled="isAnimating" @click="handleReset">
+            <RotateCcw class="w-4 h-4" />
+            <span>{{ t('divination.redrawButton') }}</span>
+          </button>
+          <button class="btn-accent" @click="goToReading">
+            <span>{{ t('divination.viewReadingButton') }}</span>
+            <ChevronRight class="w-4 h-4" />
+          </button>
+        </Motion>
+      </AnimatePresence>
 
-    <!-- Bottom Action Area -->
-    <div class="action-area">
-      <Transition name="fade-slide">
-        <div v-if="isDrawn" class="action-buttons">
-          <Button variant="outline" size="sm" :disabled="isAnimating" @click="handleReset">
-            {{ $t('home.resetButton') }}
-          </Button>
-          <Button v-if="allFlipped" size="sm" @click="goToReading">{{
-            $t('home.readingButton')
-          }}</Button>
-          <span v-else class="hint-text">{{ hint }}</span>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer-area">
-      <AppFooter />
+      <!-- 更多牌阵入口 -->
+      <AnimatePresence>
+        <Motion
+          v-if="showActions"
+          :initial="{ opacity: 0 }"
+          :animate="{ opacity: 1 }"
+          :exit="{ opacity: 0 }"
+          :transition="{ duration: 0.3, delay: 0.2 }"
+          class="more-spreads"
+        >
+          <button class="spread-link" @click="goToMoreSpreads">
+            <Sparkles class="w-4 h-4" />
+            <span>{{ t('home.exploreMoreSpreads') }}</span>
+          </button>
+        </Motion>
+      </AnimatePresence>
     </div>
   </div>
 </template>
 
 <style scoped>
-.home-container {
-  @apply h-full flex flex-col px-3 md:px-6 relative;
-  /* 不使用 overflow-hidden，避免裁切 3D tilt 效果 */
-}
+/**
+ * Daily Fortune 页面样式
+ * 设计系统：暗夜优雅 (Dark Elegant)
+ * 
+ * 特点：
+ * - 大尺寸卡牌居中展示
+ * - 无跳变：始终显示 HoloTarot
+ * - 点击翻牌直接揭示
+ */
 
-/* ========== Header ========== */
-.header-row {
-  @apply flex items-center justify-between py-3 md:py-4 flex-shrink-0;
-}
-
-.header-content {
-  @apply flex-1 text-center;
-}
-
-.title {
-  @apply text-xl md:text-2xl lg:text-3xl font-bold;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  @apply text-muted-foreground text-xs md:text-sm mt-0.5 tracking-wider;
-}
-
-.tips-toggle {
-  @apply absolute right-3 md:right-6 top-3 md:top-4;
-  @apply w-8 h-8 md:w-9 md:h-9 rounded-full;
-  @apply flex items-center justify-center;
-  @apply border border-gold/40 text-gold/70;
-  @apply hover:bg-gold/10 hover:text-gold hover:border-gold;
-  @apply transition-all duration-200;
-}
-
-.tips-toggle.is-active {
-  @apply bg-gold/20 text-gold border-gold;
-}
-
-/* ========== Tips Popup ========== */
-.tips-popup {
-  @apply absolute right-3 md:right-6 top-14 md:top-16 z-50;
-  @apply w-[280px] md:w-[320px];
-  @apply glass-card p-3 md:p-4;
-  @apply border border-gold/20;
-}
-
-.tips-header {
-  @apply flex items-center justify-between mb-2;
-}
-
-.tips-title {
-  @apply text-gold text-sm font-medium;
-}
-
-.tips-close {
-  @apply w-6 h-6 rounded-full;
-  @apply flex items-center justify-center;
-  @apply text-muted-foreground hover:text-foreground hover:bg-white/10;
-  @apply transition-colors;
-}
-
-.tips-text {
-  @apply text-xs md:text-sm text-muted-foreground leading-relaxed;
-}
-
-.tips-text :deep(.highlight) {
-  @apply text-gold font-medium;
-}
-
-.tips-footer {
-  @apply flex items-center justify-between mt-3 pt-2 border-t border-white/10;
-}
-
-.tips-count {
-  @apply text-xs text-muted-foreground/60;
-}
-
-.tips-next {
-  @apply text-xs text-gold hover:text-gold-light transition-colors;
-}
-
-/* ========== Spread Selector ========== */
-.spread-selector {
-  @apply flex justify-center gap-2 md:gap-3 py-2 flex-shrink-0;
-}
-
-/* ========== Spread Info ========== */
-.spread-info {
-  @apply flex flex-col items-center py-1 flex-shrink-0;
-}
-
-.spread-badges {
-  @apply flex items-center gap-2;
-}
-
-.spread-badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full;
-  @apply bg-gold/15 text-gold text-xs md:text-sm;
-  @apply cursor-pointer hover:bg-gold/25 transition-colors;
-}
-
-.spread-name {
-  @apply font-medium;
-}
-
-.spread-desc {
-  @apply text-[10px] md:text-xs text-muted-foreground mt-1;
-}
-
-/* ========== Main Card Area ========== */
-.main-area {
-  @apply flex-1 flex items-center justify-center min-h-0;
-  @apply py-2 md:py-4;
-}
-
-.draw-area {
-  @apply flex flex-col items-center gap-3;
-}
-
-.draw-btn {
-  @apply px-8 md:px-10 py-2.5 md:py-3 text-base md:text-lg;
-}
-
-/* ========== 牌阵布局 ========== */
-.cards-area {
-  @apply flex items-center justify-center;
-}
-
-/* 卡牌入场动画 */
-.card-slot {
-  position: relative; /* 确保 z-index 生效 */
-  animation: card-enter 0.5s ease-out both;
-  animation-delay: var(--card-delay, 0s);
-}
-
-@keyframes card-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.6) translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* 单牌阵 - 居中一张 */
-.cards-area.spread-1 {
-  @apply flex items-center justify-center;
-}
-
-/* 三牌阵 - 横向一排 */
-.cards-area.spread-3 {
-  @apply flex flex-row items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5;
-}
-
-/* 五牌十字阵 - 使用 CSS Grid */
-.cards-area.spread-5 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 0.25rem;
-  justify-items: center;
+.daily-fortune {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  width: fit-content;
+  justify-content: center;
+  padding: var(--space-4);
+  padding-top: var(--space-8);
+  padding-bottom: calc(var(--space-6) + var(--safe-bottom));
+  overflow: hidden;
+}
+
+/* ========== 极简设置按钮 ========== */
+.settings-btn {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--fg-subtle);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: var(--z-elevated);
+}
+
+.settings-btn:hover {
+  color: var(--fg-default);
+  border-color: var(--border-default);
+  background: var(--bg-elevated);
+}
+
+.settings-btn:active {
+  transform: scale(0.95);
+}
+
+/* ========== 引导文字 ========== */
+.guide-header {
+  position: absolute;
+  top: var(--space-16);
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.guide-text {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+/* ========== 大尺寸卡牌舞台 ========== */
+.card-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  perspective: 1000px;
+}
+
+/* 卡牌尺寸 - 大占比 */
+.daily-card {
+  width: min(70vw, 280px);
 }
 
 @media (min-width: 640px) {
-  .cards-area.spread-5 {
-    gap: 0.5rem;
+  .daily-card {
+    width: min(50vw, 320px);
   }
 }
 
 @media (min-width: 768px) {
-  .cards-area.spread-5 {
-    gap: 0.75rem;
+  .daily-card {
+    width: min(45vw, 360px);
   }
 }
 
-/* 五牌阵位置映射 */
-.cards-area.spread-5 .card-slot {
+@media (min-width: 1024px) {
+  .daily-card {
+    width: min(35vw, 380px);
+  }
+}
+
+/* ========== 卡牌信息 ========== */
+.card-info {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  /* 确保 z-index 在 grid 布局中生效 */
-  position: relative;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  text-align: center;
 }
 
-/* 当内部卡片正在翻转时，提升整个 slot 的层级 */
-.cards-area .card-slot:has(.is-flipping) {
-  z-index: 100;
+.card-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
 }
 
-.cards-area.spread-5 .row-0.col-1 {
-  grid-area: 1 / 2 / 2 / 3;
-} /* 上：过去 */
-.cards-area.spread-5 .row-1.col-0 {
-  grid-area: 2 / 1 / 3 / 2;
-} /* 左：建议 */
-.cards-area.spread-5 .row-1.col-1 {
-  grid-area: 2 / 2 / 3 / 3;
-} /* 中：现状 */
-.cards-area.spread-5 .row-1.col-2 {
-  grid-area: 2 / 3 / 3 / 4;
-} /* 右：未来 */
-.cards-area.spread-5 .row-2.col-1 {
-  grid-area: 3 / 2 / 4 / 3;
-} /* 下：挑战 */
+.card-number {
+  font-size: var(--text-sm);
+  color: var(--fg-subtle);
+  font-weight: var(--font-medium);
+}
 
-/* ========== Action Area ========== */
-.action-area {
-  @apply flex-shrink-0 h-14 md:h-16 flex items-center justify-center;
+.card-name {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--fg-bright);
+  margin: 0;
+}
+
+.orientation-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.orientation-tag.is-upright {
+  background: var(--upright-soft);
+  color: var(--upright);
+  border: 1px solid var(--upright);
+}
+
+.orientation-tag.is-reversed {
+  background: var(--reversed-soft);
+  color: var(--reversed);
+  border: 1px solid var(--reversed);
+}
+
+.card-keywords {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  margin: 0;
+}
+
+/* ========== 底部操作区 ========== */
+.action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 70px;
 }
 
 .action-buttons {
-  @apply flex items-center gap-3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-.hint-text {
-  @apply text-xs md:text-sm text-muted-foreground;
+/* Ghost 按钮 */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  transition: all var(--duration-fast) var(--ease-spring);
+  cursor: pointer;
 }
 
-/* ========== Footer ========== */
-.footer-area {
-  @apply flex-shrink-0 py-2;
+.btn-ghost:hover:not(:disabled) {
+  color: var(--fg-default);
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
 }
 
-/* ========== Mobile Landscape Mode ========== */
-.home-container.is-landscape {
-  @apply px-4;
+.btn-ghost:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
-/* 横屏：隐藏标题 */
-.home-container.is-landscape .header-row {
-  @apply hidden;
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* 横屏：主区域最大化 */
-.home-container.is-landscape .main-area {
-  @apply flex-1 py-0;
+/* Accent 按钮 */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--fg-on-accent);
+  background: var(--gradient-accent);
+  border: none;
+  box-shadow: var(--glow-common);
+  transition: all var(--duration-fast) var(--ease-spring);
+  cursor: pointer;
 }
 
-.home-container.is-landscape .cards-area {
-  @apply gap-2;
+.btn-accent:hover {
+  box-shadow: var(--glow-rare);
+  transform: translateY(-1px);
 }
 
-/* 横屏：底部操作区紧凑 */
-.home-container.is-landscape .action-area {
-  @apply h-10;
+.btn-accent:active {
+  transform: translateY(0) scale(0.98);
 }
 
-.home-container.is-landscape .action-buttons {
-  @apply gap-2;
+/* 更多牌阵入口 */
+.more-spreads {
+  margin-top: var(--space-1);
 }
 
-.home-container.is-landscape .draw-btn {
-  @apply px-6 py-1.5 text-xs;
+.spread-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--fg-subtle);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
-/* 横屏：隐藏 footer */
-.home-container.is-landscape .footer-area {
-  @apply hidden;
+.spread-link:hover {
+  color: var(--accent);
 }
 
-.home-container.is-landscape .hint-text {
-  @apply text-[10px];
+/* ========== 响应式 ========== */
+@media (min-width: 768px) {
+  .settings-btn {
+    top: var(--space-6);
+    right: var(--space-6);
+  }
+
+  .guide-header {
+    top: var(--space-20);
+  }
 }
 
-/* ========== Vue Transition 动画 ========== */
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-}
+/* 横屏模式 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .daily-fortune {
+    flex-direction: row;
+    padding: var(--space-3);
+    padding-top: var(--space-3);
+  }
 
-.fade-scale-enter-from {
-  opacity: 0;
-  transform: scale(0.9);
-}
+  .guide-header {
+    display: none;
+  }
 
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
+  .card-stage {
+    flex: 0 0 auto;
+  }
 
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-}
+  .daily-card {
+    width: min(35vh, 200px);
+  }
 
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
+  .card-info {
+    padding: var(--space-2);
+  }
 
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-5px);
+  .card-name {
+    font-size: var(--text-xl);
+  }
+
+  .action-bar {
+    min-height: auto;
+    gap: var(--space-2);
+  }
 }
 </style>

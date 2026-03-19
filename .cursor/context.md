@@ -1,6 +1,6 @@
 # BlackRice Tarot - 项目上下文
 
-> 更新日期：2026-03-12
+> 更新日期：2026-03-18
 
 ## 项目概述
 
@@ -69,23 +69,27 @@ tarot/
 │   │       └── README.md       # 牌组资源说明
 │   ├── components/             # 组件
 │   │   ├── tarot/              # 塔罗业务组件
-│   │   │   └── TarotCard.vue   # 塔罗牌卡片
+│   │   │   ├── TarotCard.vue   # 塔罗牌纯渲染组件
+│   │   │   ├── HoloTarot.vue   # 全息塔罗牌组件（tilt+flip+zoom）
+│   │   │   └── index.ts        # 组件导出
+│   │   ├── holo/               # 全息效果组件
+│   │   │   ├── HoloFoil.vue    # hover-tilt 包装器
+│   │   │   ├── presets.ts      # 全息效果预设配置
+│   │   │   ├── effects/        # CSS 效果（shadows, gradients, masks）
+│   │   │   └── index.ts        # 组件导出
+│   │   ├── deck/               # 牌组组件
+│   │   │   └── DeckCover.vue   # 牌组封面展示
 │   │   ├── ui/                 # 基础 UI 组件
 │   │   │   └── button.vue
-│   │   ├── NavBar.vue          # 导航栏
-│   │   ├── StarBackground.vue  # 星空背景
-│   │   ├── TipsBox.vue         # 提示框
-│   │   └── AppFooter.vue       # 页脚
+│   │   ├── NavBar.vue          # 导航栏（底部 Tab Bar）
+│   │   └── StarBackground.vue  # 星空背景
 │   ├── composables/            # 组合式函数
-│   │   ├── useTarot.ts         # 塔罗状态管理
-│   │   ├── useDevice.ts        # 设备检测
-│   │   └── useNative.ts        # 原生能力封装
+│   │   ├── useTarot.ts         # 塔罗状态管理（含翻牌状态持久化）
+│   │   └── useDevice.ts        # 设备检测
 │   ├── data/                   # 数据层
 │   │   ├── index.ts            # 数据导出、多语言数据加载
 │   │   ├── tarot-base.json     # 基础配置（逆位概率等）
 │   │   └── card-images.ts      # 卡牌图片路径工具
-│   ├── directives/             # Vue 指令
-│   │   └── vHoloFoil.ts        # 全息闪卡效果
 │   ├── i18n/                   # 国际化
 │   │   ├── index.ts            # i18n 配置
 │   │   └── locales/
@@ -99,13 +103,15 @@ tarot/
 │   ├── lib/                    # 工具库
 │   │   └── utils.ts            # 通用工具函数 (cn)
 │   ├── pages/                  # 页面视图
-│   │   ├── Home.vue            # 首页（抽牌）
-│   │   ├── Reading.vue         # 解读页
-│   │   ├── Library.vue         # 牌库页
+│   │   ├── Home.vue            # Daily Fortune 首页（单卡抽取）
+│   │   ├── Divination.vue      # 占卜页（3/5 牌阵选择）
+│   │   ├── Reading.vue         # 解读页（轮播展示）
+│   │   ├── Library.vue         # 牌库页（网格收集）
 │   │   └── Settings.vue        # 设置页
 │   ├── router/                 # 路由配置
 │   │   └── index.ts
 │   ├── styles/                 # 样式
+│   │   ├── design-tokens.css   # 设计系统变量（暗夜优雅）
 │   │   └── globals.css         # 全局样式
 │   ├── App.vue                 # 根组件
 │   ├── main.ts                 # 入口文件
@@ -255,29 +261,36 @@ pnpm app:android
 
 ## 核心功能
 
-### 当前实现 (MVP v1.0 + i18n)
+### 当前实现 (v1.5 暗夜优雅版)
 
 - [x] 78 张塔罗牌完整数据（22大 + 56小阿尔卡纳）
-- [x] 三种牌阵：单牌、三牌阵、五牌阵
-- [x] 正位/逆位随机（30% 逆位概率）
-- [x] 点击翻牌交互 + 3D 翻转动画
-- [x] 全息闪卡效果（6种风格）
-- [x] 完整解读面板（牌义、关键词、象征、综合指引）
+- [x] Daily Fortune 每日运势首页（沉浸式单卡）
+- [x] 多牌阵支持：单牌、三牌阵、五牌阵
+- [x] **逆位模式**：经典(50%)、轻逆位(30%)、重逆位(70%)、极轻(10%)
+- [x] **HoloTarot 卡牌系统**
+  - hover-tilt 3D 倾斜效果
+  - Glare 全息效果（多种预设）
+  - 双面 tilt 架构（正反面独立倾斜）
+  - 3D 翻转 + 点击放大（动态居中 + 最高层级）
+  - 翻牌状态 useStorage 持久化
+- [x] **暗夜优雅设计系统**
+  - 陶土橙主色 + 虚空黑背景
+  - CSS 设计令牌 `design-tokens.css`
+  - 弹性动画曲线 (Spring Easing)
 - [x] 星空背景动画
-- [x] 占卜小贴士轮播
-- [x] 金色神秘主题
-- [x] 响应式布局（移动端底部导航/PC端顶部导航）
-- [x] 牌库浏览页面
-- [x] 多牌组支持（Emoji + 韦特塔罗）
-- [x] **i18n 国际化（中英双语）**
-- [x] **Capacitor 项目结构（原生 App 支持）**
+- [x] 轮播式解读页面
+- [x] 网格收集式牌库（含锁定/解锁状态）
+- [x] 响应式布局（移动优先）
+- [x] 多牌组支持（Emoji + 韦特塔罗 + 中国风）
+- [x] i18n 国际化（中英双语）
+- [x] Capacitor 项目结构（原生 App 支持）
 - [x] GitHub Pages 一键部署
 
 ### 扩展方向
 
 - [ ] 更多牌阵（凯尔特十字等）
 - [ ] 抽牌历史记录（LocalStorage）
-- [ ] 每日一牌功能
+- [ ] 图鉴收集系统（稀有度）
 - [ ] 分享功能（生成卡片）
 - [ ] AI 解读集成
 - [ ] PWA 离线支持
@@ -287,61 +300,62 @@ pnpm app:android
 
 ## 设计系统
 
-### 颜色变量
+> **暗夜优雅** (Dark Elegant) - 像深夜星空下的占卜小屋
+
+详见 `docs/design/DESIGN-SYSTEM.md`
+
+### 核心颜色
 
 ```css
-/* 核心金色 */
---gold: #ffd700           /* 主金色 - 用于强调、标题 */
---gold-dark: #c9a227      /* 深金色 - 用于悬停、渐变 */
---gold-light: #ffb347     /* 浅金色 - 用于渐变终点 */
+/* 主色 - 陶土橙 */
+--primary-500: #E07B5A;   /* 主色 */
+--primary-400: #ED9370;   /* 悬停 */
+--primary-600: #CB5E3D;   /* 点击 */
 
-/* 背景色 */
---background: #1a1a2e     /* 主背景 - 深紫蓝 */
---muted: rgba(255, 255, 255, 0.05)  /* 抬升背景 */
-
-/* 文本色 */
---foreground: #e8d5b7     /* 主文本 - 暖白 */
---muted-foreground: #a8a8b3 /* 次文本 - 灰色 */
+/* 背景 - 虚空黑 */
+--void-950: #08080C;      /* 页面背景 */
+--void-900: #0D0D12;      /* 卡片背景 */
+--void-200: #D4D4D8;      /* 主文字 */
+--void-400: #71717A;      /* 次要文字 */
 
 /* 语义色 */
---success: #4ade80        /* 正位标签 */
---warning: #f87171        /* 逆位标签 */
+--upright: #34D399;       /* 正位 - 翡翠绿 */
+--reversed: #F87171;      /* 逆位 - 玫瑰红 */
 ```
 
 ### 交互流程
 
 ```mermaid
 flowchart TD
-    A[进入首页] --> B[选择牌阵]
-    B --> C[点击抽牌]
-    C --> D[卡牌入场动画]
-    D --> E[依次翻开卡牌]
-    E --> F{全部翻开?}
-    F -->|否| E
-    F -->|是| G[显示查看解读按钮]
-    G --> H[进入解读页]
-    H --> I[阅读牌义详情]
-    I --> J[阅读综合指引]
-    J --> K{继续?}
-    K -->|重新抽牌| A
-    K -->|浏览牌库| L[牌库页]
+    A[进入首页] --> B{当日已抽?}
+    B -->|否| C[显示卡背]
+    C --> D[点击翻牌]
+    D --> E[3D 翻转动画]
+    E --> F[显示解读]
+    B -->|是| F
+    F --> G{继续?}
+    G -->|更多牌阵| H[占卜页]
+    G -->|浏览牌库| I[牌库页]
+    H --> J[选择牌阵]
+    J --> K[抽牌]
+    K --> L[依次翻牌]
+    L --> M[查看解读]
 ```
 
 ---
 
 ## 配置项
 
-### 逆位概率
+### 逆位模式
 
-在 `src/data/tarot-base.json` 中：
+在设置页可选择四种模式：
 
-```json
-{
-  "config": {
-    "reversedProbability": 0.3
-  }
-}
-```
+| 模式 | 概率 | 说明 |
+|------|------|------|
+| 经典 Classic | 50% | 标准随机 |
+| 轻逆位 Light | 30% | 适合初学者 |
+| 重逆位 Heavy | 70% | 强调挑战 |
+| 极轻 Minimal | 10% | 几乎无逆位 |
 
 ### 牌阵配置
 

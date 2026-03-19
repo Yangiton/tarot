@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   static: false,
   flipped: false,
   zoomable: true,
-  zoomScale: 1.75,
+  zoomScale: 2.5, // 默认放大倍数，会被视口尺寸限制
 })
 
 // ========== Emits ==========
@@ -65,6 +65,8 @@ const rootRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
 const state = ref<CardState>(props.static || props.flipped ? 'front' : 'back')
 const isAnimating = ref(false)
+const isFlipping = ref(false)
+const isHoloActivating = ref(false)
 const translateX = ref(0)
 const translateY = ref(0)
 
@@ -86,13 +88,15 @@ const presetConfig = computed(() => getHoloPreset(props.holoPreset || 'normal'))
 
 // 派生状态（保留兼容性）
 const isFlipped = computed(() => state.value === 'front' || state.value === 'zoom-out')
-const isFlipping = computed(() => isAnimating.value && state.value === 'front')
 const isZoomed = computed(() => state.value === 'zoom-in')
+
+// 动态计算的缩放比例
+const dynamicZoomScale = ref(props.zoomScale)
 
 const cssVars = computed(() => ({
   '--flip-duration': `${props.flipDuration}ms`,
   '--zoom-duration': `${props.zoomDuration}ms`,
-  '--zoom-scale': String(props.zoomScale),
+  '--zoom-scale': String(dynamicZoomScale.value),
   '--translate-x': `${translateX.value}px`,
   '--translate-y': `${translateY.value}px`,
   '--card-aspect-ratio': String(deckRatio.value),
@@ -117,11 +121,28 @@ const onTransitionEnd = (callback: () => void) => {
   target.addEventListener('transitionend', handler)
 }
 
-/** 计算移动到视口中心所需的偏移量 */
+/** 计算移动到视口中心所需的偏移量和动态缩放比例 */
 const calcZoomOffset = () => {
   if (!rootRef.value) return
 
   const rect = rootRef.value.getBoundingClientRect()
+
+  // 视口安全边距 (px)
+  const VIEWPORT_PADDING = 40
+
+  // 可用视口尺寸
+  const availableWidth = window.innerWidth - VIEWPORT_PADDING * 2
+  const availableHeight = window.innerHeight - VIEWPORT_PADDING * 2
+
+  // 计算最大允许的缩放比例
+  const maxScaleByWidth = availableWidth / rect.width
+  const maxScaleByHeight = availableHeight / rect.height
+  const maxScale = Math.min(maxScaleByWidth, maxScaleByHeight)
+
+  // 使用 props.zoomScale 但不超过 maxScale，并确保至少为 1
+  dynamicZoomScale.value = Math.max(1, Math.min(props.zoomScale, maxScale))
+
+  // 计算移动到中心的偏移量
   translateX.value = window.innerWidth / 2 - (rect.left + rect.width / 2)
   translateY.value = window.innerHeight / 2 - (rect.top + rect.height / 2)
 }
@@ -149,11 +170,18 @@ const flip = () => {
   if (isAnimating.value || state.value !== 'back') return
 
   isAnimating.value = true
+  isFlipping.value = true
   state.value = 'front'
   emit('flip', props.card?.id || '')
 
   onTransitionEnd(() => {
     isAnimating.value = false
+    isFlipping.value = false
+    // 触发 holo 激活动画
+    isHoloActivating.value = true
+    setTimeout(() => {
+      isHoloActivating.value = false
+    }, 800)
     emit('flipComplete')
     triggerTilt()
   })
@@ -248,6 +276,18 @@ const reset = () => {
   document.removeEventListener('keydown', handleKeydown)
 }
 
+// 监听 flipped prop 变化（支持从 localStorage 恢复状态）
+watch(
+  () => props.flipped,
+  newFlipped => {
+    if (newFlipped && state.value === 'back') {
+      // 外部状态表明已翻牌，直接跳到正面（无动画）
+      state.value = 'front'
+    }
+  },
+  { immediate: true }
+)
+
 // ========== 生命周期 ==========
 
 watch(
@@ -302,6 +342,7 @@ defineExpose({
       class="card-container"
       :class="{
         flipped: state === 'front' || state === 'zoom-out',
+        flipping: isFlipping,
         'zoom-in': state === 'zoom-in',
         'zoom-out': state === 'zoom-out',
       }"
@@ -319,6 +360,7 @@ defineExpose({
       <!-- Front 面：hover-tilt 有 tilt + glare -->
       <HoloFoil
         class="front-wrapper"
+        :class="{ 'holo-activate': isHoloActivating }"
         :preset="holoPreset"
         :glare-intensity="presetConfig.glareIntensity ?? 1.2"
         :gyroscope="gyroscope"
@@ -385,11 +427,37 @@ defineExpose({
   transform-style: preserve-3d;
   transform: perspective(800px);
   transition: transform var(--flip-duration) cubic-bezier(0.4, 0.2, 0.2, 1);
+  border-radius: var(--card-radius);
 }
 
 /* 翻转状态 */
 .card-container.flipped {
   transform: perspective(800px) rotateY(180deg);
+}
+
+/* ========== 翻转金色边缘光效 ========== */
+.card-container.flipping {
+  animation: flip-edge-glow var(--flip-duration) ease-out;
+}
+
+@keyframes flip-edge-glow {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  }
+  30% {
+    box-shadow:
+      0 0 20px rgba(255, 215, 0, 0.6),
+      0 0 40px rgba(255, 215, 0, 0.3),
+      inset 0 0 20px rgba(255, 215, 0, 0.1);
+  }
+  60% {
+    box-shadow:
+      0 0 30px rgba(255, 215, 0, 0.4),
+      0 0 60px rgba(255, 215, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  }
 }
 
 /* 放大状态：旋转 540° + 缩放 */
@@ -426,7 +494,7 @@ defineExpose({
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 4px;
   font-size: 0.65rem;
-  color: var(--gold, #d4af37);
+  color: var(--accent);
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;

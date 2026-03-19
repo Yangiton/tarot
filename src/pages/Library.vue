@@ -105,25 +105,21 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 </script>
 
 <template>
-  <div class="h-full flex flex-col overflow-hidden">
+  <div class="library-page">
     <!-- Header -->
-    <header class="flex-shrink-0 text-center py-3 md:py-4 px-4 border-b border-gold/15">
-      <div class="flex items-center justify-center gap-2">
+    <header class="library-header">
+      <div class="header-content">
         <!-- 返回按钮（在牌组详情时显示） -->
-        <button
-          v-if="selectedDeckId"
-          class="absolute left-4 flex items-center gap-1 text-muted-foreground hover:text-gold transition-colors"
-          @click="backToList"
-        >
+        <button v-if="selectedDeckId" class="back-btn" @click="backToList">
           <ChevronLeft class="w-4 h-4" />
-          <span class="text-xs hidden sm:inline">{{ $t('library.backToDecks') }}</span>
+          <span class="hidden sm:inline">{{ $t('library.backToDecks') }}</span>
         </button>
 
-        <h1 class="text-base md:text-xl font-bold gold-title">
+        <h1 class="page-title">
           {{ selectedDeckId ? currentDeck?.name : $t('library.title') }}
         </h1>
       </div>
-      <p class="text-muted-foreground text-[10px] md:text-xs mt-0.5">
+      <p class="page-subtitle">
         {{ selectedDeckId ? currentDeck?.description : $t('library.subtitle') }}
       </p>
     </header>
@@ -160,7 +156,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
           :transition="{ duration: 0.4 }"
         >
           <section class="mb-8">
-            <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
+            <h2 class="section-title">
               {{ $t('library.majorArcanaFull') }}
             </h2>
             <p class="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
@@ -192,7 +188,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
           :transition="{ duration: 0.4, delay: 0.15 }"
         >
           <section>
-            <h2 class="text-sm md:text-lg font-semibold text-gold mb-1 md:mb-2">
+            <h2 class="section-title">
               {{ $t('library.minorArcanaFull') }}
             </h2>
             <p class="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
@@ -276,7 +272,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
               />
               <!-- 卡牌标题（移动端显示在图片下方） -->
               <div class="card-title-mobile">
-                <h3 class="text-sm font-bold text-gold">{{ selectedCard.name }}</h3>
+                <h3 class="detail-card-name">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">
                   {{ selectedCard.nameEn
                   }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
@@ -288,7 +284,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
             <div class="card-info-area">
               <!-- 卡牌标题（桌面端显示在信息区顶部） -->
               <div class="card-title-desktop">
-                <h3 class="text-base font-bold text-gold">{{ selectedCard.name }}</h3>
+                <h3 class="detail-card-name">{{ selectedCard.name }}</h3>
                 <p class="text-xs text-muted-foreground">
                   {{ selectedCard.nameEn
                   }}{{ selectedCardNumber ? ` · ${selectedCardNumber}` : '' }}
@@ -297,12 +293,12 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 
               <!-- Keywords -->
               <div>
-                <h4 class="text-xs text-gold font-medium mb-1">{{ $t('library.keywords') }}</h4>
+                <h4 class="detail-section-title">{{ $t('library.keywords') }}</h4>
                 <div class="flex flex-wrap gap-1">
                   <span
                     v-for="kw in splitKeywords(selectedCard.keywords, locale)"
                     :key="kw"
-                    class="px-1.5 py-0.5 bg-gold/10 text-gold rounded-full text-xs"
+                    class="keyword-badge"
                   >
                     {{ kw }}
                   </span>
@@ -331,7 +327,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 
               <!-- Description -->
               <div v-if="selectedCard.description">
-                <h4 class="text-xs text-gold font-medium mb-1">
+                <h4 class="detail-section-title">
                   {{ $t('library.cardDescription') }}
                 </h4>
                 <p class="text-xs text-muted-foreground leading-relaxed">
@@ -341,7 +337,7 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 
               <!-- Note -->
               <div v-if="selectedCard.note">
-                <h4 class="text-xs text-gold font-medium mb-1">{{ $t('library.symbolism') }}</h4>
+                <h4 class="detail-section-title">{{ $t('library.symbolism') }}</h4>
                 <p class="text-xs text-muted-foreground leading-relaxed">{{ selectedCard.note }}</p>
               </div>
             </div>
@@ -353,9 +349,76 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 </template>
 
 <style scoped>
+/**
+ * 牌库页样式
+ * 设计系统：暗夜优雅 (Dark Elegant)
+ */
+
+.library-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== Header ========== */
+.library-header {
+  position: relative;
+  flex-shrink: 0;
+  text-align: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.back-btn {
+  position: absolute;
+  left: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.back-btn:hover {
+  color: var(--accent);
+}
+
+.page-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .page-title {
+    font-size: var(--text-xl);
+  }
+}
+
+.page-subtitle {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  margin-top: var(--space-half);
+}
+
 /* ========== 牌库卡牌 ========== */
 .library-card {
-  /* 宽度 100%，高度由 TarotCard 内部的 aspect-ratio 自适应 */
   --card-width: 100%;
   width: 100%;
   cursor: pointer;
@@ -365,21 +428,84 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 .deck-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
   justify-items: center;
 }
 
 @media (min-width: 640px) {
   .deck-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
+    gap: var(--space-5);
   }
 }
 
 @media (min-width: 1024px) {
   .deck-grid {
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 24px;
+    gap: var(--space-6);
+  }
+}
+
+/* ========== 区块标题 ========== */
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+  margin-bottom: var(--space-1);
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
+  }
+}
+
+/* ========== 详情卡片名 ========== */
+.detail-card-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .detail-card-name {
+    font-size: var(--text-base);
+  }
+}
+
+/* ========== 详情区块标题 ========== */
+.detail-section-title {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--accent);
+  margin-bottom: var(--space-1);
+}
+
+/* ========== 关键词徽章 ========== */
+.keyword-badge {
+  padding: 2px 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+}
+
+/* ========== 花色区块 ========== */
+.suit-section h3 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--fg-default);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .suit-section h3 {
+    font-size: var(--text-base);
   }
 }
 
@@ -389,6 +515,10 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
   max-width: 320px;
   max-height: 85vh;
   overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
 }
 
 .card-detail-content {
@@ -403,36 +533,74 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
-  gap: 8px;
+  padding: var(--space-3);
+  gap: var(--space-2);
 }
 
 .card-preview {
-  /* 宽度固定，高度由 TarotCard 内部的 aspect-ratio 自适应 */
   width: 100px;
 }
 
-/* 移动端标题（图片下方） */
+/* 移动端标题 */
 .card-title-mobile {
   text-align: center;
 }
 
-/* 桌面端标题（隐藏） */
+.card-title-mobile h3 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  margin: 0;
+}
+
+.card-title-mobile p {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  margin: 0;
+}
+
+/* 桌面端标题 */
 .card-title-desktop {
   display: none;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-  margin-bottom: 8px;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-2);
+}
+
+.card-title-desktop h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  margin: 0;
+}
+
+.card-title-desktop p {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  margin: 0;
 }
 
 /* 卡牌信息区 */
 .card-info-area {
   flex: 1;
   overflow-y: auto;
-  padding: 0 12px 12px;
+  padding: 0 var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2half);
+}
+
+.card-info-area h4 {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  margin-bottom: var(--space-1);
+}
+
+.card-info-area p {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  line-height: var(--leading-relaxed);
+  margin: 0;
 }
 
 /* ========== 桌面端：左右布局 ========== */
@@ -447,27 +615,25 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
   }
 
   .card-preview-area {
-    padding: 16px;
+    padding: var(--space-4);
     justify-content: center;
-    border-right: 1px solid rgba(255, 215, 0, 0.2);
+    border-right: 1px solid var(--border-default);
   }
 
   .card-preview {
     width: 140px;
   }
 
-  /* 移动端标题隐藏 */
   .card-title-mobile {
     display: none;
   }
 
-  /* 桌面端标题显示 */
   .card-title-desktop {
     display: block;
   }
 
   .card-info-area {
-    padding: 16px;
+    padding: var(--space-4);
     width: 320px;
   }
 }
@@ -484,7 +650,16 @@ const toDisplayCard = (card: MinorArcanaCard): TarotCardType & MinorArcanaCard =
 
   .card-info-area {
     width: 380px;
-    gap: 12px;
+    gap: var(--space-3);
   }
+}
+
+/* ========== 关键词标签 ========== */
+.card-info-area .flex-wrap span {
+  padding: var(--space-half) var(--space-1half);
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
 }
 </style>

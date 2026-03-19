@@ -252,6 +252,22 @@ export interface SpreadConfig {
   positions: SpreadPosition[]
 }
 
+/**
+ * 抽牌结果 - 存储语言无关的信息
+ * 展示时通过 id 查询对应语言的卡牌数据
+ */
+export interface DrawnCardRef {
+  id: string
+  isReversed: boolean
+  positionIndex: number
+  row: number
+  col: number
+}
+
+/**
+ * 展示用的完整卡牌数据（包含当前语言的文本）
+ * @deprecated 使用 DrawnCardRef + getCardById 代替
+ */
 export interface DrawnCard extends TarotCard {
   isReversed: boolean
   position: string
@@ -323,6 +339,21 @@ export function useCardData() {
     return minorArcana.value[suit] || []
   }
 
+  /** 根据 id 获取当前语言的卡牌数据 */
+  const getCardById = (id: string): TarotCard | MinorArcanaCard | undefined => {
+    const major = majorArcana.value.find(c => c.id === id)
+    if (major) return major
+
+    const allMinor = getAllMinorArcana()
+    return allMinor.find(c => c.id === id)
+  }
+
+  /** 获取当前语言的牌阵位置名称 */
+  const getPositionName = (spreadType: SpreadType, index: number): string => {
+    const positions = spreads.value[String(spreadType)]?.positions || []
+    return positions[index]?.name || ''
+  }
+
   const getAllCards = (): TarotCard[] => {
     const minorCards = getAllMinorArcana().map(card => ({
       ...card,
@@ -343,6 +374,8 @@ export function useCardData() {
     getAllMinorArcana,
     getMinorArcanaBySuit,
     getAllCards,
+    getCardById,
+    getPositionName,
   }
 }
 
@@ -361,10 +394,30 @@ export interface ReversedModeConfig {
 
 /** 逆位模式列表 */
 export const REVERSED_MODES: ReversedModeConfig[] = [
-  { id: 'classic', probability: 0.5, nameKey: 'settings.reversedModes.classic', descKey: 'settings.reversedModes.classicDesc' },
-  { id: 'light', probability: 0.3, nameKey: 'settings.reversedModes.light', descKey: 'settings.reversedModes.lightDesc' },
-  { id: 'heavy', probability: 0.7, nameKey: 'settings.reversedModes.heavy', descKey: 'settings.reversedModes.heavyDesc' },
-  { id: 'minimal', probability: 0.1, nameKey: 'settings.reversedModes.minimal', descKey: 'settings.reversedModes.minimalDesc' },
+  {
+    id: 'classic',
+    probability: 0.5,
+    nameKey: 'settings.reversedModes.classic',
+    descKey: 'settings.reversedModes.classicDesc',
+  },
+  {
+    id: 'light',
+    probability: 0.3,
+    nameKey: 'settings.reversedModes.light',
+    descKey: 'settings.reversedModes.lightDesc',
+  },
+  {
+    id: 'heavy',
+    probability: 0.7,
+    nameKey: 'settings.reversedModes.heavy',
+    descKey: 'settings.reversedModes.heavyDesc',
+  },
+  {
+    id: 'minimal',
+    probability: 0.1,
+    nameKey: 'settings.reversedModes.minimal',
+    descKey: 'settings.reversedModes.minimalDesc',
+  },
 ]
 
 /** 默认逆位模式 */
@@ -389,6 +442,34 @@ function shuffle<T>(array: T[]): T[] {
   return arr
 }
 
+/**
+ * 抽牌 - 返回语言无关的引用数据
+ * 只存储 id、isReversed、位置索引等信息，不存储文本
+ */
+export function drawCardsRef(
+  count: SpreadType,
+  useFullDeck: boolean,
+  reversedProbability: number = 0.5
+): DrawnCardRef[] {
+  const data = getStaticCardData('zh')
+  const deck = useFullDeck
+    ? [...data.majorArcana, ...Object.values(data.minorArcana).flat()]
+    : data.majorArcana
+  const shuffled = shuffle(deck)
+  const positions = data.spreads[String(count)]?.positions || []
+
+  return shuffled.slice(0, count).map((card, i) => ({
+    id: card.id,
+    isReversed: Math.random() < reversedProbability,
+    positionIndex: i,
+    row: positions[i]?.row || 0,
+    col: positions[i]?.col || 0,
+  }))
+}
+
+/**
+ * @deprecated 使用 drawCardsRef + useCardData.getCardById 代替
+ */
 export function drawCards(
   count: SpreadType,
   useFullDeck: boolean,
